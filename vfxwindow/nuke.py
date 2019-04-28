@@ -276,22 +276,28 @@ class NukeWindow(BaseWindow):
         """Check if the window still exists.
         See if it is attached to any pane, or check the parents up to the QStackedWidget.
         """
-        if alternative:
-            return self.parent().parent().parent().parent().parent().parent().parent().parent() is not None
-        return Pane.get(self.ID) is not None
+        if self.dockable():
+            if alternative:
+                return self.parent().parent().parent().parent().parent().parent().parent().parent() is not None
+            return Pane.get(self.ID) is not None
+        return not self.isClosed()
 
     def floating(self, alternative=False):
         """Determine if the window is floating."""
-        if alternative:
-            return self.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent() is not None
-        return Pane.find(self.ID) is None
+        if self.dockable():
+            if alternative:
+                return self.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent() is not None
+            return Pane.find(self.ID) is None
+        return True
 
     def siblings(self):
         """Count the number of siblings in the QStackedWidget."""
-        try:
-            return self.parent().parent().parent().parent().parent().parent().parent().parent().count()
-        except AttributeError:
-            return 0
+        if self.dockable():
+            try:
+                return self.parent().parent().parent().parent().parent().parent().parent().parent().count()
+            except AttributeError:
+                return 0
+        return None
 
     def getAttachedPane(self):
         """Find the name of the pane the window is attached to."""

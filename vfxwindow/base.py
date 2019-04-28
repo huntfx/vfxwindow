@@ -87,6 +87,7 @@ class BaseWindow(QtWidgets.QMainWindow):
         if self.__forceDisableSaving:
             self.ID = uuid.uuid4()
         self.setWindowTitle(getattr(self, 'NAME', 'New Window'))
+        self.setObjectName(self.ID)
 
         # Track settings that to be read by any inherited windows
         self.maya = False
@@ -128,9 +129,15 @@ class BaseWindow(QtWidgets.QMainWindow):
         >>> self.signalDisconnect('widget_changed')
         []
         """
-        for (signal, func) in self._signals[group]:
-            signal.disconnect(func)
-        return self._signals.pop(group, [])
+        signals = []
+        for (signal, func) in self._signals.pop(group, []):
+            try:
+                signal.disconnect(func)
+            except RuntimeError:
+                pass
+            else:
+                signals.append(func)
+        return signals
 
     def signalConnect(self, signal, func, group=None):
         """Add a new signal for the current group.
@@ -175,9 +182,7 @@ class BaseWindow(QtWidgets.QMainWindow):
         return NotImplementedError('override needed')
 
     def setDocked(self, docked):
-        """Force the window to dock or undock.
-        TODO: Add to Maya/Nuke if possible
-        """
+        """Force the window to dock or undock."""
         pass
     
     def loadWindowPosition(self):
