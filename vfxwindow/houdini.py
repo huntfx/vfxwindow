@@ -2,8 +2,6 @@
 
 from __future__ import absolute_import
 
-from functools import partial
-
 import hou
 import hdefereval
 
@@ -115,4 +113,4 @@ class QHoudiniWindow(QBaseWindow):
                 pass
 
     def deferred(self, func, *args, **kwargs):
-        hdefereval.executeDeferred(partial(func, *args, **kwargs))
+        hdefereval.executeDeferred(func, *args, **kwargs)

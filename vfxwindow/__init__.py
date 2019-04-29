@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 import os
 
-# The imports are nested so that only 1 is imported
+# The imports are nested as an easy way to stop importing once a window is found
 try:
     import maya.cmds as cmds
 

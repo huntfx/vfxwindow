@@ -229,7 +229,7 @@ class BaseWindow(QtWidgets.QMainWindow):
         new = cls(parent, **kwargs)
         super(BaseWindow, new).show()
         new.loadWindowPosition()
-        new.windowReady.emit()
+        new.deferred(new.windowReady.emit)
         return new
 
     def setDefaultSize(self, width, height):
@@ -384,7 +384,7 @@ class BaseWindow(QtWidgets.QMainWindow):
 
     def deferred(self, func, *args, **kwargs):
         """Placeholder for program specific deferred functions."""
-        func(*args, **kwargs)
+        func()
 
     def exists(self):
         """Return if the window currently exists.

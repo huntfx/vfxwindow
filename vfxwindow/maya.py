@@ -135,6 +135,7 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
     
     # Restore the window (after maya is ready) since it may not be visible
     windowInstance.deferred(windowInstance.raise_)
+    windowInstance.deferred(windowInstance.windowReady.emit)
     return windowInstance
 
 
@@ -158,6 +159,7 @@ def dockControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs)
 
         windowInstance.setWindowTitle(getattr(windowInstance, 'NAME', 'New Window'))
         windowInstance.deferred(windowInstance.raise_)
+        windowInstance.deferred(windowInstance.windowReady.emit)
         
     # Set window ID if needed but disable saving
     if not hasattr(windowClass, 'ID'):
@@ -189,7 +191,10 @@ def dialogWrapper(windowClass, title=None, clsArgs=(), clsKwargs={}):
         form = pm.setParent(query=True)
         parent = pm.uitypes.toQtObject(form)
         parent.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        return cls(parent, *clsArgs, **clsKwargs)
+
+        windowInstance = cls(parent, *clsArgs, **clsKwargs)
+        windowInstance.windowReady.emit()
+        return windowInstance
     return pm.layoutDialog(ui=partial(uiScript, windowClass, clsArgs=clsArgs, clsKwargs=clsKwargs), title=title)
 
 
@@ -783,9 +788,9 @@ class MayaWindow(BaseWindow):
         If the window is a dialog, then execute now as Maya will pause.
         """
         if getattr(self, 'DIALOG', False):
-            func(*args, **kwargs)
+            func()
         else:
-            pm.evalDeferred(partial(func, *args, **kwargs))
+            pm.evalDeferred(func, *args, **kwargs)
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):

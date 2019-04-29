@@ -6,7 +6,6 @@ TODO: Get callbacks from https://learn.foundry.com/nuke/developers/110/pythonref
 from __future__ import absolute_import, print_function
 
 from collections import defaultdict
-from functools import partial
 
 import nuke
 from nukescripts import panels, utils
@@ -612,7 +611,7 @@ class NukeWindow(BaseWindow):
                 pass
 
     def deferred(self, func, *args, **kwargs):
-        utils.executeDeferred(partial(func, *args, **kwargs))
+        utils.executeDeferred(func, *args, **kwargs)
 
     @classmethod
     def show(cls, namespace=None, **kwargs):
