@@ -33,7 +33,7 @@ if __name__ == '__main__':
 ```
 
 ### Compatibility
- - Maya (2011-2016, tested on 2016) - QMainWindow, dockControl (only lightly tested)
+ - Maya (2011-2016, tested on 2016) - QMainWindow, dockControl (needs work)
  - Maya (2017+, tested on 2017, 2018) - QMainWindow, workspaceControl, layoutDialog
  - Nuke (tested on 9) - QMainWindow, nukescripts.panels
  - Houdini (tested on 16) - QMainWindow
