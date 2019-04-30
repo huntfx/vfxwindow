@@ -214,10 +214,10 @@ class MayaWindow(BaseWindow):
     were already implemented when I found it. It is missing a few parts I would have liked though.
     """
 
-    def __init__(self, parent=None, dockable=False):
+    def __init__(self, parent=None, dockable=False, **kwargs):
         if parent is None:
             parent = getMayaWindow()
-        super(MayaWindow, self).__init__(parent)
+        super(MayaWindow, self).__init__(parent, **kwargs)
         self.maya = True
         self.setDockable(dockable, override=True)
 

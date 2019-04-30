@@ -29,10 +29,10 @@ class QHoudiniWindow(QBaseWindow):
     It has support for automatically saving the position when closed,
     and performs some necessary CSS edits to fix colours.
     """
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, **kwargs):
         if parent is None:
             parent = getMainWindow()
-        super(QHoudiniWindow, self).__init__(parent)
+        super(QHoudiniWindow, self).__init__(parent, **kwargs)
         self.houdini = True
         
         # Fix some issues with widgets not taking the correct style

@@ -78,8 +78,8 @@ class BaseWindow(QtWidgets.QMainWindow):
     
     _WINDOW_INSTANCES = {}
 
-    def __init__(self, parent=None, *args, **kwargs):
-        super(BaseWindow, self).__init__(parent, *args, **kwargs)
+    def __init__(self, parent=None, **kwargs):
+        super(BaseWindow, self).__init__(parent, **kwargs)
         
         # Setup window attributes and saving
         self.enableSaveWindowPosition(True)
@@ -93,6 +93,9 @@ class BaseWindow(QtWidgets.QMainWindow):
         self.maya = False
         self.nuke = False
         self.houdini = False
+        self.fusion = False
+        self.blender = False
+        self.unreal = False
         self.standalone = False
 
         # Read settings

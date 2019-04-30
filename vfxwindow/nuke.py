@@ -212,10 +212,10 @@ class NukeWindow(BaseWindow):
         'updateUI': ('addUpdateUI', 'removeUpdateUI'),
     }
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, **kwargs):
         if parent is None:
             parent = getMainWindow()
-        super(NukeWindow, self).__init__(parent)
+        super(NukeWindow, self).__init__(parent, **kwargs)
         self.nuke = True
 
         self.__windowHidden = False
