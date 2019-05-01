@@ -49,20 +49,14 @@ def getMayaWindow(windowID=None, wrapInstance=True):
 
 def deleteWorkspaceControl(windowID, resetFloating=True):
     """Handle deleting a workspaceControl with a particular ID."""
-    exists = pm.workspaceControlState(windowID, query=True, exists=True)
-    try:
+    if pm.workspaceControl(windowID, query=True, exists=True):
         floating = pm.workspaceControl(windowID, query=True, floating=True)
         pm.deleteUI(windowID)
-        #pm.workspaceControl(id, edit=True, close=True) #appears to do the same thing so diabled
-    except RuntimeError:
-        floating = None
     else:
-        #Do not reset workspace if the window is currently floating
-        if not resetFloating:
-            exists = not floating
+        floating = None
 
-    #Delete the window preferences (position, size, etc)
-    if exists:
+    #Delete the window preferences (position, size, etc), if the window is not currently floating
+    if pm.workspaceControlState(windowID, query=True, exists=True) and (not floating or floating and resetFloating):
         pm.workspaceControlState(windowID, remove=True)
 
     return floating
@@ -111,9 +105,13 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
 
     # Setup Maya's window
     if dock:
+        defaultDock = mel.eval('getUIComponentDockControl("Attribute Editor", false)')
         if isinstance(dock, (bool, int)):
-            dock = 'AttributeEditor'
-        pm.workspaceControl(windowClass.ID, retain=True, label=getattr(windowClass, 'NAME', 'New Window'), tabToControl=[dock, -1])
+            dock = defaultDock
+        try:
+            pm.workspaceControl(windowClass.ID, retain=True, label=getattr(windowClass, 'NAME', 'New Window'), tabToControl=[dock, -1])
+        except RuntimeError:
+            pm.workspaceControl(windowClass.ID, retain=True, label=getattr(windowClass, 'NAME', 'New Window'), tabToControl=[defaultDock, -1])
     else:
         pm.workspaceControl(windowClass.ID, retain=True, label=getattr(windowClass, 'NAME', 'New Window'), floating=True)
 
@@ -359,18 +357,6 @@ class MayaWindow(BaseWindow):
             if not self.dockable():
                 return None
             
-            # Search through siblings until another widget is found
-            # This is most likely a Maya control
-            parent = self.parent()
-            for item in self.siblings():
-                if item != parent and type(item) == QtWidgets.QWidget:
-                    try:
-                        return item.objectName()
-                    except RuntimeError:
-                        pass
-
-            # Verbose way
-            # TODO: Needs testing if this is still needed
             workspaces = [
                 mel.eval('$gViewportWorkspaceControl=$gViewportWorkspaceControl'),
                 mel.eval('getUIComponentDockControl("Tool Settings", false)'),
@@ -407,6 +393,17 @@ class MayaWindow(BaseWindow):
                 if widget is not None:
                     if widget.parent() is stackedWidget:
                         return control
+
+            # Search through siblings until another widget is found
+            # TODO: Limit to Maya only widgets (this is why the code above is preferred)
+            parent = self.parent()
+            for item in self.siblings():
+                if item != parent and type(item) == QtWidgets.QWidget:
+                    try:
+                        return item.objectName()
+                    except RuntimeError:
+                        pass
+
             return None
 
     def centreWindow(self):
@@ -454,6 +451,8 @@ class MayaWindow(BaseWindow):
         except RuntimeError:
             if not self.dockable():
                 raise
+        except AttributeError:
+            pass
         else:
             super(MayaWindow, self).saveWindowPosition()
         

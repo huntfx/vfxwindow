@@ -17,7 +17,7 @@ from .utils.Qt import QtCore, QtWidgets
 
 def getWindowSettingsPath(windowID):
     """Get a path to the window settings."""
-    return os.path.join(tempfile.gettempdir(), 'ph_window_settings', '{}.json'.format(windowID))
+    return os.path.join(tempfile.gettempdir(), 'VFXWindow.{}.json'.format(windowID))
 
 
 def getWindowSettings(windowID, path=None):
@@ -265,17 +265,17 @@ class BaseWindow(QtWidgets.QMainWindow):
             return cls._WINDOW_INSTANCES[windowID]
 
     @classmethod
-    def clearWindowInstance(self, windowID):
+    def clearWindowInstance(cls, windowID):
         """Close the last class instance.
         This must be subclassed if the window needs to be closed.
         """
-        return self._WINDOW_INSTANCES.pop(windowID, None)
+        return cls._WINDOW_INSTANCES.pop(windowID, None)
 
     @classmethod
-    def clearWindowInstances(self):
+    def clearWindowInstances(cls):
         """Close down every loaded window."""
-        for windowID in tuple(self._WINDOW_INSTANCES):
-            self.clearWindowInstance(windowID)
+        for windowID in tuple(cls._WINDOW_INSTANCES):
+            cls.clearWindowInstance(windowID)
 
     def close(self):
         """Close the window and mark it as closed."""
