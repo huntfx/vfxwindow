@@ -474,6 +474,10 @@ class MayaWindow(BaseWindow):
             self.resize(width, height)
             self.move(x, y)
 
+    def displayMessage(self, message, title=None):
+        """This is basically Maya's copy of a QMessageBox."""
+        pm.confirmDialog(title=title, message=message, button=['Ok'])
+
     @hybridmethod
     def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
         """Remove all the registered callbacks.

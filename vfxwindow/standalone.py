@@ -3,10 +3,26 @@
 from __future__ import absolute_import
 
 import sys
+from functools import partial
+from multiprocessing import Queue, Process
+from threading import Thread
 
 from .base import BaseWindow
 from .utils import setCoordinatesToScreen
 from .utils.Qt import QtWidgets, IsPySide, IsPyQt4, IsPySide2, IsPyQt5
+
+
+class _MultiAppLaunch(Process):
+    """Launch multiple QApplications."""
+    def __init__(self, cls):
+        self.cls = cls
+        super(_MultiAppLaunch, self).__init__()
+    
+    def run(self):
+        app = QtWidgets.QApplication(sys.argv)
+        window = super(StandaloneWindow, self.cls).show()
+        app.setActiveWindow(window)
+        sys.exit(app.exec_())
 
 
 class StandaloneWindow(BaseWindow):
@@ -16,14 +32,24 @@ class StandaloneWindow(BaseWindow):
         self.standalone = True
 
     @classmethod
-    def show(cls, **kwargs):
+    def show(cls, instance=False, **kwargs):
         """Start a standalone QApplication and launch the window.
-        To launch another window, subprocess.Popen(["python", path]) must be used.
+        Multiprocessing can be used to launch a separate application instead of an instance.
+        The disadvantage of an instance is the palette and other bits are all linked.
         """
-        app = QtWidgets.QApplication(sys.argv)
-        window = super(StandaloneWindow, cls).show()
-        app.setActiveWindow(window)
-        sys.exit(app.exec_())
+        if instance:
+            try:
+                app = QtWidgets.QApplication(sys.argv)
+                window = super(StandaloneWindow, cls).show()
+                app.setActiveWindow(window)
+            except RuntimeError:
+                app = QtWidgets.QApplication.instance()
+                window = super(StandaloneWindow, cls).show()
+                app.setActiveWindow(window)
+            else:
+                sys.exit(app.exec_())
+        else:
+            _MultiAppLaunch(cls).start()
 
     def setWindowPalette(self, program, version=None):
         """Override of the default setWindowPalette to also set style."""
