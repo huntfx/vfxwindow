@@ -87,7 +87,6 @@ class BaseWindow(QtWidgets.QMainWindow):
         if self.__forceDisableSaving:
             self.ID = uuid.uuid4()
         self.setWindowTitle(getattr(self, 'NAME', 'New Window'))
-        self.setObjectName(self.ID)
 
         # Track settings that to be read by any inherited windows
         self.maya = False

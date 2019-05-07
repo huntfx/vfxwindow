@@ -144,6 +144,8 @@ def dockControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs)
 
         if isinstance(dock, (bool, int)):
             dock = 'right'
+        if not windowInstance.objectName():
+            windowInstance.setObjectName(windowInstance.ID)
         pm.dockControl(windowInstance.ID, area=dock, floating=False, retain=False, content=windowInstance.objectName(), closeCommand=windowInstance.close)
 
         windowInstance.setDocked(dock)
