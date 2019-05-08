@@ -37,19 +37,19 @@ class StandaloneWindow(BaseWindow):
         Multiprocessing can be used to launch a separate application instead of an instance.
         The disadvantage of an instance is the palette and other bits are all linked.
         """
-        if instance:
-            try:
-                app = QtWidgets.QApplication(sys.argv)
-                window = super(StandaloneWindow, cls).show()
-                app.setActiveWindow(window)
-            except RuntimeError:
+        try:
+            app = QtWidgets.QApplication(sys.argv)
+            window = super(StandaloneWindow, cls).show()
+            app.setActiveWindow(window)
+        except RuntimeError:
+            if instance:
                 app = QtWidgets.QApplication.instance()
                 window = super(StandaloneWindow, cls).show()
                 app.setActiveWindow(window)
             else:
-                sys.exit(app.exec_())
+                _MultiAppLaunch(cls).start()
         else:
-            _MultiAppLaunch(cls).start()
+            sys.exit(app.exec_())
 
     def setWindowPalette(self, program, version=None):
         """Override of the default setWindowPalette to also set style."""
