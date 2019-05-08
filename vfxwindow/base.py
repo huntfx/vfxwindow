@@ -210,13 +210,43 @@ class BaseWindow(QtWidgets.QMainWindow):
             path = self._windowDataPath
         return saveWindowSettings(self.ID, self.windowSettings, path=path)
 
-    def displayMessage(self, message, title=None):
-        """Display a popup box."""
-        notify = QtWidgets.QMessageBox()
-        notify.setText(message)
-        if title is not None:
-            notify.setWindowTitle(title)
-        notify.exec_()
+    def displayMessage(self, title, text, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None):
+        """Display a popup box.
+        
+        Parameters:
+            title (str): Title of the window.
+            text (str): Short sentence with a question or statement.
+            details (str): Add extra information if required.
+            buttons (list of str): Define which buttons to use, must be a QMessageBox StandardButton.
+                It is required as a string for compatibility with other programs.
+            defaultButton (str): Define which button is selected by default.
+            cancelButton (str): Define which button acts as the no/cancel option.
+        """
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle(title)
+        msg.setText(text)
+        if details is not None:
+            msg.setInformativeText(details)
+
+        # Store a list of buttons so we can figure out what was pressed
+        buttonDict = {}
+        for button in buttons:
+            buttonDict[getattr(QtWidgets.QMessageBox, button)] = button
+
+        # Set the buttons
+        standardButtons = 0
+        for button in buttonDict:
+            standardButtons |= button
+        msg.setStandardButtons(standardButtons)
+        if defaultButton is None:
+            msg.setDefaultButton(getattr(QtWidgets.QMessageBox, buttons[-1]))
+        else:
+            msg.setDefaultButton(getattr(QtWidgets.QMessageBox, defaultButton))
+        if cancelButton is not None:
+            msg.setEscapeButton(getattr(QtWidgets.QMessageBox, cancelButton))
+
+        # Return the string of the button that was clicked
+        return buttonDict[msg.exec_()]
 
     @hybridmethod
     def show(cls, self, parent=None, **kwargs):
