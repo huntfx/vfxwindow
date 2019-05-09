@@ -7,6 +7,7 @@ import os
 import tempfile
 import uuid
 from collections import defaultdict
+from contextlib import contextmanager
 
 from .palette import setPalette
 from .utils import hybridmethod, setCoordinatesToScreen
@@ -136,7 +137,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
             except RuntimeError:
                 pass
             else:
-                signals.append(func)
+                signals.append((signal, func))
         return signals
 
     def signalConnect(self, signal, func, group=None):
@@ -147,6 +148,23 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self._signals[group].append((signal, func))
         signal.connect(func)
         return func
+
+    @contextmanager
+    def signalPause(self, *groups):
+        """Pause a certain set of signals during execution.
+        This will remove the signals, and re-apply them after.
+        """
+        if not groups:
+            groups = self._signals
+        
+        signalCache = {}
+        for group in groups:
+            signalCache[group] = self.signalDisconnect(group)
+
+        yield
+
+        for group in groups:
+            self.signalConnect(group=group, *signalCache[group])
 
     def dockable(self, raw=False):
         """Return if the window is dockable.
