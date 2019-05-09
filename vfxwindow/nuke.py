@@ -10,7 +10,7 @@ from collections import defaultdict
 import nuke
 from nukescripts import panels, utils
 
-from .base import BaseWindow, getWindowSettings
+from .abstract import AbstractWindow, getWindowSettings
 from .utils import hybridmethod, setCoordinatesToScreen
 from .utils.Qt import QtWidgets
 
@@ -186,7 +186,7 @@ class Pane(object):
     ]
 
 
-class NukeWindow(BaseWindow):
+class NukeWindow(AbstractWindow):
     """Base class for docking windows in Nuke.
 
     Usage:

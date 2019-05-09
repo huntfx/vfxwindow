@@ -7,7 +7,7 @@ from functools import partial
 from multiprocessing import Queue, Process
 from threading import Thread
 
-from .base import BaseWindow
+from .abstract import AbstractWindow
 from .utils import setCoordinatesToScreen
 from .utils.Qt import QtWidgets, IsPySide, IsPyQt4, IsPySide2, IsPyQt5
 
@@ -25,7 +25,7 @@ class _MultiAppLaunch(Process):
         sys.exit(app.exec_())
 
 
-class StandaloneWindow(BaseWindow):
+class StandaloneWindow(AbstractWindow):
     """Window to use outside of specific programs."""
     def __init__(self, parent=None):
         super(StandaloneWindow, self).__init__(parent)

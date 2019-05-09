@@ -5,7 +5,7 @@ from __future__ import absolute_import
 import hou
 import hdefereval
 
-from .base import QBaseWindow
+from .abstract import AbstractWindow
 from .utils import setCoordinatesToScreen
 
 
@@ -24,7 +24,7 @@ def getStyleSheet():
     return hou.qt.styleSheet()
 
 
-class QHoudiniWindow(QBaseWindow):
+class HoudiniWindow(AbstractWindow):
     """Window to use for Houdini.
     It has support for automatically saving the position when closed,
     and performs some necessary CSS edits to fix colours.
@@ -32,7 +32,7 @@ class QHoudiniWindow(QBaseWindow):
     def __init__(self, parent=None, **kwargs):
         if parent is None:
             parent = getMainWindow()
-        super(QHoudiniWindow, self).__init__(parent, **kwargs)
+        super(HoudiniWindow, self).__init__(parent, **kwargs)
         self.houdini = True
         
         # Fix some issues with widgets not taking the correct style
@@ -55,14 +55,14 @@ class QHoudiniWindow(QBaseWindow):
         """Save the window location on window close."""
         self.saveWindowPosition()
         self.clearWindowInstance(self.ID)
-        return super(QHoudiniWindow, self).closeEvent(event)
+        return super(HoudiniWindow, self).closeEvent(event)
 
     def displayMessage(self, message):
         """Show a popup message."""
         hou.ui.displayMessage(message)
 
     def windowPalette(self):
-        currentPalette = super(QHoudiniWindow, self).windowPalette()
+        currentPalette = super(HoudiniWindow, self).windowPalette()
         if currentPalette is None:
             return 'Houdini.{}'.format(HOUDINI_VERSION)
         return currentPalette
@@ -82,7 +82,7 @@ class QHoudiniWindow(QBaseWindow):
         mainWindowSettings['height'] = self.height()
         mainWindowSettings['x'] = self.x()
         mainWindowSettings['y'] = self.y()
-        super(QHoudiniWindow, self).saveWindowPosition()
+        super(HoudiniWindow, self).saveWindowPosition()
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
@@ -92,7 +92,7 @@ class QHoudiniWindow(QBaseWindow):
             width = self.windowSettings['houdini']['main']['width']
             height = self.windowSettings['houdini']['main']['height']
         except KeyError:
-            super(QHoudiniWindow, self).loadWindowPosition()
+            super(HoudiniWindow, self).loadWindowPosition()
         else:
             x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
             self.resize(width, height)
@@ -101,7 +101,7 @@ class QHoudiniWindow(QBaseWindow):
     @classmethod
     def clearWindowInstance(self, windowID):
         """Close the last class instance."""
-        previousInstance = super(QHoudiniWindow, self).clearWindowInstance(windowID)
+        previousInstance = super(HoudiniWindow, self).clearWindowInstance(windowID)
         if previousInstance is None:
             return
 

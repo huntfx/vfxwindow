@@ -1,6 +1,4 @@
-"""Base class for other porgrams to inherit.
-This should never be the top window as it contains a few functions that need overrides.
-"""
+"""Abstract class to inherit that contains the core functionality."""
 
 from __future__ import absolute_import
 
@@ -43,7 +41,7 @@ def saveWindowSettings(windowID, data, path=None):
     return True
 
 
-class BaseWindow(QtWidgets.QMainWindow):
+class AbstractWindow(QtWidgets.QMainWindow):
     """Base class for all Qt windows.
 
     Each window must be provided with a unique "ID" attribute to enable the saving and
@@ -79,7 +77,7 @@ class BaseWindow(QtWidgets.QMainWindow):
     _WINDOW_INSTANCES = {}
 
     def __init__(self, parent=None, **kwargs):
-        super(BaseWindow, self).__init__(parent, **kwargs)
+        super(AbstractWindow, self).__init__(parent, **kwargs)
         
         # Setup window attributes and saving
         self.enableSaveWindowPosition(True)
@@ -113,7 +111,7 @@ class BaseWindow(QtWidgets.QMainWindow):
         # Store the window data so it can be closed later
         # In some cases such as Maya's layoutDialog, the window will
         # be deleted too early, so we can't use weakref.proxy(self)
-        BaseWindow._WINDOW_INSTANCES[self.ID] = {
+        AbstractWindow._WINDOW_INSTANCES[self.ID] = {
             'window': self,
             'callback': {}
         }
@@ -252,14 +250,14 @@ class BaseWindow(QtWidgets.QMainWindow):
     def show(cls, self, parent=None, **kwargs):
         """Show the window and load its position."""
         if self is not cls:
-            return super(BaseWindow, self).show()
+            return super(AbstractWindow, self).show()
 
         try:
             cls.clearWindowInstance(cls.ID)
         except AttributeError:
             pass
         new = cls(parent, **kwargs)
-        super(BaseWindow, new).show()
+        super(AbstractWindow, new).show()
         new.loadWindowPosition()
         new.deferred(new.windowReady.emit)
         return new
@@ -309,7 +307,7 @@ class BaseWindow(QtWidgets.QMainWindow):
     def close(self):
         """Close the window and mark it as closed."""
         self.__closed = True
-        super(BaseWindow, self).close()
+        super(AbstractWindow, self).close()
 
     def isClosed(self):
         """Return if the window has been closed."""
@@ -330,7 +328,7 @@ class BaseWindow(QtWidgets.QMainWindow):
 
     def _parentOverride(self):
         """Make sure this function is inherited."""
-        return super(BaseWindow, self)
+        return super(AbstractWindow, self)
 
     def floating(self):
         """Return if the window is floating.
@@ -341,47 +339,47 @@ class BaseWindow(QtWidgets.QMainWindow):
     def move(self, x, y):
         if self.dockable():
             return self._parentOverride().move(x, y)
-        return super(BaseWindow, self).move(x, y)
+        return super(AbstractWindow, self).move(x, y)
     
     def geometry(self):
         if self.dockable():
             return self._parentOverride().geometry()
-        return super(BaseWindow, self).geometry()
+        return super(AbstractWindow, self).geometry()
 
     def frameGeometry(self):
         if self.dockable():
             return self._parentOverride().frameGeometry()
-        return super(BaseWindow, self).frameGeometry()
+        return super(AbstractWindow, self).frameGeometry()
 
     def rect(self):
         if self.dockable():
             return self._parentOverride().rect()
-        return super(BaseWindow, self).rect()
+        return super(AbstractWindow, self).rect()
 
     def width(self):
         if self.dockable():
             return self._parentOverride().width()
-        return super(BaseWindow, self).width()
+        return super(AbstractWindow, self).width()
 
     def height(self):
         if self.dockable():
             return self._parentOverride().height()
-        return super(BaseWindow, self).height()
+        return super(AbstractWindow, self).height()
 
     def x(self):
         if self.dockable():
             return self._parentOverride().x()
-        return super(BaseWindow, self).x()
+        return super(AbstractWindow, self).x()
 
     def y(self):
         if self.dockable():
             return self._parentOverride().y()
-        return super(BaseWindow, self).y()
+        return super(AbstractWindow, self).y()
 
     def resize(self, width, height):
         if self.dockable():
             return self._parentOverride().resize(width, height)
-        return super(BaseWindow, self).resize(width, height)
+        return super(AbstractWindow, self).resize(width, height)
 
     def centreWindow(self, parentGeometry=None, childGeometry=None):
         """Centre the current window to its parent.

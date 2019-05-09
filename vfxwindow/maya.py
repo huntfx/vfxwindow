@@ -11,7 +11,7 @@ import maya.OpenMayaUI as omUI
 import pymel.core as pm
 from pymel import versions
 
-from .base import BaseWindow, getWindowSettings
+from .abstract import AbstractWindow, getWindowSettings
 from .utils import hybridmethod, setCoordinatesToScreen
 from .utils.Qt import QtWidgets, QtCompat, QtCore
 
@@ -207,7 +207,7 @@ def toMObject(node):
     return selected.getDependNode(0)
 
 
-class MayaWindow(BaseWindow):
+class MayaWindow(AbstractWindow):
     """Inhert from this for dockable Maya windows.
 
     This is an alternative to maya.app.general.mayaMixin.MayaQWidgetDockableMixin, as many features
