@@ -164,7 +164,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         yield
 
         for group in groups:
-            self.signalConnect(group=group, *signalCache[group])
+            for signal, func in signalCache[group]:
+                self.signalConnect(signal, func, group=group)
 
     def dockable(self, raw=False):
         """Return if the window is dockable.
