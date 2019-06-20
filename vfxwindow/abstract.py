@@ -8,6 +8,7 @@ import tempfile
 import uuid
 from collections import defaultdict
 from contextlib import contextmanager
+from functools import partial
 
 from .palette import setPalette
 from .utils import hybridmethod, setCoordinatesToScreen
@@ -73,6 +74,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         setDefaultPosition(x, y)            # Set position if settings can't be read
         setWindowPalette(palette)           # Set a palette
     """
+    clearedInstance = QtCore.Signal()
     windowReady = QtCore.Signal()
     
     _WINDOW_INSTANCES = {}
@@ -280,6 +282,41 @@ class AbstractWindow(QtWidgets.QMainWindow):
         new.deferred(new.windowReady.emit)
         return new
 
+    @classmethod
+    def instance(cls, parent=None, **kwargs):
+        """Setup the window without showing it.
+        Used for parenting to other windows.
+
+        Note: If not using a parent of AbstractWindow, then
+        cls.clearWindowInstance(cls.ID) will need to be manually run to
+        unregister callbacks.
+
+        Example:
+            layout.addWidget(OtherWindow.instance(self).centralWidget())
+            # The above line will link the close callbacks and things
+        """
+        # Store the ID of an existing window
+        tempID = None
+        if cls.ID in cls._WINDOW_INSTANCES:
+            tempID = uuid.uuid4().hex
+            cls._WINDOW_INSTANCES[tempID] = cls._WINDOW_INSTANCES[cls.ID]
+
+        # Create window with new ID and disable saving
+        new = cls(parent, **kwargs)
+        new.ID = uuid.uuid4().hex
+        cls._WINDOW_INSTANCES[new.ID] = cls._WINDOW_INSTANCES[cls.ID]
+        new.enableSaveWindowPosition(False)
+
+        # Return old ID
+        if tempID is not None:
+            cls._WINDOW_INSTANCES[cls.ID] = cls._WINDOW_INSTANCES[tempID]
+
+        # Connect/emit the signals
+        new.deferred(new.windowReady.emit)
+        if isinstance(parent, AbstractWindow):
+            parent.clearedInstance.connect(partial(cls.clearWindowInstance, new.ID, new))
+        return new
+
     def setDefaultSize(self, width, height):
         """Set a default size upon widget load."""
         self.resize(width, height)
@@ -306,7 +343,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         if windowID in cls._WINDOW_INSTANCES:
             if delete and self is cls:
-                return cls._WINDOW_INSTANCES.pop(windowID)
+                return cls.clearWindowInstance(windowID)
             return cls._WINDOW_INSTANCES[windowID]
 
     @classmethod
@@ -314,7 +351,10 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Close the last class instance.
         This must be subclassed if the window needs to be closed.
         """
-        return cls._WINDOW_INSTANCES.pop(windowID, None)
+        inst = cls._WINDOW_INSTANCES.pop(windowID, None)
+        if inst is not None:
+            inst['window'].clearedInstance.emit()
+        return inst
 
     @classmethod
     def clearWindowInstances(cls):
