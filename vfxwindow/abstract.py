@@ -227,12 +227,12 @@ class AbstractWindow(QtWidgets.QMainWindow):
             path = self._windowDataPath
         return saveWindowSettings(self.ID, self.windowSettings, path=path)
 
-    def displayMessage(self, title, text, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None):
+    def displayMessage(self, title, message, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None):
         """Display a popup box.
         
         Parameters:
             title (str): Title of the window.
-            text (str): Short sentence with a question or statement.
+            message (str): Short sentence with a question or statement.
             details (str): Add extra information if required.
             buttons (list of str): Define which buttons to use, must be a QMessageBox StandardButton.
                 It is required as a string for compatibility with other programs.
@@ -241,7 +241,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle(title)
-        msg.setText(text)
+        msg.setText(message)
         if details is not None:
             msg.setInformativeText(details)
 
@@ -270,7 +270,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Show the window and load its position."""
         if self is not cls:
             return super(AbstractWindow, self).show()
-
         try:
             cls.clearWindowInstance(cls.ID)
         except AttributeError:
@@ -407,21 +406,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         if parentGeometry is None:
             try:
                 parentGeometry = self.parent().frameGeometry()
-
-            #If there is no parent, use the screen size
             except AttributeError:
-                screenSize = QtWidgets.QApplication.desktop().screenGeometry()
-                class _TempRect(object):
-                    def __init__(self, x=0, y=0, width=0, height=0):
-                        self.__x = x
-                        self.__y = y
-                        self.__width = width
-                        self.__height = height
-                    x = lambda self: self.__x
-                    y = lambda self: self.__y
-                    width = lambda self: self.__width
-                    height = lambda self: self.__height
-                parentGeometry = _TempRect(width=screenSize.width(), height=screenSize.height())
+                parentGeometry = QtWidgets.QApplication.desktop().screenGeometry()
 
         if childGeometry is None:
             childGeometry = self.frameGeometry()

@@ -223,6 +223,11 @@ class NukeWindow(AbstractWindow):
             self.setDockable(self.windowSettings['nuke']['docked'], override=True)
         except KeyError:
             self.setDockable(True, override=True)
+
+        # Fix for parent bug
+        # See NukeWindow.parent for more information
+        self.__useNukeTemporaryParent = True
+        self.windowReady.connect(self.__disableTemporaryParent)
         
         # This line seemed to be recommended, but I'm not sure why
         #if not self.dockable():
@@ -347,10 +352,10 @@ class NukeWindow(AbstractWindow):
             return
         try:
             settings = self.windowSettings['nuke']['main']
-            x = self.windowSettings['nuke']['main']['x']
-            y = self.windowSettings['nuke']['main']['y']
-            width = self.windowSettings['nuke']['main']['width']
-            height = self.windowSettings['nuke']['main']['height']
+            x = settings['x']
+            y = settings['y']
+            width = settings['width']
+            height = settings['height']
         except KeyError:
             super(NukeWindow, self).loadWindowPosition()
         else:
@@ -598,7 +603,10 @@ class NukeWindow(AbstractWindow):
     @classmethod
     def clearWindowInstance(self, windowID):
         """Close the last class instance."""
-        previousInstance = super(NukeWindow, self).clearWindowInstance(windowID)
+        try:
+            previousInstance = super(NukeWindow, self).clearWindowInstance(windowID)
+        except TypeError:
+            return
         if previousInstance is None:
             return
         self.removeCallbacks(windowInstance=previousInstance)
@@ -613,8 +621,28 @@ class NukeWindow(AbstractWindow):
     def deferred(self, func, *args, **kwargs):
         utils.executeDeferred(func, *args, **kwargs)
 
+    def parent(self, *args, **kwargs):
+        """Fix a weird Nuke crash.
+        It seems to be under a specific set of circumstances, so I'm
+        not sure how to deal with it other than with this workaround.
+
+        Details specific to my issue:
+            Non-dockable window
+            Location data doesn't exist, causing centreWindow to run
+            Requesting self.parent() inside centreWindow crashes Nuke.
+
+        This fix runs getMainWindow if loading isn't complete.
+        """
+        if not self.__useNukeTemporaryParent or self.dockable():
+            return super(NukeWindow, self).parent(*args, **kwargs)
+        return getMainWindow()
+    
+    def __disableTemporaryParent(self):
+        """See NukeWindow.parent for information."""
+        self.__useNukeTemporaryParent = False
+
     @classmethod
-    def show(cls, namespace=None, **kwargs):
+    def show(cls, namespace=None, *args, **kwargs):
         """Show the Nuke window.
 
         IMPORTANT:
@@ -678,8 +706,5 @@ class NukeWindow(AbstractWindow):
                     widget = panel_obj.widget
                     _removeMargins(widget)
                     return widget
-
-        elif 'main' not in nukeSettings:
-            nukeSettings['main'] = {}
         
-        return super(NukeWindow, cls).show()
+        return super(NukeWindow, cls).show(*args, **kwargs)

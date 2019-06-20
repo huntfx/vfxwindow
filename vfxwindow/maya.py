@@ -19,7 +19,7 @@ from .utils.Qt import QtWidgets, QtCompat, QtCore
 MAYA_VERSION = int(versions.flavor())
 
 
-def getMayaWindow(windowID=None, wrapInstance=True):
+def getMainWindow(windowID=None, wrapInstance=True):
     """Get pointer to main Maya window.
     The pointer type is a QWidget, so wrap to that (though it can be wrapped to other things too).
     """
@@ -73,10 +73,10 @@ def deleteDockControl(windowID):
         floating = None
 
     # Close down the dock control
-    windowWrap = getMayaWindow(windowID)
+    windowWrap = getMainWindow(windowID)
     if windowWrap is not None:
         if windowWrap.parent().parent() is not None:
-            getMayaWindow(windowID).parent().close()
+            getMainWindow(windowID).parent().close()
     
     if floating is not None:
         try:
@@ -116,7 +116,7 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
         pm.workspaceControl(windowClass.ID, retain=True, label=getattr(windowClass, 'NAME', 'New Window'), floating=True)
 
     # Setup main window and parent to Maya
-    workspaceControlWin = getMayaWindow(windowClass.ID)
+    workspaceControlWin = getMainWindow(windowClass.ID)
     workspaceControlWin.setAttribute(QtCore.Qt.WA_DeleteOnClose)
     windowInstance = windowClass(parent=workspaceControlWin, dockable=True, *args, **kwargs)
 
@@ -172,7 +172,7 @@ def dockControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs)
     deleteDockControl(windowClass.ID)
 
     # Setup main window and parent to Maya
-    mayaWin = getMayaWindow(wrapInstance=False)
+    mayaWin = getMainWindow(wrapInstance=False)
     windowInstance = windowClass(parent=mayaWin, dockable=True, *args, **kwargs)
     windowInstance.deferred(partial(attachToDockControl, windowInstance, dock))
 
@@ -216,7 +216,7 @@ class MayaWindow(AbstractWindow):
 
     def __init__(self, parent=None, dockable=False, **kwargs):
         if parent is None:
-            parent = getMayaWindow()
+            parent = getMainWindow()
         super(MayaWindow, self).__init__(parent, **kwargs)
         self.maya = True
         self.setDockable(dockable, override=True)
@@ -316,7 +316,7 @@ class MayaWindow(AbstractWindow):
 
         #Determine if it's a new window, we need to get the C++ pointer again
         if self.__parentTemp is None:
-            base = getMayaWindow(self.ID)
+            base = getMainWindow(self.ID)
         else:
             base = self.parent()
 
@@ -476,11 +476,11 @@ class MayaWindow(AbstractWindow):
             self.resize(width, height)
             self.move(x, y)
 
-    def displayMessage(self, title, text, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None):
+    def displayMessage(self, title, message, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None):
         """This is basically Maya's copy of a QMessageBox."""
         return pm.confirmDialog(
             title=title,
-            message=text,
+            message=message,
             button=buttons,
             defaultButton=defaultButton,
             cancelButton=cancelButton,
