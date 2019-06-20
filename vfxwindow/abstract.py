@@ -299,22 +299,22 @@ class AbstractWindow(QtWidgets.QMainWindow):
         tempID = None
         if cls.ID in cls._WINDOW_INSTANCES:
             tempID = uuid.uuid4().hex
-            cls._WINDOW_INSTANCES[tempID] = cls._WINDOW_INSTANCES[cls.ID]
+            cls._WINDOW_INSTANCES[tempID] = cls._WINDOW_INSTANCES.pop(cls.ID)
 
         # Create window with new ID and disable saving
         new = cls(parent, **kwargs)
         new.ID = uuid.uuid4().hex
-        cls._WINDOW_INSTANCES[new.ID] = cls._WINDOW_INSTANCES[cls.ID]
+        cls._WINDOW_INSTANCES[new.ID] = cls._WINDOW_INSTANCES.pop(cls.ID)
         new.enableSaveWindowPosition(False)
 
         # Return old ID
         if tempID is not None:
-            cls._WINDOW_INSTANCES[cls.ID] = cls._WINDOW_INSTANCES[tempID]
+            cls._WINDOW_INSTANCES[cls.ID] = cls._WINDOW_INSTANCES.pop(tempID)
 
         # Connect/emit the signals
         new.deferred(new.windowReady.emit)
         if isinstance(parent, AbstractWindow):
-            parent.clearedInstance.connect(partial(cls.clearWindowInstance, new.ID, new))
+            parent.clearedInstance.connect(partial(cls.clearWindowInstance, new.ID))
         return new
 
     def setDefaultSize(self, width, height):
