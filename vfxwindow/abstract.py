@@ -302,7 +302,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
             cls._WINDOW_INSTANCES[tempID] = cls._WINDOW_INSTANCES.pop(cls.ID)
 
         # Create window with new ID and disable saving
-        new = cls(parent, **kwargs)
+        new = cls(parent=parent, **kwargs)
         new.ID = uuid.uuid4().hex
         cls._WINDOW_INSTANCES[new.ID] = cls._WINDOW_INSTANCES.pop(cls.ID)
         new.enableSaveWindowPosition(False)
@@ -350,10 +350,16 @@ class AbstractWindow(QtWidgets.QMainWindow):
     def clearWindowInstance(cls, windowID):
         """Close the last class instance.
         This must be subclassed if the window needs to be closed.
+
+        A signal will be emitted as it will be attached to any child windows too.
+        In the case of a dialog, it will be deleted by now, so ignore.
         """
         inst = cls._WINDOW_INSTANCES.pop(windowID, None)
-        if inst is not None:
-            inst['window'].clearedInstance.emit()
+        if inst is not None and not getattr(inst['window'], 'DIALOG', False):
+            try:
+                inst['window'].clearedInstance.emit()
+            except RuntimeError:
+                pass
         return inst
 
     @classmethod
