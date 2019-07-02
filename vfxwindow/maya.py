@@ -487,6 +487,19 @@ class MayaWindow(AbstractWindow):
             dismissString=cancelButton,
         )
 
+    def centralWidget(self):
+        if self.dockable():
+            item = self.parent().layout().itemAt(0)
+            if item is not None:
+                return item.widget()
+        return super(MayaWindow, self).centralWidget()
+
+    def setCentralWidget(self, widget):
+        if self.dockable():
+            self.parent().layout().takeAt(0)
+            return self.parent().layout().addWidget(widget)
+        return super(MayaWindow, self).setCentralWidget(widget)
+
     @hybridmethod
     def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
         """Remove all the registered callbacks.
