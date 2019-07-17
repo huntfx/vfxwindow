@@ -476,15 +476,24 @@ class MayaWindow(AbstractWindow):
             self.resize(width, height)
             self.move(x, y)
 
-    def displayMessage(self, title, message, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None):
+    def displayMessage(self, title, message, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None, checkBox=None):
         """This is basically Maya's copy of a QMessageBox."""
-        return pm.confirmDialog(
+        if checkBox is None:
+            return pm.confirmDialog(
+                title=title,
+                message=message,
+                button=buttons,
+                defaultButton=defaultButton,
+                cancelButton=cancelButton,
+                dismissString=cancelButton,
+            )
+        return super(MayaWindow, self).displayMessage(
             title=title,
             message=message,
-            button=buttons,
+            buttons=buttons,
             defaultButton=defaultButton,
             cancelButton=cancelButton,
-            dismissString=cancelButton,
+            checkBox=checkBox,
         )
 
     def centralWidget(self):

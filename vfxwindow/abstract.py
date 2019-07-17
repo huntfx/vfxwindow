@@ -229,8 +229,11 @@ class AbstractWindow(QtWidgets.QMainWindow):
             path = self._windowDataPath
         return saveWindowSettings(self.ID, self.windowSettings, path=path)
 
-    def displayMessage(self, title, message, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None):
+    def displayMessage(self, title, message, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None, checkBox=None):
         """Display a popup box.
+
+        The setCheckBox command was added in Qt 5.2.
+        Even if it is not available, its state will still be returned.
         
         Parameters:
             title (str): Title of the window.
@@ -240,6 +243,13 @@ class AbstractWindow(QtWidgets.QMainWindow):
                 It is required as a string for compatibility with other programs.
             defaultButton (str): Define which button is selected by default.
             cancelButton (str): Define which button acts as the no/cancel option.
+            checkBox (QtWidgets.QCheckBox): Add a checkbox (Qt 5.2+ only).
+
+        Returns:
+            if checkBox:
+                (buttonClicked (str), checked (bool))
+            else:
+                buttonClicked (str)
         """
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle(title)
@@ -264,8 +274,20 @@ class AbstractWindow(QtWidgets.QMainWindow):
         if cancelButton is not None:
             msg.setEscapeButton(getattr(QtWidgets.QMessageBox, cancelButton))
 
-        # Return the string of the button that was clicked
-        return buttonDict[msg.exec_()]
+        if checkBox is not None:
+            if not isinstance(checkBox, QtWidgets.QCheckBox):
+                checkBox = QtWidgets.QCheckBox(checkBox)
+            try:
+                msg.setCheckBox(checkBox)
+            except AttributeError:
+                pass
+
+        # Get the string of the button that was clicked
+        result = buttonDict[msg.exec_()]
+
+        if checkBox is not None:
+            return (result, checkBox.isChecked())
+        return result
 
     @hybridmethod
     def show(cls, self, parent=None, **kwargs):
