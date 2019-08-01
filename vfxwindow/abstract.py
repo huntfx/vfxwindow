@@ -12,7 +12,7 @@ from functools import partial
 
 from .palette import setPalette
 from .utils import hybridmethod, setCoordinatesToScreen
-from .utils.Qt import QtCore, QtWidgets
+from .utils.Qt import QtCore, QtGui, QtWidgets
 
 
 def getWindowSettingsPath(windowID):
@@ -228,6 +228,12 @@ class AbstractWindow(QtWidgets.QMainWindow):
         if path is None:
             path = self._windowDataPath
         return saveWindowSettings(self.ID, self.windowSettings, path=path)
+
+    def setWindowIcon(self, icon):
+        """Convert a string to a QIcon if needed."""
+        if not isinstance(icon, QtGui.QIcon):
+            icon = QtGui.QIcon(icon)
+        super(AbstractWindow, self).setWindowIcon(icon)
 
     def displayMessage(self, title, message, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None, checkBox=None):
         """Display a popup box.
