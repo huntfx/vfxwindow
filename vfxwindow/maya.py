@@ -111,6 +111,7 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
         try:
             pm.workspaceControl(windowClass.ID, retain=True, label=getattr(windowClass, 'NAME', 'New Window'), tabToControl=[dock, -1])
         except RuntimeError:
+            deleteWorkspaceControl(windowClass.ID, resetFloating=resetFloating)
             pm.workspaceControl(windowClass.ID, retain=True, label=getattr(windowClass, 'NAME', 'New Window'), tabToControl=[defaultDock, -1])
     else:
         pm.workspaceControl(windowClass.ID, retain=True, label=getattr(windowClass, 'NAME', 'New Window'), floating=True)
