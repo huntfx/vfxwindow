@@ -428,7 +428,10 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """
         return True
 
-    def move(self, x, y):
+    def move(self, x, y=None):
+        if isinstance(x, QtCore.QPoint):
+            y = x.y()
+            x = x.x()
         if self.dockable():
             return self._parentOverride().move(x, y)
         return super(AbstractWindow, self).move(x, y)
@@ -468,7 +471,10 @@ class AbstractWindow(QtWidgets.QMainWindow):
             return self._parentOverride().y()
         return super(AbstractWindow, self).y()
 
-    def resize(self, width, height):
+    def resize(self, width, height=None):
+        if isinstance(width, QtCore.QSize):
+            height = width.height()
+            width = width.width()
         if self.dockable():
             return self._parentOverride().resize(width, height)
         return super(AbstractWindow, self).resize(width, height)
@@ -500,3 +506,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         For most cases the value will only ever be True.
         """
         return True
+
+    @hybridmethod
+    def removeCallbacks(cls, self, *args, **kwargs):
+        pass

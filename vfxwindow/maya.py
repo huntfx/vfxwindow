@@ -333,8 +333,11 @@ class MayaWindow(AbstractWindow):
             return pm.dockControl(self.ID, query=True, floating=True)
         return pm.workspaceControl(self.ID, query=True, floating=True)
         
-    def resize(self, width, height):
+    def resize(self, width, height=None):
         """Resize the window."""
+        if isinstance(width, QtCore.QSize):
+            height = width.height()
+            width = width.width()
         if self.dockable():
             if MAYA_VERSION < 2017:
                 if not self.floating():
