@@ -1,4 +1,4 @@
-# VXFWindow
+# VFXWindow
 Qt Window class for designing tools to be compatible between multiple VFX programs.
 
 The main purpose of the class is to integrate into the program UI, but it also contains helpful features such as safely dealing with callbacks and automatically saving the window position.
