@@ -81,7 +81,7 @@ class StandaloneWindow(AbstractWindow):
     def closeEvent(self, event):
         """Save the window location on window close."""
         self.saveWindowPosition()
-        self.clearWindowInstance(self.ID)
+        self.clearWindowInstance(self.WindowID)
         return super(StandaloneWindow, self).closeEvent(event)
 
     def saveWindowPosition(self):

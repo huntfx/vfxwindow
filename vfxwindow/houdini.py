@@ -54,7 +54,7 @@ class HoudiniWindow(AbstractWindow):
     def closeEvent(self, event):
         """Save the window location on window close."""
         self.saveWindowPosition()
-        self.clearWindowInstance(self.ID)
+        self.clearWindowInstance(self.WindowID)
         return super(HoudiniWindow, self).closeEvent(event)
 
     def displayMessage(self, message):

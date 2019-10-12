@@ -63,9 +63,9 @@ class Pane(object):
                 return pane
 
     @classmethod
-    def find(cls, id):
-        """Find which pane the current ID is docked to."""
-        current_pane = nuke.getPaneFor(id)
+    def find(cls, windowID):
+        """Find which pane the WindowID is docked to."""
+        current_pane = nuke.getPaneFor(windowID)
         if current_pane is None:
             return None
         for pane_func in cls.__PRIORITY:
@@ -234,7 +234,7 @@ class NukeWindow(AbstractWindow):
         #    self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
     def closeEvent(self, event):
-        super(NukeWindow, self).clearWindowInstance(self.ID)
+        super(NukeWindow, self).clearWindowInstance(self.WindowID)
 
         if self.dockable():
             if self.exists():
@@ -245,7 +245,7 @@ class NukeWindow(AbstractWindow):
                 #Remove the tab and pane if by itself
                 else:
                     self.parent().parent().parent().parent().parent().parent().parent().close()
-                    deleteQtWindow(self.ID)
+                    deleteQtWindow(self.WindowID)
         else:
             self.saveWindowPosition()
         return super(NukeWindow, self).closeEvent(event)
@@ -283,7 +283,7 @@ class NukeWindow(AbstractWindow):
         if self.dockable():
             if alternative:
                 return self.parent().parent().parent().parent().parent().parent().parent().parent() is not None
-            return Pane.get(self.ID) is not None
+            return Pane.get(self.WindowID) is not None
         return not self.isClosed()
 
     def floating(self, alternative=False):
@@ -291,7 +291,7 @@ class NukeWindow(AbstractWindow):
         if self.dockable():
             if alternative:
                 return self.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent() is not None
-            return Pane.find(self.ID) is None
+            return Pane.find(self.WindowID) is None
         return True
 
     def siblings(self):
@@ -305,7 +305,7 @@ class NukeWindow(AbstractWindow):
 
     def getAttachedPane(self):
         """Find the name of the pane the window is attached to."""
-        return Pane.find(self.ID)
+        return Pane.find(self.WindowID)
     
     def saveWindowPosition(self):
         """Save the window location."""
@@ -386,7 +386,7 @@ class NukeWindow(AbstractWindow):
         """Get the widget that contains the correct size and position on screen."""
         try:
             if use_pane:
-                pane = Pane.get(self.ID)
+                pane = Pane.get(self.WindowID)
                 if pane is None:
                     raise AttributeError()
                 return pane
@@ -652,11 +652,11 @@ class NukeWindow(AbstractWindow):
         """
         #Close down any instances of the window
         try:
-            cls.clearWindowInstance(cls.ID)
+            cls.clearWindowInstance(cls.WindowID)
         except AttributeError:
             settings = {}
         else:
-            settings = getWindowSettings(cls.ID)
+            settings = getWindowSettings(cls.WindowID)
 
         #Load settings
         try:
@@ -664,8 +664,8 @@ class NukeWindow(AbstractWindow):
         except KeyError:
             nukeSettings = settings['nuke'] = {}
 
-        if hasattr(cls, 'DOCKABLE'):
-            docked = cls.DOCKABLE
+        if hasattr(cls, 'WindowDockable'):
+            docked = cls.WindowDockable
         else:
             try:
                 docked = nukeSettings['docked']
@@ -685,9 +685,9 @@ class NukeWindow(AbstractWindow):
             try:
                 panel = panels.registerWidgetAsPanel(
                     widget=namespace or cls.__name__,
-                    name=getattr(cls, 'NAME', 'New Window'),
-                    id=cls.ID,
-                    create=True
+                    name=getattr(cls, 'WindowName', 'New Window'),
+                    id=cls.WindowID,
+                    create=True,
                 )
                 panel.addToPane(pane)
                 

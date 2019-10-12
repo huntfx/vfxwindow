@@ -46,10 +46,12 @@ def saveWindowSettings(windowID, data, path=None):
 class AbstractWindow(QtWidgets.QMainWindow):
     """Base class for all Qt windows.
 
-    Each window must be provided with a unique "ID" attribute to enable the saving and
-     loading of its location betweem sessions. This will also enable the automatic closing
-     of a previous window if a new one is launched, via the clearWindowInstance methods.
-    A "NAME" attribute will determine the window title, or it will revert to "New Window"
+    Each window must be provided with a unique "WindowID" attribute to
+    enable the saving and loading of its location betweem sessions.
+    This will also enable the automatic closing of a previous window if
+    a new one is launched, via the clearWindowInstance methods. A
+    "WindowName" attribute will determine the window title, or it will
+    default to "New Window" if not set.
 
     Dockable Windows:
         The dockable attribute should be used if the window can be integrated into a program.
@@ -84,10 +86,10 @@ class AbstractWindow(QtWidgets.QMainWindow):
         
         # Setup window attributes and saving
         self.enableSaveWindowPosition(True)
-        self.__forceDisableSaving = not hasattr(self, 'ID')
+        self.__forceDisableSaving = not hasattr(self, 'WindowID')
         if self.__forceDisableSaving:
-            self.ID = uuid.uuid4()
-        self.setWindowTitle(getattr(self, 'NAME', 'New Window'))
+            self.WindowID = uuid.uuid4()
+        self.setWindowTitle(getattr(self, 'WindowName', 'New Window'))
 
         # Track settings that to be read by any inherited windows
         self.maya = False
@@ -99,11 +101,11 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self.standalone = False
 
         # Read settings
-        self._windowDataPath = getWindowSettingsPath(self.ID)
+        self._windowDataPath = getWindowSettingsPath(self.WindowID)
         tempFolder = os.path.dirname(self._windowDataPath)
         if not os.path.exists(tempFolder):
             os.makedirs(tempFolder)
-        self.windowSettings = getWindowSettings(self.ID, path=self._windowDataPath)
+        self.windowSettings = getWindowSettings(self.WindowID, path=self._windowDataPath)
 
         self._signals = defaultdict(list)
         self.__closed = False
@@ -114,7 +116,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         # Store the window data so it can be closed later
         # In some cases such as Maya's layoutDialog, the window will
         # be deleted too early, so we can't use weakref.proxy(self)
-        AbstractWindow._WINDOW_INSTANCES[self.ID] = {
+        AbstractWindow._WINDOW_INSTANCES[self.WindowID] = {
             'window': self,
             'callback': {}
         }
@@ -173,11 +175,12 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Return if the window is dockable.
         
         Parameters:
-            raw (bool): If True, get the current state of the window, otherwise get the current
-                setting, which may require a reload to apply if changed.
+            raw (bool): If True, get the current state of the window,
+                otherwise get the current setting, which may require
+                a reload to apply if it's been changed.
         """
-        if hasattr(self, 'DOCKABLE'):
-            return self.DOCKABLE
+        if hasattr(self, 'WindowDockable'):
+            return self.WindowDockable
         if not raw and self.__wasDocked is not None:
             return self.__wasDocked
         return self.__dockable
@@ -186,7 +189,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Set if the window should be dockable.
 
         Parameters:
-            override (bool): If the dockable raw value should be set too.
+            override (bool): If the dockable raw value should be set.
                 Should only be used if the dock state has changed.
         """
         if override:
@@ -227,7 +230,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
             return False
         if path is None:
             path = self._windowDataPath
-        return saveWindowSettings(self.ID, self.windowSettings, path=path)
+        return saveWindowSettings(self.WindowID, self.windowSettings, path=path)
 
     def setWindowIcon(self, icon):
         """Convert a string to a QIcon if needed."""
@@ -301,7 +304,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         if self is not cls:
             return super(AbstractWindow, self).show()
         try:
-            cls.clearWindowInstance(cls.ID)
+            cls.clearWindowInstance(cls.WindowID)
         except AttributeError:
             pass
         new = cls(parent, **kwargs)
@@ -316,8 +319,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         Used for parenting to other windows.
 
         Note: If not using a parent of AbstractWindow, then
-        cls.clearWindowInstance(cls.ID) will need to be manually run to
-        unregister callbacks.
+        cls.clearWindowInstance(cls.WindowID) will need to be manually
+        run to unregister callbacks.
 
         Example:
             layout.addWidget(OtherWindow.instance(self).centralWidget())
@@ -325,24 +328,24 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """
         # Store the ID of an existing window
         tempID = None
-        if cls.ID in cls._WINDOW_INSTANCES:
+        if cls.WindowID in cls._WINDOW_INSTANCES:
             tempID = uuid.uuid4().hex
-            cls._WINDOW_INSTANCES[tempID] = cls._WINDOW_INSTANCES.pop(cls.ID)
+            cls._WINDOW_INSTANCES[tempID] = cls._WINDOW_INSTANCES.pop(cls.WindowID)
 
         # Create window with new ID and disable saving
         new = cls(parent=parent, **kwargs)
-        new.ID = uuid.uuid4().hex
-        cls._WINDOW_INSTANCES[new.ID] = cls._WINDOW_INSTANCES.pop(cls.ID)
+        new.WindowID = uuid.uuid4().hex
+        cls._WINDOW_INSTANCES[new.WindowID] = cls._WINDOW_INSTANCES.pop(cls.WindowID)
         new.enableSaveWindowPosition(False)
 
         # Return old ID
         if tempID is not None:
-            cls._WINDOW_INSTANCES[cls.ID] = cls._WINDOW_INSTANCES.pop(tempID)
+            cls._WINDOW_INSTANCES[cls.WindowID] = cls._WINDOW_INSTANCES.pop(tempID)
 
         # Connect/emit the signals
         new.deferred(new.windowReady.emit)
         if isinstance(parent, AbstractWindow):
-            parent.clearedInstance.connect(partial(cls.clearWindowInstance, new.ID))
+            parent.clearedInstance.connect(partial(cls.clearWindowInstance, new.WindowID))
         return new
 
     def setDefaultSize(self, width, height):
@@ -367,7 +370,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         if windowID is None:
             if self is cls:
                 return
-            windowID = self.ID
+            windowID = self.WindowID
 
         if windowID in cls._WINDOW_INSTANCES:
             if delete and self is cls:
@@ -383,7 +386,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         In the case of a dialog, it will be deleted by now, so ignore.
         """
         inst = cls._WINDOW_INSTANCES.pop(windowID, None)
-        if inst is not None and not getattr(inst['window'], 'DIALOG', False):
+        if inst is not None and not getattr(inst['window'], 'ForceDialog', False):
             try:
                 inst['window'].clearedInstance.emit()
             except RuntimeError:
