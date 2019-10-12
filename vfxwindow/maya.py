@@ -883,7 +883,7 @@ class MayaWindow(AbstractWindow):
                 docked = settings['maya']['docked']
             except KeyError:
                 try:
-                    docked = cls.DEFAULTS['docked']
+                    docked = cls.WindowDefaults['docked']
                 except (AttributeError, KeyError):
                     docked = True
 
@@ -896,7 +896,7 @@ class MayaWindow(AbstractWindow):
                     floating = settings['maya']['dock']['floating']
                 except KeyError:
                     try:
-                        floating = cls.DEFAULTS['floating']
+                        floating = cls.WindowDefaults['floating']
                     except (AttributeError, KeyError):
                         floating = False
             if floating:

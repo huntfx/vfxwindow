@@ -671,7 +671,7 @@ class NukeWindow(AbstractWindow):
                 docked = nukeSettings['docked']
             except KeyError:
                 try:
-                    docked = cls.DEFAULTS['docked']
+                    docked = cls.WindowDefaults['docked']
                 except (AttributeError, KeyError):
                     docked = True
 
