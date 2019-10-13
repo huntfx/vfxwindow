@@ -517,7 +517,7 @@ class NukeWindow(AbstractWindow):
                 'updateUI': defaultdict(set),
             }
 
-    def addCallbackOnUserCreate(self, func, group=None, nodeClass=None):
+    def addCallbackOnUserCreate(self, func, nodeClass=None, group=None):
         """Executed whenever a node is created by the user.
         Not called when loading existing scripts, pasting nodes, or undoing a delete.
         """
@@ -529,7 +529,7 @@ class NukeWindow(AbstractWindow):
             else:
                 nuke.addOnUserCreate(func, nodeClass=nodeClass)
 
-    def addCallbackOnCreate(self, func, group=None, nodeClass=None):
+    def addCallbackOnCreate(self, func, nodeClass=None, group=None):
         """Executed when any node is created.
         Examples include loading a script (includes new file), pasting a node, selecting a menu item, or undoing a delete.
         """
@@ -541,7 +541,7 @@ class NukeWindow(AbstractWindow):
             else:
                 nuke.addOnCreate(func, nodeClass=nodeClass)
 
-    def addCallbackOnScriptLoad(self, func, group=None, nodeClass=None):
+    def addCallbackOnScriptLoad(self, func, nodeClass=None, group=None):
         """Executed when a script is loaded.
         This will be called by onCreate (for root), and straight after onCreate.
         """
@@ -553,7 +553,7 @@ class NukeWindow(AbstractWindow):
             else:
                 nuke.addOnScriptLoad(func, nodeClass=nodeClass)
 
-    def addCallbackOnScriptSave(self, func, group=None, nodeClass=None):
+    def addCallbackOnScriptSave(self, func, nodeClass=None, group=None):
         """Executed when the user tries to save a script."""
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onScriptSave'][func].add(nodeClass)
@@ -563,7 +563,7 @@ class NukeWindow(AbstractWindow):
             else:
                 nuke.addOnScriptSave(func, nodeClass=nodeClass)
 
-    def addCallbackOnScriptClose(self, func, group=None, nodeClass=None):
+    def addCallbackOnScriptClose(self, func, nodeClass=None, group=None):
         """Executed when Nuke is exited or the script is closed."""
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onScriptClose'][func].add(nodeClass)
@@ -573,7 +573,7 @@ class NukeWindow(AbstractWindow):
             else:
                 nuke.addOnScriptClose(func, nodeClass=nodeClass)
 
-    def addCallbackOnDestroy(self, func, group=None, nodeClass=None):
+    def addCallbackOnDestroy(self, func, nodeClass=None, group=None):
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onDestroy'][func].add(nodeClass)
         if not self.__windowHidden:
@@ -582,7 +582,7 @@ class NukeWindow(AbstractWindow):
             else:
                 nuke.addOnDestroy(func, nodeClass=nodeClass)
 
-    def addCallbackKnobChanged(self, func, group=None, nodeClass=None):
+    def addCallbackKnobChanged(self, func, nodeClass=None, group=None):
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['knobChanged'][func].add(nodeClass)
         if not self.__windowHidden:
@@ -591,7 +591,7 @@ class NukeWindow(AbstractWindow):
             else:
                 nuke.addKnobChanged(func, nodeClass=nodeClass)
 
-    def addCallbackUpdateUI(self, func, group=None, nodeClass=None):
+    def addCallbackUpdateUI(self, func, nodeClass=None, group=None):
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['updateUI'][func].add(nodeClass)
         if not self.__windowHidden:
