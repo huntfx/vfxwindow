@@ -37,6 +37,7 @@ if __name__ == '__main__':
  - Maya (2017+, tested on 2017-2019) - standard, docked (`pymel.core.workspaceControl`), dialog (`pymel.core.layoutDialog`)
  - Nuke (tested on 9 and 10) - standard, docked (`nukescripts.panels`)
  - Houdini (tested on 16) - standard
+ - Blender (tested in 2.80) - standard
  - Standalone (Qt4, Qt5) - standard
 
 ### Generic Features

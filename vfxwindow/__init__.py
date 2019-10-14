@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 import os
 
@@ -21,7 +21,12 @@ except ImportError:
             hou.qt  # The hou module works outside of Houdini, so also check for qt
 
         except (ImportError, AttributeError):
-            from .standalone import StandaloneWindow as VFXWindow
+            try:
+                import bpy
+            except ImportError:
+                from .standalone import StandaloneWindow as VFXWindow
+            else:
+                from .blender import BlenderWindow as VFXWindow
         else:
             from .houdini import HoudiniWindow as VFXWindow
     else:

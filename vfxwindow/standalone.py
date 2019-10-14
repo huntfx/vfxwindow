@@ -13,12 +13,13 @@ from .utils.Qt import QtWidgets, IsPySide, IsPyQt4, IsPySide2, IsPyQt5
 
 
 class _MultiAppLaunch(Process):
-    """Launch multiple QApplications."""
+    """Launch multiple QApplications as separate processes."""
     def __init__(self, cls):
         self.cls = cls
         super(_MultiAppLaunch, self).__init__()
     
     def run(self):
+        """Launch the app once the process has started."""
         app = QtWidgets.QApplication(sys.argv)
         window = super(StandaloneWindow, self.cls).show()
         app.setActiveWindow(window)
@@ -32,11 +33,12 @@ class StandaloneWindow(AbstractWindow):
         self.standalone = True
 
     @classmethod
-    def show(cls, instance=False, **kwargs):
+    def show(cls, instance=False, exec_=True, **kwargs):
         """Start a standalone QApplication and launch the window.
         Multiprocessing can be used to launch a separate application instead of an instance.
         The disadvantage of an instance is the palette and other bits are all linked.
         """
+        window = None
         try:
             app = QtWidgets.QApplication(sys.argv)
             window = super(StandaloneWindow, cls).show()
@@ -49,11 +51,9 @@ class StandaloneWindow(AbstractWindow):
             else:
                 _MultiAppLaunch(cls).start()
         else:
-            sys.exit(app.exec_())
-
-    def setWindowPalette(self, program, version=None):
-        """Override of the default setWindowPalette to also set style."""
-        return super(StandaloneWindow, self).setWindowPalette(program, version, style=True)
+            if exec_:
+                sys.exit(app.exec_())
+        return window
 
     def windowPalette(self):
         currentPalette = super(StandaloneWindow, self).windowPalette()
@@ -65,9 +65,9 @@ class StandaloneWindow(AbstractWindow):
         return currentPalette
 
     @classmethod
-    def clearWindowInstance(self, windowID):
+    def clearWindowInstance(cls, windowID):
         """Close the last class instance."""
-        previousInstance = super(StandaloneWindow, self).clearWindowInstance(windowID)
+        previousInstance = super(StandaloneWindow, cls).clearWindowInstance(windowID)
         if previousInstance is None:
             return
 
