@@ -1,6 +1,7 @@
 """This is a test to see if multiple window instances can be launched.
 By default, there can only be one QApplication, so this is an example of launching a second window using a new process.
 """
+
 import sys
 import os
 sys.path.append(os.path.abspath(__file__).rsplit(os.path.sep, 2)[0])
