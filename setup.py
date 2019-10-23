@@ -28,7 +28,7 @@ setup(
     url = 'https://github.com/Peter92/vfxwindow',
     download_url = 'https://github.com/Peter92/vfxwindow/archive/{}.tar.gz'.format(version),
     project_urls={
-        'Documentation' : 'https://github.com/Peter92/vfxwindow',
+        'Documentation' : 'https://github.com/Peter92/vfxwindow/wiki',
         'Source'        : 'https://github.com/Peter92/vfxwindow',
         'Issues'        : 'https://github.com/Peter92/vfxwindow/issues',
     },

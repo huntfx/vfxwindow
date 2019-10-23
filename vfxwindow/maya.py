@@ -220,6 +220,7 @@ class MayaWindow(AbstractWindow):
             parent = getMainWindow()
         super(MayaWindow, self).__init__(parent, **kwargs)
         self.maya = True
+        self.batch = pm.about(batch=True)
         self.setDockable(dockable, override=True)
 
         # The line below can save the window preferences, but this window automatically does it
@@ -301,6 +302,14 @@ class MayaWindow(AbstractWindow):
                 self.raise_()
             else:
                 pm.workspaceControl(self.WindowID, edit=True, floating=not dock)
+    
+    def setWindowPalette(self, program, version=None, style=True, force=False):
+        """Set the palette of the window.
+        This will cause issues in the Maya GUI so it's disabled by default.
+        The force parameter can be set to override this behaviour.
+        """
+        if force or self.batch:
+            super(MayaWindow, self).setWindowPalette(program, version, style)
 
     def windowPalette(self):
         currentPalette = super(MayaWindow, self).windowPalette()

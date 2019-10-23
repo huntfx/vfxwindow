@@ -92,6 +92,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(getattr(self, 'WindowName', 'New Window'))
 
         # Track settings that to be read by any inherited windows
+        self.batch = False
         self.maya = False
         self.nuke = False
         self.houdini = False
@@ -408,16 +409,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Return if the window has been closed."""
         return self.__closed
     
-    def setWindowPalette(self, program, version=None, style=True, force=False):
-        """Set the palette of the window.
-
-        By default it will not work on any program with a Qt interface,
-        as it will override the entire program.
-        To bypass this behaviour, set force=True.
-        """
-        if not force and self.maya or self.nuke:
-            return
-            
+    def setWindowPalette(self, program, version=None, style=True, **kwargs):
+        """Set the palette of the window."""
         setPalette(program, version, style=style)
         self._windowPalette = program
         if version is not None:

@@ -270,6 +270,14 @@ class NukeWindow(AbstractWindow):
         if not self.dockable():
             super(NukeWindow, self).setDefaultPosition(x, y)
 
+    def setWindowPalette(self, program, version=None, style=True, force=False):
+        """Set the palette of the window.
+        This will change the entire Nuke GUI so it's disabled by default.
+        The force parameter can be set to override this behaviour.
+        """
+        if force:
+            super(NukeWindow, self).setWindowPalette(program, version, style)
+
     def windowPalette(self):
         currentPalette = super(NukeWindow, self).windowPalette()
         if currentPalette is None:
