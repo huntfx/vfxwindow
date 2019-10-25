@@ -70,7 +70,7 @@ def setCoordinatesToScreen(x, y, w, h, padding=0):
     Use offset_high if the space at the left or bottom of the screen needs adjusting.
     """
     monitor_adjusted = [(x1, y1, x2-w-padding, y2-h-padding) for x1, y1, x2, y2 in tuple(m[1] for m in _monitorAreas())]
-    location_groups = zip(*monitor_adjusted)
+    location_groups = tuple(zip(*monitor_adjusted))
 
     x_orig = x
     y_orig = y

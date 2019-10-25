@@ -3,31 +3,57 @@
 from __future__ import absolute_import
 
 import sys
+from functools import partial
+from multiprocessing import Queue, Process
+from threading import Thread
 
-from .base import BaseWindow
+from .abstract import AbstractWindow
 from .utils import setCoordinatesToScreen
 from .utils.Qt import QtWidgets, IsPySide, IsPyQt4, IsPySide2, IsPyQt5
 
 
-class StandaloneWindow(BaseWindow):
+class _MultiAppLaunch(Process):
+    """Launch multiple QApplications as separate processes."""
+    def __init__(self, cls):
+        self.cls = cls
+        super(_MultiAppLaunch, self).__init__()
+    
+    def run(self):
+        """Launch the app once the process has started."""
+        app = QtWidgets.QApplication(sys.argv)
+        window = super(StandaloneWindow, self.cls).show()
+        app.setActiveWindow(window)
+        sys.exit(app.exec_())
+
+
+class StandaloneWindow(AbstractWindow):
     """Window to use outside of specific programs."""
     def __init__(self, parent=None):
         super(StandaloneWindow, self).__init__(parent)
         self.standalone = True
 
     @classmethod
-    def show(cls, **kwargs):
+    def show(cls, instance=False, exec_=True, **kwargs):
         """Start a standalone QApplication and launch the window.
-        To launch another window, subprocess.Popen(["python", path]) must be used.
+        Multiprocessing can be used to launch a separate application instead of an instance.
+        The disadvantage of an instance is the palette and other bits are all linked.
         """
-        app = QtWidgets.QApplication(sys.argv)
-        window = super(StandaloneWindow, cls).show()
-        app.setActiveWindow(window)
-        sys.exit(app.exec_())
-
-    def setWindowPalette(self, program, version=None):
-        """Override of the default setWindowPalette to also set style."""
-        return super(StandaloneWindow, self).setWindowPalette(program, version, style=True)
+        window = None
+        try:
+            app = QtWidgets.QApplication(sys.argv)
+            window = super(StandaloneWindow, cls).show()
+            app.setActiveWindow(window)
+        except RuntimeError:
+            if instance:
+                app = QtWidgets.QApplication.instance()
+                window = super(StandaloneWindow, cls).show()
+                app.setActiveWindow(window)
+            else:
+                _MultiAppLaunch(cls).start()
+        else:
+            if exec_:
+                sys.exit(app.exec_())
+        return window
 
     def windowPalette(self):
         currentPalette = super(StandaloneWindow, self).windowPalette()
@@ -39,9 +65,9 @@ class StandaloneWindow(BaseWindow):
         return currentPalette
 
     @classmethod
-    def clearWindowInstance(self, windowID):
+    def clearWindowInstance(cls, windowID):
         """Close the last class instance."""
-        previousInstance = super(StandaloneWindow, self).clearWindowInstance(windowID)
+        previousInstance = super(StandaloneWindow, cls).clearWindowInstance(windowID)
         if previousInstance is None:
             return
 
@@ -55,7 +81,7 @@ class StandaloneWindow(BaseWindow):
     def closeEvent(self, event):
         """Save the window location on window close."""
         self.saveWindowPosition()
-        self.clearWindowInstance(self.ID)
+        self.clearWindowInstance(self.WindowID)
         return super(StandaloneWindow, self).closeEvent(event)
 
     def saveWindowPosition(self):

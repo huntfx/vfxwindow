@@ -10,7 +10,7 @@ from collections import defaultdict
 import nuke
 from nukescripts import panels, utils
 
-from .base import BaseWindow, getWindowSettings
+from .abstract import AbstractWindow, getWindowSettings
 from .utils import hybridmethod, setCoordinatesToScreen
 from .utils.Qt import QtWidgets
 
@@ -63,9 +63,9 @@ class Pane(object):
                 return pane
 
     @classmethod
-    def find(cls, id):
-        """Find which pane the current ID is docked to."""
-        current_pane = nuke.getPaneFor(id)
+    def find(cls, windowID):
+        """Find which pane the WindowID is docked to."""
+        current_pane = nuke.getPaneFor(windowID)
         if current_pane is None:
             return None
         for pane_func in cls.__PRIORITY:
@@ -186,7 +186,7 @@ class Pane(object):
     ]
 
 
-class NukeWindow(BaseWindow):
+class NukeWindow(AbstractWindow):
     """Base class for docking windows in Nuke.
 
     Usage:
@@ -223,13 +223,18 @@ class NukeWindow(BaseWindow):
             self.setDockable(self.windowSettings['nuke']['docked'], override=True)
         except KeyError:
             self.setDockable(True, override=True)
+
+        # Fix for parent bug
+        # See NukeWindow.parent for more information
+        self.__useNukeTemporaryParent = True
+        self.windowReady.connect(self.__disableTemporaryParent)
         
         # This line seemed to be recommended, but I'm not sure why
         #if not self.dockable():
         #    self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
     def closeEvent(self, event):
-        super(NukeWindow, self).clearWindowInstance(self.ID)
+        super(NukeWindow, self).clearWindowInstance(self.WindowID)
 
         if self.dockable():
             if self.exists():
@@ -240,7 +245,7 @@ class NukeWindow(BaseWindow):
                 #Remove the tab and pane if by itself
                 else:
                     self.parent().parent().parent().parent().parent().parent().parent().close()
-                    deleteQtWindow(self.ID)
+                    deleteQtWindow(self.WindowID)
         else:
             self.saveWindowPosition()
         return super(NukeWindow, self).closeEvent(event)
@@ -265,6 +270,14 @@ class NukeWindow(BaseWindow):
         if not self.dockable():
             super(NukeWindow, self).setDefaultPosition(x, y)
 
+    def setWindowPalette(self, program, version=None, style=True, force=False):
+        """Set the palette of the window.
+        This will change the entire Nuke GUI so it's disabled by default.
+        The force parameter can be set to override this behaviour.
+        """
+        if force:
+            super(NukeWindow, self).setWindowPalette(program, version, style)
+
     def windowPalette(self):
         currentPalette = super(NukeWindow, self).windowPalette()
         if currentPalette is None:
@@ -278,7 +291,7 @@ class NukeWindow(BaseWindow):
         if self.dockable():
             if alternative:
                 return self.parent().parent().parent().parent().parent().parent().parent().parent() is not None
-            return Pane.get(self.ID) is not None
+            return Pane.get(self.WindowID) is not None
         return not self.isClosed()
 
     def floating(self, alternative=False):
@@ -286,7 +299,7 @@ class NukeWindow(BaseWindow):
         if self.dockable():
             if alternative:
                 return self.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent() is not None
-            return Pane.find(self.ID) is None
+            return Pane.find(self.WindowID) is None
         return True
 
     def siblings(self):
@@ -300,7 +313,7 @@ class NukeWindow(BaseWindow):
 
     def getAttachedPane(self):
         """Find the name of the pane the window is attached to."""
-        return Pane.find(self.ID)
+        return Pane.find(self.WindowID)
     
     def saveWindowPosition(self):
         """Save the window location."""
@@ -347,10 +360,10 @@ class NukeWindow(BaseWindow):
             return
         try:
             settings = self.windowSettings['nuke']['main']
-            x = self.windowSettings['nuke']['main']['x']
-            y = self.windowSettings['nuke']['main']['y']
-            width = self.windowSettings['nuke']['main']['width']
-            height = self.windowSettings['nuke']['main']['height']
+            x = settings['x']
+            y = settings['y']
+            width = settings['width']
+            height = settings['height']
         except KeyError:
             super(NukeWindow, self).loadWindowPosition()
         else:
@@ -381,7 +394,7 @@ class NukeWindow(BaseWindow):
         """Get the widget that contains the correct size and position on screen."""
         try:
             if use_pane:
-                pane = Pane.get(self.ID)
+                pane = Pane.get(self.WindowID)
                 if pane is None:
                     raise AttributeError()
                 return pane
@@ -512,7 +525,7 @@ class NukeWindow(BaseWindow):
                 'updateUI': defaultdict(set),
             }
 
-    def addCallbackOnUserCreate(self, func, group=None, nodeClass=None):
+    def addCallbackOnUserCreate(self, func, nodeClass=None, group=None):
         """Executed whenever a node is created by the user.
         Not called when loading existing scripts, pasting nodes, or undoing a delete.
         """
@@ -524,7 +537,7 @@ class NukeWindow(BaseWindow):
             else:
                 nuke.addOnUserCreate(func, nodeClass=nodeClass)
 
-    def addCallbackOnCreate(self, func, group=None, nodeClass=None):
+    def addCallbackOnCreate(self, func, nodeClass=None, group=None):
         """Executed when any node is created.
         Examples include loading a script (includes new file), pasting a node, selecting a menu item, or undoing a delete.
         """
@@ -536,7 +549,7 @@ class NukeWindow(BaseWindow):
             else:
                 nuke.addOnCreate(func, nodeClass=nodeClass)
 
-    def addCallbackOnScriptLoad(self, func, group=None, nodeClass=None):
+    def addCallbackOnScriptLoad(self, func, nodeClass=None, group=None):
         """Executed when a script is loaded.
         This will be called by onCreate (for root), and straight after onCreate.
         """
@@ -548,7 +561,7 @@ class NukeWindow(BaseWindow):
             else:
                 nuke.addOnScriptLoad(func, nodeClass=nodeClass)
 
-    def addCallbackOnScriptSave(self, func, group=None, nodeClass=None):
+    def addCallbackOnScriptSave(self, func, nodeClass=None, group=None):
         """Executed when the user tries to save a script."""
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onScriptSave'][func].add(nodeClass)
@@ -558,7 +571,7 @@ class NukeWindow(BaseWindow):
             else:
                 nuke.addOnScriptSave(func, nodeClass=nodeClass)
 
-    def addCallbackOnScriptClose(self, func, group=None, nodeClass=None):
+    def addCallbackOnScriptClose(self, func, nodeClass=None, group=None):
         """Executed when Nuke is exited or the script is closed."""
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onScriptClose'][func].add(nodeClass)
@@ -568,7 +581,7 @@ class NukeWindow(BaseWindow):
             else:
                 nuke.addOnScriptClose(func, nodeClass=nodeClass)
 
-    def addCallbackOnDestroy(self, func, group=None, nodeClass=None):
+    def addCallbackOnDestroy(self, func, nodeClass=None, group=None):
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onDestroy'][func].add(nodeClass)
         if not self.__windowHidden:
@@ -577,7 +590,7 @@ class NukeWindow(BaseWindow):
             else:
                 nuke.addOnDestroy(func, nodeClass=nodeClass)
 
-    def addCallbackKnobChanged(self, func, group=None, nodeClass=None):
+    def addCallbackKnobChanged(self, func, nodeClass=None, group=None):
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['knobChanged'][func].add(nodeClass)
         if not self.__windowHidden:
@@ -586,7 +599,7 @@ class NukeWindow(BaseWindow):
             else:
                 nuke.addKnobChanged(func, nodeClass=nodeClass)
 
-    def addCallbackUpdateUI(self, func, group=None, nodeClass=None):
+    def addCallbackUpdateUI(self, func, nodeClass=None, group=None):
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['updateUI'][func].add(nodeClass)
         if not self.__windowHidden:
@@ -598,7 +611,10 @@ class NukeWindow(BaseWindow):
     @classmethod
     def clearWindowInstance(self, windowID):
         """Close the last class instance."""
-        previousInstance = super(NukeWindow, self).clearWindowInstance(windowID)
+        try:
+            previousInstance = super(NukeWindow, self).clearWindowInstance(windowID)
+        except TypeError:
+            return
         if previousInstance is None:
             return
         self.removeCallbacks(windowInstance=previousInstance)
@@ -613,8 +629,28 @@ class NukeWindow(BaseWindow):
     def deferred(self, func, *args, **kwargs):
         utils.executeDeferred(func, *args, **kwargs)
 
+    def parent(self, *args, **kwargs):
+        """Fix a weird Nuke crash.
+        It seems to be under a specific set of circumstances, so I'm
+        not sure how to deal with it other than with this workaround.
+
+        Details specific to my issue:
+            Non-dockable window
+            Location data doesn't exist, causing centreWindow to run
+            Requesting self.parent() inside centreWindow crashes Nuke.
+
+        This fix runs getMainWindow if loading isn't complete.
+        """
+        if not self.__useNukeTemporaryParent or self.dockable():
+            return super(NukeWindow, self).parent(*args, **kwargs)
+        return getMainWindow()
+    
+    def __disableTemporaryParent(self):
+        """See NukeWindow.parent for information."""
+        self.__useNukeTemporaryParent = False
+
     @classmethod
-    def show(cls, namespace=None, **kwargs):
+    def show(cls, namespace=None, *args, **kwargs):
         """Show the Nuke window.
 
         IMPORTANT:
@@ -624,11 +660,11 @@ class NukeWindow(BaseWindow):
         """
         #Close down any instances of the window
         try:
-            cls.clearWindowInstance(cls.ID)
+            cls.clearWindowInstance(cls.WindowID)
         except AttributeError:
             settings = {}
         else:
-            settings = getWindowSettings(cls.ID)
+            settings = getWindowSettings(cls.WindowID)
 
         #Load settings
         try:
@@ -636,14 +672,14 @@ class NukeWindow(BaseWindow):
         except KeyError:
             nukeSettings = settings['nuke'] = {}
 
-        if hasattr(cls, 'DOCKABLE'):
-            docked = cls.DOCKABLE
+        if hasattr(cls, 'WindowDockable'):
+            docked = cls.WindowDockable
         else:
             try:
                 docked = nukeSettings['docked']
             except KeyError:
                 try:
-                    docked = cls.DEFAULTS['docked']
+                    docked = cls.WindowDefaults['docked']
                 except (AttributeError, KeyError):
                     docked = True
 
@@ -657,9 +693,9 @@ class NukeWindow(BaseWindow):
             try:
                 panel = panels.registerWidgetAsPanel(
                     widget=namespace or cls.__name__,
-                    name=getattr(cls, 'NAME', 'New Window'),
-                    id=cls.ID,
-                    create=True
+                    name=getattr(cls, 'WindowName', 'New Window'),
+                    id=cls.WindowID,
+                    create=True,
                 )
                 panel.addToPane(pane)
                 
@@ -678,8 +714,5 @@ class NukeWindow(BaseWindow):
                     widget = panel_obj.widget
                     _removeMargins(widget)
                     return widget
-
-        elif 'main' not in nukeSettings:
-            nukeSettings['main'] = {}
         
-        return super(NukeWindow, cls).show()
+        return super(NukeWindow, cls).show(*args, **kwargs)

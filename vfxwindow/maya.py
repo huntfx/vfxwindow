@@ -11,7 +11,7 @@ import maya.OpenMayaUI as omUI
 import pymel.core as pm
 from pymel import versions
 
-from .base import BaseWindow, getWindowSettings
+from .abstract import AbstractWindow, getWindowSettings
 from .utils import hybridmethod, setCoordinatesToScreen
 from .utils.Qt import QtWidgets, QtCompat, QtCore
 
@@ -19,7 +19,7 @@ from .utils.Qt import QtWidgets, QtCompat, QtCore
 MAYA_VERSION = int(versions.flavor())
 
 
-def getMayaWindow(windowID=None, wrapInstance=True):
+def getMainWindow(windowID=None, wrapInstance=True):
     """Get pointer to main Maya window.
     The pointer type is a QWidget, so wrap to that (though it can be wrapped to other things too).
     """
@@ -40,7 +40,7 @@ def getMayaWindow(windowID=None, wrapInstance=True):
 
     # Fallback to searching widgets
     if isinstance(windowID, QtWidgets.QWidget):
-        return obj
+        return windowID
     search = windowID or 'MayaWindow'
     for obj in QtWidgets.QApplication.topLevelWidgets():
         if obj.objectName() == search:
@@ -49,20 +49,14 @@ def getMayaWindow(windowID=None, wrapInstance=True):
 
 def deleteWorkspaceControl(windowID, resetFloating=True):
     """Handle deleting a workspaceControl with a particular ID."""
-    exists = pm.workspaceControlState(windowID, query=True, exists=True)
-    try:
+    if pm.workspaceControl(windowID, query=True, exists=True):
         floating = pm.workspaceControl(windowID, query=True, floating=True)
         pm.deleteUI(windowID)
-        #pm.workspaceControl(id, edit=True, close=True) #appears to do the same thing so diabled
-    except RuntimeError:
-        floating = None
     else:
-        #Do not reset workspace if the window is currently floating
-        if not resetFloating:
-            exists = not floating
+        floating = None
 
-    #Delete the window preferences (position, size, etc)
-    if exists:
+    #Delete the window preferences (position, size, etc), if the window is not currently floating
+    if pm.workspaceControlState(windowID, query=True, exists=True) and (not floating or floating and resetFloating):
         pm.workspaceControlState(windowID, remove=True)
 
     return floating
@@ -79,10 +73,10 @@ def deleteDockControl(windowID):
         floating = None
 
     # Close down the dock control
-    windowWrap = getMayaWindow(windowID)
+    windowWrap = getMainWindow(windowID)
     if windowWrap is not None:
         if windowWrap.parent().parent() is not None:
-            getMayaWindow(windowID).parent().close()
+            getMainWindow(windowID).parent().close()
     
     if floating is not None:
         try:
@@ -95,37 +89,42 @@ def deleteDockControl(windowID):
 
 def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs):
     """Template class for docking a Qt widget to maya 2017+.
-    Requires the window to contain the attributes ID and NAME.
+    Requires the window to contain the attributes WindowID and WindowName.
 
     Source (heavily modified): https://gist.github.com/liorbenhorin/69da10ec6f22c6d7b92deefdb4a4f475
     """
     # Set window ID if needed but disable saving
-    if not hasattr(windowClass, 'ID'):
-        windowClass.ID = str(uuid.uuid4())
+    if not hasattr(windowClass, 'WindowID'):
+        windowClass.WindowID = str(uuid.uuid4())
         windowClass.saveWindowPosition = lambda *args, **kwargs: None
 
     # Remove existing window
-    floating = deleteWorkspaceControl(windowClass.ID, resetFloating=resetFloating)
+    floating = deleteWorkspaceControl(windowClass.WindowID, resetFloating=resetFloating)
     if not resetFloating and floating is None:
         floating = not dock
 
     # Setup Maya's window
     if dock:
+        defaultDock = mel.eval('getUIComponentDockControl("Attribute Editor", false)')
         if isinstance(dock, (bool, int)):
-            dock = 'AttributeEditor'
-        pm.workspaceControl(windowClass.ID, retain=True, label=getattr(windowClass, 'NAME', 'New Window'), tabToControl=[dock, -1])
+            dock = defaultDock
+        try:
+            pm.workspaceControl(windowClass.WindowID, retain=True, label=getattr(windowClass, 'WindowName', 'New Window'), tabToControl=[dock, -1])
+        except RuntimeError:
+            deleteWorkspaceControl(windowClass.WindowID, resetFloating=resetFloating)
+            pm.workspaceControl(windowClass.WindowID, retain=True, label=getattr(windowClass, 'WindowName', 'New Window'), tabToControl=[defaultDock, -1])
     else:
-        pm.workspaceControl(windowClass.ID, retain=True, label=getattr(windowClass, 'NAME', 'New Window'), floating=True)
+        pm.workspaceControl(windowClass.WindowID, retain=True, label=getattr(windowClass, 'WindowName', 'New Window'), floating=True)
 
     # Setup main window and parent to Maya
-    workspaceControlWin = getMayaWindow(windowClass.ID)
+    workspaceControlWin = getMainWindow(windowClass.WindowID)
     workspaceControlWin.setAttribute(QtCore.Qt.WA_DeleteOnClose)
     windowInstance = windowClass(parent=workspaceControlWin, dockable=True, *args, **kwargs)
 
     # Attach callbacks
     windowInstance.signalConnect(workspaceControlWin.destroyed, windowInstance.close, group='__mayaDockWinDestroy')
     try:
-        pm.workspaceControl(windowClass.ID, edit=True, visibleChangeCommand=windowInstance.visibleChangeEvent)
+        pm.workspaceControl(windowClass.WindowID, edit=True, visibleChangeCommand=windowInstance.visibleChangeEvent)
     except (AttributeError, TypeError):
         pass
     try:
@@ -141,14 +140,18 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
 
 def dockControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs):
     
-    def attachToDockControl(windowInstance, floating=False, area='right'):
+    def attachToDockControl(windowInstance, dock=True, area='right'):
         """This needs to be deferred as it can run before the previous dockControl has closed."""
 
-        controlName = pm.dockControl(windowInstance.ID, area=area, floating=False, retain=False, content=windowInstance.objectName(), closeCommand=windowInstance.close)
+        if isinstance(dock, (bool, int)):
+            dock = 'right'
+        if not windowInstance.objectName():
+            windowInstance.setObjectName(windowInstance.WindowID)
+        pm.dockControl(windowInstance.WindowID, area=dock, floating=False, retain=False, content=windowInstance.objectName(), closeCommand=windowInstance.close)
 
-        windowInstance.setDocked(not floating)
+        windowInstance.setDocked(dock)
         try:
-            pm.dockControl(windowInstance.ID, edit=True, floatChangeCommand=windowInstance.saveWindowPosition)
+            pm.dockControl(windowInstance.WindowID, edit=True, floatChangeCommand=windowInstance.saveWindowPosition)
         except (AttributeError, TypeError):
             pass
 
@@ -157,24 +160,22 @@ def dockControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs)
         except (AttributeError, TypeError):
             pass
 
-        windowInstance.setWindowTitle(getattr(windowInstance, 'NAME', 'New Window'))
+        windowInstance.setWindowTitle(getattr(windowInstance, 'WindowName', 'New Window'))
         windowInstance.deferred(windowInstance.raise_)
         windowInstance.deferred(windowInstance.windowReady.emit)
         
-    # Set window ID if needed but disable saving
-    if not hasattr(windowClass, 'ID'):
-        windowClass.ID = str(uuid.uuid4())
+    # Set WindowID if needed but disable saving
+    if not hasattr(windowClass, 'WindowID'):
+        windowClass.WindowID = str(uuid.uuid4())
         windowClass.saveWindowPosition = lambda *args, **kwargs: None
     
     # Remove existing window
-    floating = deleteDockControl(windowClass.ID)
-    if not resetFloating or floating is None:
-        floating = not dock
+    deleteDockControl(windowClass.WindowID)
 
     # Setup main window and parent to Maya
-    mayaWin = getMayaWindow(wrapInstance=False)
+    mayaWin = getMainWindow(wrapInstance=False)
     windowInstance = windowClass(parent=mayaWin, dockable=True, *args, **kwargs)
-    windowInstance.deferred(attachToDockControl, windowInstance, floating)
+    windowInstance.deferred(partial(attachToDockControl, windowInstance, dock))
 
     # Restore the window (after maya is ready) since it may not be visible
     return windowInstance
@@ -207,7 +208,7 @@ def toMObject(node):
     return selected.getDependNode(0)
 
 
-class MayaWindow(BaseWindow):
+class MayaWindow(AbstractWindow):
     """Inhert from this for dockable Maya windows.
 
     This is an alternative to maya.app.general.mayaMixin.MayaQWidgetDockableMixin, as many features
@@ -216,9 +217,10 @@ class MayaWindow(BaseWindow):
 
     def __init__(self, parent=None, dockable=False, **kwargs):
         if parent is None:
-            parent = getMayaWindow()
+            parent = getMainWindow()
         super(MayaWindow, self).__init__(parent, **kwargs)
         self.maya = True
+        self.batch = pm.about(batch=True)
         self.setDockable(dockable, override=True)
 
         # The line below can save the window preferences, but this window automatically does it
@@ -241,7 +243,7 @@ class MayaWindow(BaseWindow):
                 self.saveWindowPosition()
             except TypeError:
                 pass
-        self.clearWindowInstance(self.ID, deleteWindow=True)
+        self.clearWindowInstance(self.WindowID, deleteWindow=True)
 
         # If dockControl is being used, then Maya will crash if close is called
         if dockable and MAYA_VERSION < 2017:
@@ -252,23 +254,23 @@ class MayaWindow(BaseWindow):
     def exists(self):
         if self.dockable():
             if MAYA_VERSION < 2017:
-                return pm.dockControl(self.ID, query=True, exists=True)
-            return pm.workspaceControl(self.ID, query=True, exists=True)
+                return pm.dockControl(self.WindowID, query=True, exists=True)
+            return pm.workspaceControl(self.WindowID, query=True, exists=True)
         return not self.isClosed()
 
     def raise_(self):
         if self.dockable():
             if MAYA_VERSION < 2017:
-                return pm.dockControl(self.ID, edit=True, r=True)
-            return pm.workspaceControl(self.ID, edit=True, restore=True)
+                return pm.dockControl(self.WindowID, edit=True, r=True)
+            return pm.workspaceControl(self.WindowID, edit=True, restore=True)
         return super(MayaWindow, self).raise_()
 
     def setWindowTitle(self, title):
         if self.dockable():
             try:
                 if MAYA_VERSION < 2017:
-                    return pm.dockControl(self.ID, edit=True, label=title)
-                return pm.workspaceControl(self.ID, edit=True, label=title)
+                    return pm.dockControl(self.WindowID, edit=True, label=title)
+                return pm.workspaceControl(self.WindowID, edit=True, label=title)
             except RuntimeError:
                 pass
         return super(MayaWindow, self).setWindowTitle(title)
@@ -277,8 +279,8 @@ class MayaWindow(BaseWindow):
         if self.dockable():
             try:
                 if MAYA_VERSION < 2017:
-                    return pm.dockControl(self.ID, query=True, visible=True)
-                return pm.workspaceControl(self.ID, query=True, visible=True)
+                    return pm.dockControl(self.WindowID, query=True, visible=True)
+                return pm.workspaceControl(self.WindowID, query=True, visible=True)
             except RuntimeError:
                 return False
         return super(MayaWindow, self).isVisible()
@@ -296,10 +298,18 @@ class MayaWindow(BaseWindow):
         if self.dockable() and self.floating() == dock:
             if MAYA_VERSION < 2017:
                 self.raise_()
-                pm.dockControl(self.ID, edit=True, floating=not dock)
+                pm.dockControl(self.WindowID, edit=True, floating=not dock)
                 self.raise_()
             else:
-                pm.workspaceControl(self.ID, edit=True, floating=not dock)
+                pm.workspaceControl(self.WindowID, edit=True, floating=not dock)
+    
+    def setWindowPalette(self, program, version=None, style=True, force=False):
+        """Set the palette of the window.
+        This will cause issues in the Maya GUI so it's disabled by default.
+        The force parameter can be set to override this behaviour.
+        """
+        if force or self.batch:
+            super(MayaWindow, self).setWindowPalette(program, version, style)
 
     def windowPalette(self):
         currentPalette = super(MayaWindow, self).windowPalette()
@@ -316,7 +326,7 @@ class MayaWindow(BaseWindow):
 
         #Determine if it's a new window, we need to get the C++ pointer again
         if self.__parentTemp is None:
-            base = getMayaWindow(self.ID)
+            base = getMainWindow(self.WindowID)
         else:
             base = self.parent()
 
@@ -329,17 +339,20 @@ class MayaWindow(BaseWindow):
 
     def floating(self):
         if MAYA_VERSION < 2017:
-            return pm.dockControl(self.ID, query=True, floating=True)
-        return pm.workspaceControl(self.ID, query=True, floating=True)
+            return pm.dockControl(self.WindowID, query=True, floating=True)
+        return pm.workspaceControl(self.WindowID, query=True, floating=True)
         
-    def resize(self, width, height):
+    def resize(self, width, height=None):
         """Resize the window."""
+        if isinstance(width, QtCore.QSize):
+            height = width.height()
+            width = width.width()
         if self.dockable():
             if MAYA_VERSION < 2017:
                 if not self.floating():
-                    return pm.dockControl(self.ID, edit=True, width=width, height=height)
+                    return pm.dockControl(self.WindowID, edit=True, width=width, height=height)
             else:
-                return pm.workspaceControl(self.ID, edit=True, resizeWidth=width, resizeHeight=height)
+                return pm.workspaceControl(self.WindowID, edit=True, resizeWidth=width, resizeHeight=height)
         return super(MayaWindow, self).resize(width, height)
 
     def siblings(self):
@@ -349,63 +362,64 @@ class MayaWindow(BaseWindow):
             return self.parent().parent().children()
         return []
 
-    def control(self):
-        """Return the Maya Control name, so it can be attached again."""
-        if not self.dockable():
-            return None
-        
-        # Pre-2017 only has 'top', 'bottom', 'left' and 'right'
-        if MAYA_VERSION < 2017:
-            return pm.dockControl(self.ID, query=True, area=True)
-        
-        # Search through siblings until a 
-        parent = self.parent()
-        for item in self.siblings():
-            if item != parent and type(item) == QtWidgets.QWidget:
-                try:
-                    return item.objectName()
-                except RuntimeError:
-                    pass
+    if MAYA_VERSION < 2017:
+        def area(self, *args, **kwargs):
+            return pm.dockControl(self.WindowID, query=True, area=True)
+    
+    else:
+        def control(self, *args, **kwargs):
+            """Return the Maya Control name, so it can be attached again."""
+            if not self.dockable():
+                return None
+            
+            workspaces = [
+                mel.eval('$gViewportWorkspaceControl=$gViewportWorkspaceControl'),
+                mel.eval('getUIComponentDockControl("Tool Settings", false)'),
+                mel.eval('getUIComponentDockControl("Attribute Editor", false)'),
+                mel.eval('getUIComponentDockControl("Channel Box", false)'),
+                mel.eval('getUIComponentDockControl("Layer Editor", false)'),
+                mel.eval('getUIComponentDockControl("Channel Box / Layer Editor", false)'),
+                mel.eval('getUIComponentDockControl("Outliner", false)'),
+                mel.eval('getUIComponentToolBar("Shelf", false)'),
+                mel.eval('getUIComponentToolBar("Time Slider", false)'),
+                mel.eval('getUIComponentToolBar("Range Slider", false)'),
+                mel.eval('getUIComponentToolBar("Command Line", false)'),
+                mel.eval('getUIComponentToolBar("Help Line", false)'),
+                mel.eval('getUIComponentToolBar("Tool Box", false)'),
+                'UVToolkitDockControl',
+                'polyTexturePlacementPanel1Window',
+                'hyperGraphPanel1Window',
+                'graphEditor1Window',
+                'timeEditorPanel1Window',
+                'nodeEditorPanel1Window',
+                'shapePanel1Window',
+                'posePanel1Window',
+                'hyperShadePanel1Window',
+                'contentBrowserPanel1Window',
+                'outlinerPanel1Window',
+                'clipEditorPanel1Window',
+                'devicePanel1Window',
+                'dynPaintScriptedPanelWindow',
+                'blindDataEditor1Window',
+            ]
+            stackedWidget = self.parent().parent()
+            for control in workspaces:
+                widget = pm.uitypes.toQtControl(control)
+                if widget is not None:
+                    if widget.parent() is stackedWidget:
+                        return control
 
-        # Verbose way
-        # TODO: Needs testing if this is still needed
-        workspaces = [
-            mel.eval('$gViewportWorkspaceControl=$gViewportWorkspaceControl'),
-            mel.eval('getUIComponentDockControl("Tool Settings", false)'),
-            mel.eval('getUIComponentDockControl("Attribute Editor", false)'),
-            mel.eval('getUIComponentDockControl("Channel Box", false)'),
-            mel.eval('getUIComponentDockControl("Layer Editor", false)'),
-            mel.eval('getUIComponentDockControl("Channel Box / Layer Editor", false)'),
-            mel.eval('getUIComponentDockControl("Outliner", false)'),
-            mel.eval('getUIComponentToolBar("Shelf", false)'),
-            mel.eval('getUIComponentToolBar("Time Slider", false)'),
-            mel.eval('getUIComponentToolBar("Range Slider", false)'),
-            mel.eval('getUIComponentToolBar("Command Line", false)'),
-            mel.eval('getUIComponentToolBar("Help Line", false)'),
-            mel.eval('getUIComponentToolBar("Tool Box", false)'),
-            'UVToolkitDockControl',
-            'polyTexturePlacementPanel1Window',
-            'hyperGraphPanel1Window',
-            'graphEditor1Window',
-            'timeEditorPanel1Window',
-            'nodeEditorPanel1Window',
-            'shapePanel1Window',
-            'posePanel1Window',
-            'hyperShadePanel1Window',
-            'contentBrowserPanel1Window',
-            'outlinerPanel1Window',
-            'clipEditorPanel1Window',
-            'devicePanel1Window',
-            'dynPaintScriptedPanelWindow',
-            'blindDataEditor1Window',
-        ]
-        stackedWidget = self.parent().parent()
-        for control in workspaces:
-            widget = pm.uitypes.toQtControl(control)
-            if widget is not None:
-                if widget.parent() is stackedWidget:
-                    return control
-        return None
+            # Search through siblings until another widget is found
+            # TODO: Limit to Maya only widgets (this is why the code above is preferred)
+            parent = self.parent()
+            for item in self.siblings():
+                if item != parent and type(item) == QtWidgets.QWidget:
+                    try:
+                        return item.objectName()
+                    except RuntimeError:
+                        pass
+
+            return None
 
     def centreWindow(self):
         """Centre the window using geometry of the main Maya window."""
@@ -436,7 +450,10 @@ class MayaWindow(BaseWindow):
                 dockWindowSettings['x'] = self.x()
                 dockWindowSettings['y'] = self.y()
                 dockWindowSettings['floating'] = self.floating()
-                dockWindowSettings['control'] = self.control()
+                if MAYA_VERSION < 2017:
+                    dockWindowSettings['area'] = self.area()
+                else:
+                    dockWindowSettings['control'] = self.control()
             else:
                 try:
                     mainWindowSettings = mayaSettings['main']
@@ -449,6 +466,8 @@ class MayaWindow(BaseWindow):
         except RuntimeError:
             if not self.dockable():
                 raise
+        except AttributeError:
+            pass
         else:
             super(MayaWindow, self).saveWindowPosition()
         
@@ -457,7 +476,6 @@ class MayaWindow(BaseWindow):
         try:
             if self.dockable():
                 settings = self.windowSettings['maya']['dock']
-                control = settings['control']
             else:
                 settings = self.windowSettings['maya']['main']
             x = settings['x']
@@ -470,8 +488,39 @@ class MayaWindow(BaseWindow):
             x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
             self.resize(width, height)
             self.move(x, y)
-            if self.dockable() and MAYA_VERSION < 2017:
-                pm.dockControl(self.ID, edit=True, area=control)
+
+    def displayMessage(self, title, message, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None, checkBox=None):
+        """This is basically Maya's copy of a QMessageBox."""
+        if checkBox is None:
+            return pm.confirmDialog(
+                title=title,
+                message=message,
+                button=buttons,
+                defaultButton=defaultButton,
+                cancelButton=cancelButton,
+                dismissString=cancelButton,
+            )
+        return super(MayaWindow, self).displayMessage(
+            title=title,
+            message=message,
+            buttons=buttons,
+            defaultButton=defaultButton,
+            cancelButton=cancelButton,
+            checkBox=checkBox,
+        )
+
+    def centralWidget(self):
+        if self.dockable():
+            item = self.parent().layout().itemAt(0)
+            if item is not None:
+                return item.widget()
+        return super(MayaWindow, self).centralWidget()
+
+    def setCentralWidget(self, widget):
+        if self.dockable():
+            self.parent().layout().takeAt(0)
+            return self.parent().layout().addWidget(widget)
+        return super(MayaWindow, self).setCentralWidget(widget)
 
     @hybridmethod
     def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
@@ -741,12 +790,12 @@ class MayaWindow(BaseWindow):
         self.windowInstance()['callback'][group]['event'].append(om.MDGMessage.addPreConnectionCallback(func, clientData)(func, clientData))
 
     @classmethod
-    def clearWindowInstance(self, windowID, deleteWindow=True):
+    def clearWindowInstance(cls, windowID, deleteWindow=True):
         """Close the last class instance."""
-        previousInstance = super(MayaWindow, self).clearWindowInstance(windowID)
+        previousInstance = super(MayaWindow, cls).clearWindowInstance(windowID)
         if previousInstance is None:
             return
-        self.removeCallbacks(windowInstance=previousInstance)
+        cls.removeCallbacks(windowInstance=previousInstance)
 
         # Disconnect the destroyed signal
         if previousInstance['window'].dockable():
@@ -764,30 +813,30 @@ class MayaWindow(BaseWindow):
         # It's better to handle it elsewhere if possible
         if deleteWindow and previousInstance['window'].dockable():
             if MAYA_VERSION < 2017:
-                deleteDockControl(previousInstance['window'].ID)
+                deleteDockControl(previousInstance['window'].WindowID)
             else:
-                deleteWorkspaceControl(previousInstance['window'].ID)
+                deleteWorkspaceControl(previousInstance['window'].WindowID)
         return previousInstance
 
     def hide(self):
         """Hide the window."""
         if self.dockable():
             if MAYA_VERSION < 2017:
-                return pm.dockControl(self.ID, edit=True, visible=False)
-            return pm.workspaceControl(self.ID, edit=True, visible=False)
+                return pm.dockControl(self.WindowID, edit=True, visible=False)
+            return pm.workspaceControl(self.WindowID, edit=True, visible=False)
         return super(MayaWindow, self).hide()
 
     def setFocus(self):
         """Force Maya to focus on the window."""
         if self.dockable():
-            return pm.setFocus(self.ID)
+            return pm.setFocus(self.WindowID)
         return super(MayaWindow, self).setFocus()
 
     def deferred(self, func, *args, **kwargs):
         """Execute a deferred command.
         If the window is a dialog, then execute now as Maya will pause.
         """
-        if getattr(self, 'DIALOG', False):
+        if getattr(self, 'ForceDialog', False):
             func()
         else:
             pm.evalDeferred(func, *args, **kwargs)
@@ -804,31 +853,31 @@ class MayaWindow(BaseWindow):
             # Case where window is already initialised
             if self.dockable():
                 if MAYA_VERSION < 2017:
-                    return pm.dockControl(self.ID, edit=True, visible=True)
-                return pm.workspaceControl(self.ID, edit=True, visible=True)
+                    return pm.dockControl(self.WindowID, edit=True, visible=True)
+                return pm.workspaceControl(self.WindowID, edit=True, visible=True)
             return super(MayaWindow, self).show()
 
         # Close down any instances of the window
         # If a dialog was opened, then the reference will no longer exist
         try:
-            cls.clearWindowInstance(cls.ID, deleteWindow=False)
+            cls.clearWindowInstance(cls.WindowID)
         except AttributeError:
             settings = {}
         else:
-            settings = getWindowSettings(cls.ID)
+            settings = getWindowSettings(cls.WindowID)
         
         # Open a dialog window that will force control
-        if MAYA_VERSION >= 2017 and getattr(cls, 'DIALOG', False):
-            cls.DOCKABLE = False
+        if MAYA_VERSION >= 2017 and getattr(cls, 'ForceDialog', False):
+            cls.WindowDockable = False
             try:
                 return dialogWrapper(
                     cls,
-                    title=getattr(cls, 'NAME', 'New Window'),
+                    title=getattr(cls, 'WindowName', 'New Window'),
                     clsArgs=args,
                     clsKwargs=kwargs
                 )
             finally:
-                cls.clearWindowInstance(cls.ID, deleteWindow=False)
+                cls.clearWindowInstance(cls.WindowID)
 
         # Load settings
         try:
@@ -836,34 +885,37 @@ class MayaWindow(BaseWindow):
         except KeyError:
             mayaSettings = settings['maya'] = {}
 
-        if hasattr(cls, 'DOCKABLE'):
-            docked = cls.DOCKABLE
+        if hasattr(cls, 'WindowDockable'):
+            docked = cls.WindowDockable
         else:
             try:
                 docked = settings['maya']['docked']
             except KeyError:
                 try:
-                    docked = cls.DEFAULTS['docked']
+                    docked = cls.WindowDefaults['docked']
                 except (AttributeError, KeyError):
                     docked = True
 
         # Return new class instance and show window
         if docked:
-            if hasattr(cls, 'FLOATING'):
-                floating = cls.FLOATING
+            if hasattr(cls, 'WindowDocked'):
+                floating = not cls.WindowDocked
             else:
                 try:
                     floating = settings['maya']['dock']['floating']
                 except KeyError:
                     try:
-                        floating = cls.DEFAULTS['floating']
+                        floating = cls.WindowDefaults['floating']
                     except (AttributeError, KeyError):
                         floating = False
             if floating:
                 dock = False
             else:
                 try:
-                    dock = settings['maya']['dock'].get('control', True)
+                    if MAYA_VERSION < 2017:
+                        dock = settings['maya']['dock'].get('area', True)
+                    else:
+                        dock = settings['maya']['dock'].get('control', True)
                 except KeyError:
                     dock = True
             if MAYA_VERSION < 2017:
