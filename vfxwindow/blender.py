@@ -14,21 +14,9 @@ from .standalone import StandaloneWindow
 BLENDER_VERSION = bpy.app.version_string
 
 
-def getMainWindow():
-    """Get an instance of the main window.
-    TODO: Get HWND using pywin32.
-    """
-    return None
-
-
 class BlenderWindow(StandaloneWindow):
-    """Window to use for Blender.
-    It has support for automatically saving the position when closed,
-    and performs some necessary CSS edits to fix colours.
-    """
+    """Window to use for Blender."""
     def __init__(self, parent=None, **kwargs):
-        if parent is None:
-            parent = getMainWindow()
         super(BlenderWindow, self).__init__(parent, **kwargs)
         self.blender = True
         self.standalone = False
@@ -66,4 +54,8 @@ class BlenderWindow(StandaloneWindow):
 
     @classmethod
     def show(cls, **kwargs):
+        try:
+            cls.clearWindowInstance(cls.ID)
+        except AttributeError:
+            pass
         return super(BlenderWindow, cls).show(instance=True, exec_=False)

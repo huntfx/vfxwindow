@@ -1,5 +1,7 @@
 """Test features to make sure they work for specific programs."""
 
+from __future__ import absolute_import, print_function
+
 import os
 import random
 import sys
@@ -11,6 +13,7 @@ from vfxwindow.utils.Qt import QtWidgets
 
 
 class Window(VFXWindow):
+    WindowID = 'test_functionality'
     def __init__(self, parent=None, **kwargs):
         super(Window, self).__init__(parent, **kwargs)
 

@@ -5,7 +5,7 @@ The main purpose of the class is to integrate into the program UI, but it also c
 
 The intended usage is to make your window class inherit `VFXWindow` - which is an instance of `QMainWindow`. By calling `cls.show()`, it will launch the correct window type based on what program is loaded, and what settings were previously saved.
 
-This is perfectly stable, but there is still plenty that needs improvement. Eventually I plan to add support for Unreal, Fusion, Blender, etc.
+This is perfectly stable, but there is still plenty that needs improvement. Maya, Nuke, Houdini, Blender and Unreal are currently supported, though help would be appreciated with adding support any other applications.
 
 ### Basic Example:
 ```python
@@ -38,7 +38,8 @@ if __name__ == '__main__':
  - Nuke (tested on 9 and 10) - standard, docked (`nukescripts.panels`)
  - Houdini (tested on 16) - standard
  - Blender (tested in 2.80) - standard
- - Standalone (Qt4, Qt5) - standard
+ - Unreal (4.19+, tested in 4.23) - standard
+ - Standalone (Qt4, Qt5, tested in 2.7, 3.4+) - standard
 
 ### Generic Features
  - Automatically save/restore window position

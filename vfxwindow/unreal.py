@@ -1,72 +1,45 @@
-"""Window class for Unreal.
-
-WARNING: THIS IS NOT EVEN TESTED AND WILL NOT WORK, JUST PUTTING CODE HERE FOR LATER
-"""
+"""Window class for Unreal."""
 
 from __future__ import absolute_import
 
+import os
+import sys
+
 import unreal
 
-from .base import QBaseWindow
+from .utils import setCoordinatesToScreen
+from .standalone import StandaloneWindow
 
 
-VERSION = 4
+UNREAL_VERSION = sys.executable.split(os.path.sep)[-5][3:]
 
 
-def dockWrapper(windowClass, dock=True, resetFloating=True):
-    """Dock a Qt widget inside Unreal Engine.
-
-    Source: https://forums.unrealengine.com/unreal-engine/unreal-studio/1526501-how-to-get-the-main-window-of-the-editor-to-parent-qt-or-pyside-application-to-it
-    """
-    windowInstance = windowClass()
-    unreal.parent_external_window_to_slate(windowInstance.winId())
-
-    try:
-        windowInstance.loadWindowPosition()
-    except (AttributeError, TypeError):
-        pass
-    return windowInstance
-
-
-class UnrealWindow(QBaseWindow):
-
-    def __init__(self, parent=None, dockable=False):
-        super(UnrealWindow, self).__init__(parent)
+class UnrealWindow(StandaloneWindow):
+    def __init__(self, parent=None, **kwargs):
+        super(UnrealWindow, self).__init__(parent, **kwargs)
         self.unreal = True
-        self.setDockable(dockable, override=True)
+        self.standalone = False
 
-    def closeEvent(self, event):
-        """Save the window location on window close."""
-        self.saveWindowPosition()
-        self.clearWindowInstance(self.ID)
-        return super(UnrealWindow, self).closeEvent(event)
-
-    def windowPalette(self):
-        currentPalette = super(UnrealWindow, self).windowPalette()
-        if currentPalette is None:
-            return 'Unreal.{}'.format(VERSION)
-        return currentPalette
+        # Parenting external windows was only added in 4.20
+        try:
+            unreal.parent_external_window_to_slate(self.winId())
+        except AttributeError:
+            pass
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.dockable():
-            try:
-                dockWindowSettings = self.windowSettings['unreal']['dock']
-            except KeyError:
-                dockWindowSettings = self.windowSettings['unreal']['dock'] = {}
-            dockWindowSettings['width'] = self.width()
-            dockWindowSettings['height'] = self.height()
-            dockWindowSettings['x'] = self.x()
-            dockWindowSettings['y'] = self.y()
-        else:
-            try:
-                mainWindowSettings = self.windowSettings['unreal']['main']
-            except KeyError:
-                mainWindowSettings = self.windowSettings['unreal']['main'] = {}
-            mainWindowSettings['width'] = self.width()
-            mainWindowSettings['height'] = self.height()
-            mainWindowSettings['x'] = self.x()
-            mainWindowSettings['y'] = self.y()
+        try:
+            unrealSettings = self.windowSettings['unreal']
+        except KeyError:
+            unrealSettings = self.windowSettings['unreal'] = {}
+        try:
+            mainWindowSettings = unrealSettings['main']
+        except KeyError:
+            mainWindowSettings = unrealSettings['main'] = {}
+        mainWindowSettings['width'] = self.width()
+        mainWindowSettings['height'] = self.height()
+        mainWindowSettings['x'] = self.x()
+        mainWindowSettings['y'] = self.y()
 
         super(UnrealWindow, self).saveWindowPosition()
 
@@ -80,48 +53,14 @@ class UnrealWindow(QBaseWindow):
         except KeyError:
             super(UnrealWindow, self).loadWindowPosition()
         else:
+            x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
             self.resize(width, height)
             self.move(x, y)
 
     @classmethod
-    def clearWindowInstance(self, windowID):
-        """Close the last class instance."""
-        previousInstance = super(UnrealWindow, self).clearWindowInstance(windowID)
-        if previousInstance is None:
-            return
-
-        #Shut down the window
-        if not previousInstance['window'].isClosed():
-            try:
-                previousInstance['window'].close()
-            except (RuntimeError, ReferenceError):
-                pass
-
-    @classmethod
     def show(cls, **kwargs):
-        #Close down any instances of the window
         try:
-            cls.clearWindowInstance(cls.ID)
+            cls.clearWindowInstance(cls.WindowID)
         except AttributeError:
-            settings = {}
-        else:
-            settings = cls.getWindowSettings(cls.ID)
-
-        #Load settings
-        try:
-            unrealSettings = settings['unreal']
-        except KeyError:
-            unrealSettings = settings['unreal'] = {}
-        try:
-            is_docked = unrealSettings['docked']
-        except KeyError:
-            try:
-                is_docked = cls.DEFAULTS['docked']
-            except (AttributeError, KeyError):
-                is_docked = True
-
-        #Return new class instance and show window
-        if is_docked:
-            return dockWrapper(cls)
-
-        return super(UnrealWindow, cls).show()
+            pass
+        return super(UnrealWindow, cls).show(instance=True, exec_=False)

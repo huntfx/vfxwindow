@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.1.1'
+__version__ = '1.2.0'
 
 import os
 
@@ -24,7 +24,12 @@ except ImportError:
             try:
                 import bpy
             except ImportError:
-                from .standalone import StandaloneWindow as VFXWindow
+                try:
+                    import unreal
+                except ImportError:
+                    from .standalone import StandaloneWindow as VFXWindow
+                else:
+                    from .unreal import UnrealWindow as VFXWindow
             else:
                 from .blender import BlenderWindow as VFXWindow
         else:

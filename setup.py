@@ -35,7 +35,8 @@ setup(
     keywords = [
         'vfx', 'cgi', 'qt', 'maya', 'nuke', 'houdini', 'gui',
         'animation', 'pipeline','mayapy', '3d', 'window', 'pymel',
-        'nukescripts', 'pyside', 'pyqt',
+        'nukescripts', 'pyside', 'pyqt', 'blender', 'unreal',
+        'engine', 'ue4',
     ],
     package_data={'vfxwindow': ['palettes/*.json']},
     install_requires=[],
