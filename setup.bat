@@ -1,4 +1,5 @@
 IF EXIST dist (rmdir dist /s /q)
-python setup.py sdist
-python -m twine upload dist/*
+py setup.py sdist
+py -m twine upload dist/*
 rmdir dist /s /q
+rmdir vfxwindow.egg-info /s /q
