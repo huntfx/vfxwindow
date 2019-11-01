@@ -649,8 +649,8 @@ class NukeWindow(AbstractWindow):
         """See NukeWindow.parent for information."""
         self.__useNukeTemporaryParent = False
 
-    @classmethod
-    def show(cls, namespace=None, *args, **kwargs):
+    @hybridmethod
+    def show(cls, self, *args, **kwargs):
         """Show the Nuke window.
 
         IMPORTANT:
@@ -658,6 +658,12 @@ class NukeWindow(AbstractWindow):
             This is simply a string of how the window is called, such as "module.MyWindow.show(namespace='module.MyWindow')".
             It's not ideal and can't be error checked, but it's required for the time being.
         """
+        # Window is already initialised
+        if self is not cls:
+            return super(NukeWindow, cls).show()
+
+        namespace = kwargs.pop('namespace', None)
+
         #Close down any instances of the window
         try:
             cls.clearWindowInstance(cls.WindowID)

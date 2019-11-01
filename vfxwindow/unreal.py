@@ -7,7 +7,7 @@ import sys
 
 import unreal
 
-from .utils import setCoordinatesToScreen
+from .utils import setCoordinatesToScreen, hybridmethod
 from .standalone import StandaloneWindow
 
 
@@ -57,10 +57,17 @@ class UnrealWindow(StandaloneWindow):
             self.resize(width, height)
             self.move(x, y)
 
-    @classmethod
-    def show(cls, **kwargs):
+    @hybridmethod
+    def show(cls, self, *args, **kwargs):
+        # Window is already initialised
+        if self is not cls:
+            return super(UnrealWindow, cls).show()
+        
+        # Close down window if it exists and open a new one
         try:
             cls.clearWindowInstance(cls.WindowID)
         except AttributeError:
             pass
-        return super(UnrealWindow, cls).show(instance=True, exec_=False)
+        kwargs['instance'] = True
+        kwargs['exec_'] = False
+        return super(UnrealWindow, cls).show(*args, **kwargs)

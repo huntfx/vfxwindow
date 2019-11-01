@@ -8,20 +8,22 @@ from multiprocessing import Queue, Process
 from threading import Thread
 
 from .abstract import AbstractWindow
-from .utils import setCoordinatesToScreen
+from .utils import setCoordinatesToScreen, hybridmethod
 from .utils.Qt import QtWidgets, IsPySide, IsPyQt4, IsPySide2, IsPyQt5
 
 
 class _MultiAppLaunch(Process):
     """Launch multiple QApplications as separate processes."""
-    def __init__(self, cls):
+    def __init__(self, cls, *args, **kwargs):
         self.cls = cls
+        self.args = args
+        self.kwargs = kwargs
         super(_MultiAppLaunch, self).__init__()
     
     def run(self):
         """Launch the app once the process has started."""
         app = QtWidgets.QApplication(sys.argv)
-        window = super(StandaloneWindow, self.cls).show()
+        window = super(StandaloneWindow, self.cls).show(*self.args, **self.kwargs)
         app.setActiveWindow(window)
         sys.exit(app.exec_())
 
@@ -32,24 +34,32 @@ class StandaloneWindow(AbstractWindow):
         super(StandaloneWindow, self).__init__(parent)
         self.standalone = True
 
-    @classmethod
-    def show(cls, instance=False, exec_=True, **kwargs):
+    @hybridmethod
+    def show(cls, self, *args, **kwargs):
         """Start a standalone QApplication and launch the window.
         Multiprocessing can be used to launch a separate application instead of an instance.
         The disadvantage of an instance is the palette and other bits are all linked.
         """
+        # Window is already initialised
+        if self is not cls:
+            return super(StandaloneWindow, cls).show()
+
+        # Open a new window
+        instance = kwargs.pop('instance', False)
+        exec_ = kwargs.pop('exec_', True)
+
         window = None
         try:
             app = QtWidgets.QApplication(sys.argv)
-            window = super(StandaloneWindow, cls).show()
+            window = super(StandaloneWindow, cls).show(*args, **kwargs)
             app.setActiveWindow(window)
         except RuntimeError:
             if instance:
                 app = QtWidgets.QApplication.instance()
-                window = super(StandaloneWindow, cls).show()
+                window = super(StandaloneWindow, cls).show(*args, **kwargs)
                 app.setActiveWindow(window)
             else:
-                _MultiAppLaunch(cls).start()
+                _MultiAppLaunch(cls, *args, **kwargs).start()
         else:
             if exec_:
                 sys.exit(app.exec_())

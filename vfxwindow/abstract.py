@@ -306,15 +306,18 @@ class AbstractWindow(QtWidgets.QMainWindow):
         return result
 
     @hybridmethod
-    def show(cls, self, parent=None, **kwargs):
+    def show(cls, self, *args, **kwargs):
         """Show the window and load its position."""
+        # The window has already been initialised
         if self is not cls:
             return super(AbstractWindow, self).show()
+        
+        # Close down any existing windows and open a new one
         try:
             cls.clearWindowInstance(cls.WindowID)
         except AttributeError:
             pass
-        new = cls(parent, **kwargs)
+        new = cls(*args, **kwargs)
         super(AbstractWindow, new).show()
         new.loadWindowPosition()
         new.deferred(new.windowReady.emit)

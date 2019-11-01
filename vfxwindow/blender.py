@@ -6,7 +6,7 @@ import sys
 
 import bpy
 
-from .utils import setCoordinatesToScreen
+from .utils import setCoordinatesToScreen, hybridmethod
 from .utils.Qt import QtWidgets
 from .standalone import StandaloneWindow
 
@@ -52,10 +52,17 @@ class BlenderWindow(StandaloneWindow):
             self.resize(width, height)
             self.move(x, y)
 
-    @classmethod
-    def show(cls, **kwargs):
+    @hybridmethod
+    def show(cls, self, *args, **kwargs):
+        # Window is already initialised
+        if self is not cls:
+            return super(BlenderWindow, cls).show()
+        
+        # Close down window if it exists and open a new one
         try:
             cls.clearWindowInstance(cls.ID)
         except AttributeError:
             pass
-        return super(BlenderWindow, cls).show(instance=True, exec_=False)
+        kwargs['instance'] = True
+        kwargs['exec_'] = False
+        return super(BlenderWindow, cls).show(*args, **kwargs)
