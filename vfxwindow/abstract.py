@@ -122,6 +122,12 @@ class AbstractWindow(QtWidgets.QMainWindow):
             'callback': {}
         }
 
+    def processEvents(self):
+        """Wrapper over the inbult processEvents method.
+        This forces the GUI to update in the middle of calculations.
+        """
+        QtWidgets.QApplication.processEvents()
+
     def signalExists(self, group):
         """How many signals exist for the given group."""
         return len(self.signal(group) or [])
