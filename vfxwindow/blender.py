@@ -203,3 +203,32 @@ class BlenderWindow(StandaloneWindow):
     def addCallbackVersionUpdate(self, func, persistent=True, group=None):
         """On ending the versioning code."""
         self._addApplicationHandler('version_update', func, group)
+
+    def addCallbackDepsgraphUpdateAfter(self, func, persistent=True, group=None):
+        """After depsgraph update.
+        Added in Blender 2.80.
+        """
+        self._addApplicationHandler('depsgraph_update_post', func, group)
+
+    def addCallbackDepsgraphUpdateBefore(self, func, persistent=True, group=None):
+        """Before depsgraph update.
+        Added in Blender 2.80.
+        """
+        self._addApplicationHandler('depsgraph_update_pre', func, group)
+
+    def addCallbackUndoAfter(self, func, persistent=True, group=None):
+        """After loading an undo step."""
+        self._addApplicationHandler('undo_post', func, group)
+
+    def addCallbackUndoBefore(self, func, persistent=True, group=None):
+        """Before loading an undo step."""
+        self._addApplicationHandler('undo_pre', func, group)
+
+    def addCallbackRedoAfter(self, func, persistent=True, group=None):
+        """After loading a redo step."""
+        self._addApplicationHandler('redo_post', func, group)
+
+    def addCallbackRedoBefore(self, func, persistent=True, group=None):
+        """Before loading a redo step."""
+        self._addApplicationHandler('redo_pre', func, group)
+
