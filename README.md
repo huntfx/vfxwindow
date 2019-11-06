@@ -33,11 +33,11 @@ if __name__ == '__main__':
 ```
 
 ### Compatibility
- - Maya (2011-2016, tested lightly on 2016) - standard, docked (`pymel.core.dockControl`)
- - Maya (2017+, tested on 2017-2019) - standard, docked (`pymel.core.workspaceControl`), dialog (`pymel.core.layoutDialog`)
- - Nuke (tested on 9 and 10) - standard, docked (`nukescripts.panels`)
+ - Maya (2011-2016, tested lightly on 2016) - standard, docked (`pymel.core.dockControl`), callbacks
+ - Maya (2017+, tested on 2017-2019) - standard, docked (`pymel.core.workspaceControl`), dialog (`pymel.core.layoutDialog`), callbacks
+ - Nuke (tested on 9 and 10) - standard, docked (`nukescripts.panels`), callbacks
  - Houdini (tested on 16) - standard
- - Blender (tested in 2.80) - standard
+ - Blender (tested in 2.80) - standard, callbacks
  - Unreal (4.19+, tested in 4.23) - standard
  - Standalone (Qt4, Qt5, tested in 2.7, 3.4+) - standard
 
@@ -60,6 +60,10 @@ if __name__ == '__main__':
 ### Nuke Features
  - Dock window as a panel
  - Save/restore location of panel (docked only)
+ - Easy access to callbacks
+
+### Blender Features
+ - Easy access to callbacks
 
 ### Special Thanks
  - [Blue Zoo](https://www.blue-zoo.co.uk/) - I've been building this up while working there

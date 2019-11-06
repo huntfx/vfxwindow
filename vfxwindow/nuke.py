@@ -390,10 +390,10 @@ class NukeWindow(AbstractWindow):
                 self.checkForChanges()
         return super(NukeWindow, self).showEvent(event)
     
-    def _parentOverride(self, use_pane=False):
+    def _parentOverride(self, usePane=False):
         """Get the widget that contains the correct size and position on screen."""
         try:
-            if use_pane:
+            if usePane:
                 pane = Pane.get(self.WindowID)
                 if pane is None:
                     raise AttributeError()
@@ -409,43 +409,43 @@ class NukeWindow(AbstractWindow):
     
     def width(self):
         if self.dockable():
-            return self._parentOverride(use_pane=True).width()
+            return self._parentOverride(usePane=True).width()
         return super(NukeWindow, self).width()
     
     def height(self):
         if self.dockable():
-            return self._parentOverride(use_pane=True).width()
+            return self._parentOverride(usePane=True).width()
         return super(NukeWindow, self).width()
     
     def _registerNukeCallbacks(self):
         """Register all callbacks."""
-        num_events = 0
+        numEvents = 0
         windowInstance = self.windowInstance()
         for group in windowInstance['callback'].keys():
-            for callback_name, (callback_add, callback_remove) in self._CALLBACKS.items():
-                for func in windowInstance['callback'][group][callback_name]:
-                    for node_class in windowInstance['callback'][group][callback_name][func]:
-                        if node_class is None:
-                            getattr(nuke, callback_add)(func)
+            for callbackName, (callbackAdd, callbackRemove) in self._CALLBACKS.items():
+                for func in windowInstance['callback'][group][callbackName]:
+                    for nodeClass in windowInstance['callback'][group][callbackName][func]:
+                        if nodeClass is None:
+                            getattr(nuke, callbackAdd)(func)
                         else:
-                            getattr(nuke, callback_add)(func, nodeClass=node_class)
-                        num_events += 1
-        return num_events
+                            getattr(nuke, callbackAdd)(func, nodeClass=nodeClass)
+                        numEvents += 1
+        return numEvents
 
     def _unregisterNukeCallbacks(self, group=None):
         """Unregister all callbacks."""
-        num_events = 0
+        numEvents = 0
         windowInstance = self.windowInstance()
         for group in windowInstance['callback'].keys():
-            for callback_name, (callback_add, callback_remove) in self._CALLBACKS.items():
-                for func in windowInstance['callback'][group][callback_name]:
-                    for node_class in windowInstance['callback'][group][callback_name][func]:
-                        if node_class is None:
-                            getattr(nuke, callback_remove)(func)
+            for callbackName, (callbackAdd, callbackRemove) in self._CALLBACKS.items():
+                for func in windowInstance['callback'][group][callbackName]:
+                    for nodeClass in windowInstance['callback'][group][callbackName][func]:
+                        if nodeClass is None:
+                            getattr(nuke, callbackRemove)(func)
                         else:
-                            getattr(nuke, callback_remove)(func, nodeClass=node_class)
-                        num_events += 1
-        return num_events
+                            getattr(nuke, callbackRemove)(func, nodeClass=nodeClass)
+                        numEvents += 1
+        return numEvents
 
     def removeCallback(self, func, group=None, nodeClass=None):
         """Remove an individual callback."""
@@ -457,23 +457,23 @@ class NukeWindow(AbstractWindow):
                 groups = []
             groups = [group]
 
-        num_events = 0
+        numEvents = 0
         for group in groups:
-            for callback_name, (callback_add, callback_remove) in self._CALLBACKS.items():
-                if func in windowInstance['callback'][group][callback_name]:
-                    for node_class in windowInstance['callback'][group][callback_name][func]:
+            for callbackName, (callbackAdd, callbackRemove) in self._CALLBACKS.items():
+                if func in windowInstance['callback'][group][callbackName]:
+                    for nodeClass in windowInstance['callback'][group][callbackName][func]:
                         if nodeClass is None:
-                            if node_class is None:
-                                getattr(nuke, callback_remove)(func)
+                            if nodeClass is None:
+                                getattr(nuke, callbackRemove)(func)
                             else:
-                                getattr(nuke, callback_remove)(func, nodeClass=node_class)
-                        elif nodeClass == node_class:
-                            getattr(nuke, callback_remove)(func, nodeClass=node_class)
+                                getattr(nuke, callbackRemove)(func, nodeClass=nodeClass)
+                        elif nodeClass == nodeClass:
+                            getattr(nuke, callbackRemove)(func, nodeClass=nodeClass)
                         else:
                             continue
-                        num_events += 1
-                        del windowInstance['callback'][group][callback_name][func][node_class]
-        return num_events
+                        numEvents += 1
+                        del windowInstance['callback'][group][callbackName][func][nodeClass]
+        return numEvents
 
     @hybridmethod
     def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
@@ -498,32 +498,24 @@ class NukeWindow(AbstractWindow):
                 groups = [group]
 
         # Iterate through each callback to remove certain groups
-        num_events = 0
+        numEvents = 0
         for group in groups:
-            for callback_name, (callback_add, callback_remove) in self._CALLBACKS.items():
-                for func in windowInstance['callback'][group][callback_name]:
-                    for node_class in windowInstance['callback'][group][callback_name][func]:
-                        if node_class is None:
-                            getattr(nuke, callback_remove)(func)
+            for callbackName, (callbackAdd, callbackRemove) in self._CALLBACKS.items():
+                for func in windowInstance['callback'][group][callbackName]:
+                    for nodeClass in windowInstance['callback'][group][callbackName][func]:
+                        if nodeClass is None:
+                            getattr(nuke, callbackRemove)(func)
                         else:
-                            getattr(nuke, callback_remove)(func, nodeClass=node_class)
-                        num_events += 1
+                            getattr(nuke, callbackRemove)(func, nodeClass=nodeClass)
+                        numEvents += 1
             del windowInstance['callback'][group]
-        return num_events
+        return numEvents
 
     def _addNukeCallbackGroup(self, group):
         windowInstance = self.windowInstance()
-        if group not in windowInstance['callback']:
-            windowInstance['callback'][group] = {
-                'onUserCreate': defaultdict(set),
-                'onCreate': defaultdict(set),
-                'onScriptLoad': defaultdict(set),
-                'onScriptSave': defaultdict(set),
-                'onScriptClose': defaultdict(set),
-                'onDestroy': defaultdict(set),
-                'knobChanged': defaultdict(set),
-                'updateUI': defaultdict(set),
-            }
+        if group in windowInstance['callback']:
+            return
+        windowInstance['callback'][group] = defaultdict(lambda: defaultdict(set))
 
     def addCallbackOnUserCreate(self, func, nodeClass=None, group=None):
         """Executed whenever a node is created by the user.
@@ -715,9 +707,9 @@ class NukeWindow(AbstractWindow):
                 raise TypeError('invalid class or namespace "{}"'.format(namespace))
             
             else:
-                panel_obj = panel.customKnob.getObject()
-                if panel_obj is not None:
-                    widget = panel_obj.widget
+                panelObject = panel.customKnob.getObject()
+                if panelObject is not None:
+                    widget = panelObject.widget
                     _removeMargins(widget)
                     return widget
         

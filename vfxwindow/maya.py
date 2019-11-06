@@ -548,38 +548,38 @@ class MayaWindow(AbstractWindow):
             groups = [group]
         
         # Iterate through each callback to remove certain groups
-        num_events = 0
+        numEvents = 0
         for group in groups:
-            for callback_id in windowInstance['callback'][group]['event']:
+            for callbackID in windowInstance['callback'][group]['event']:
                 try:
-                    om.MMessage.removeCallback(callback_id)
+                    om.MMessage.removeCallback(callbackID)
                 except RuntimeError:
                     pass
                 else:
-                    num_events += 1
-            for callback_id in windowInstance['callback'][group]['node']:
+                    numEvents += 1
+            for callbackID in windowInstance['callback'][group]['node']:
                 try:
-                    om.MNodeMessage.removeCallback(callback_id)
+                    om.MNodeMessage.removeCallback(callbackID)
                 except RuntimeError:
                     pass
                 else:
-                    num_events += 1
-            for callback_id in windowInstance['callback'][group]['scene']:
+                    numEvents += 1
+            for callbackID in windowInstance['callback'][group]['scene']:
                 try:
-                    om.MSceneMessage.removeCallback(callback_id)
+                    om.MSceneMessage.removeCallback(callbackID)
                 except RuntimeError:
                     pass
                 else:
-                    num_events += 1
-            for callback_id in windowInstance['callback'][group]['job']:
+                    numEvents += 1
+            for callbackID in windowInstance['callback'][group]['job']:
                 try:
-                    pm.scriptJob(kill=callback_id)
+                    pm.scriptJob(kill=callbackID)
                 except RuntimeError:
                     pass
                 else:
-                    num_events += 1
+                    numEvents += 1
             del windowInstance['callback'][group]
-        return num_events
+        return numEvents
 
     def _addMayaCallbackGroup(self, group):
         windowInstance = self.windowInstance()
