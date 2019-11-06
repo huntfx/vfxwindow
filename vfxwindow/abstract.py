@@ -10,7 +10,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from functools import partial
 
-from .palette import setPalette
+from .palette import savePaletteData, setPalette
 from .utils import hybridmethod, setCoordinatesToScreen
 from .utils.Qt import QtCore, QtGui, QtWidgets
 
@@ -417,6 +417,12 @@ class AbstractWindow(QtWidgets.QMainWindow):
     def isClosed(self):
         """Return if the window has been closed."""
         return self.__closed
+
+    def saveWindowPalette(self, program, version):
+        """Save the palette as a file.
+        This is mainly to be used if the window palette is auto generated.
+        """
+        return savePaletteData(program, version, self.palette())
     
     def setWindowPalette(self, program, version=None, style=True, **kwargs):
         """Set the palette of the window."""

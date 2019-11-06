@@ -34,20 +34,22 @@ def getPaletteObjects():
     return {PALETTE_ROLE: roles, PALETTE_GROUP: groups}
     
 
-def getPaletteColours():
+def getPaletteColours(palette=None):
     """Return the colours of the current palette."""
+    if palette is None:
+        palette = QtGui.QPalette()
+
     paletteObjects = getPaletteObjects()
     paletteData = {}
     for role in paletteObjects[PALETTE_ROLE]:
         for group in paletteObjects[PALETTE_GROUP]:
-            paletteData['{}:{}'.format(role.name.decode('ascii'), group.name.decode('ascii'))] = QtGui.QPalette().color(group, role).rgb()
+            paletteData['{}:{}'.format(role.name.decode('ascii'), group.name.decode('ascii'))] = palette.color(group, role).rgb()
     return paletteData
     
 
-def savePaletteData(program, version=None, paletteData=None):
+def savePaletteData(program, version=None, palette=None):
     """Save the current palette colours in a json file."""
-    if paletteData is None:
-        paletteData = json.dumps(getPaletteColours(), indent=2)
+    paletteData = json.dumps(getPaletteColours(palette), indent=2)
         
     program = ''.join(i for i in str(program) if i in ascii_letters)
     if version is not None:
