@@ -686,7 +686,6 @@ class NukeWindow(AbstractWindow):
             # If it can't be found, then it can't be docked
             namespace = searchGlobals(cls)
             if namespace is None:
-                #nukeSettings['docked'] = docked = cls.WindowDockable = False
                 docked = cls.WindowDockable = False
                 dockOverride = True
 
@@ -724,5 +723,6 @@ class NukeWindow(AbstractWindow):
         
         win = super(NukeWindow, cls).show(*args, **kwargs)
         if dockOverride:
+            cls.WindowDockable = True
             win.setDockable(True, override=True)
         return win
