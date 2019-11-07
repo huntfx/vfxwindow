@@ -696,30 +696,19 @@ class NukeWindow(AbstractWindow):
             except KeyError:
                 pane = Pane.auto()
 
-            try:
-                panel = panels.registerWidgetAsPanel(
-                    widget=namespace,
-                    name=getattr(cls, 'WindowName', 'New Window'),
-                    id=cls.WindowID,
-                    create=True,
-                )
-                panel.addToPane(pane)
+            panel = panels.registerWidgetAsPanel(
+                widget=namespace,
+                name=getattr(cls, 'WindowName', 'New Window'),
+                id=cls.WindowID,
+                create=True,
+            )
+            panel.addToPane(pane)
                 
-            #Handle errors
-            except AttributeError:
-                if namespace is None:
-                    raise NameError('namespace is not set, use a syntax like module.window.show(namespace="module.window") to fix')
-                else:
-                    raise NameError('invalid class or namespace "{}"'.format(namespace))
-            except TypeError:
-                raise TypeError('invalid class or namespace "{}"'.format(namespace))
-            
-            else:
-                panelObject = panel.customKnob.getObject()
-                if panelObject is not None:
-                    widget = panelObject.widget
-                    _removeMargins(widget)
-                    return widget
+            panelObject = panel.customKnob.getObject()
+            if panelObject is not None:
+                widget = panelObject.widget
+                _removeMargins(widget)
+                return widget
         
         win = super(NukeWindow, cls).show(*args, **kwargs)
         if dockOverride:
