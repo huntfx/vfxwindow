@@ -5,13 +5,14 @@ TODO: Get callbacks from https://learn.foundry.com/nuke/developers/110/pythonref
 
 from __future__ import absolute_import, print_function
 
+import inspect
 from collections import defaultdict
 
 import nuke
 from nukescripts import panels, utils
 
 from .abstract import AbstractWindow, getWindowSettings
-from .utils import hybridmethod, setCoordinatesToScreen
+from .utils import hybridmethod, setCoordinatesToScreen, searchGlobals
 from .utils.Qt import QtWidgets
 
 
@@ -222,7 +223,7 @@ class NukeWindow(AbstractWindow):
         try:
             self.setDockable(self.windowSettings['nuke']['docked'], override=True)
         except KeyError:
-            self.setDockable(True, override=True)
+            self.setDockable(getattr(self, 'WindowDockable', True), override=True)
 
         # Fix for parent bug
         # See NukeWindow.parent for more information
@@ -654,8 +655,6 @@ class NukeWindow(AbstractWindow):
         if self is not cls:
             return super(NukeWindow, cls).show()
 
-        namespace = kwargs.pop('namespace', None)
-
         #Close down any instances of the window
         try:
             cls.clearWindowInstance(cls.WindowID)
@@ -681,6 +680,14 @@ class NukeWindow(AbstractWindow):
                 except (AttributeError, KeyError):
                     docked = True
 
+        if docked:
+            # Attempt to find the module in the global scope
+            # If it can't be found, then it can't be docked
+            namespace = searchGlobals(cls)
+            if namespace is None:
+                #nukeSettings['docked'] = docked = cls.WindowDockable = False
+                docked = cls.WindowDockable = False
+
         #Return new class instance and show window
         if docked:
             try:
@@ -690,7 +697,7 @@ class NukeWindow(AbstractWindow):
 
             try:
                 panel = panels.registerWidgetAsPanel(
-                    widget=namespace or cls.__name__,
+                    widget=namespace,
                     name=getattr(cls, 'WindowName', 'New Window'),
                     id=cls.WindowID,
                     create=True,

@@ -1,13 +1,20 @@
 from __future__ import absolute_import
 
+import inspect
 import os
+import site
+import sys
 from functools import wraps
+from types import ModuleType
 
 if os.name == 'nt':
     from .windows import setCoordinatesToScreen
 else:
-    def setCoordinatesToScreen(x, y, *args):
+    def setCoordinatesToScreen(x, y, *args, **kwargs):
         return (x, y)
+
+
+SITE_PACKAGES = site.getsitepackages()
 
 
 class hybridmethod(object):
@@ -31,3 +38,38 @@ class hybridmethod(object):
         hybrid.__self__ = hybrid.im_self = context
 
         return hybrid
+
+
+def searchGlobals(cls, globalsDict=None, visited=None):
+    """Search from the top level globals for a particular object.
+    Every time a module is found, search that too.
+    """
+    # Read the globals from the module at the top of the stack
+    if globalsDict is None:
+        globalsDict = inspect.stack()[-1][0].f_globals
+    
+    # Initially mark every builtin module as visisted
+    if visited is None:
+        visited = set(filter(bool, map(sys.modules.get, sys.builtin_module_names)))
+    
+    for k, v in globalsDict.items():
+        if v == cls:
+            return k
+
+        elif isinstance(v, ModuleType) and v not in visited:
+            visited.add(v)
+
+            #Check it's not a built in module
+            try:
+                modulePath = inspect.getsourcefile(v)
+            except TypeError:
+                continue
+
+            # Skip any installed modules
+            if modulePath is None or any(modulePath.startswith(i) for i in SITE_PACKAGES):
+                continue
+            
+            # Recursively search the next module
+            result = searchGlobals(cls, v.__dict__, visited=visited)
+            if result:
+                return k + '.' + result
