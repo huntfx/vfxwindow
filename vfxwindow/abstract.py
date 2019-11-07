@@ -110,7 +110,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         self._signals = defaultdict(list)
         self.__closed = False
-        self.__dockable = False
+        self.__dockable = getattr(self, 'WindowDockable', False)
         self.__wasDocked = None
         self.__initialPosOverride = None
 
@@ -186,8 +186,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
                 otherwise get the current setting, which may require
                 a reload to apply if it's been changed.
         """
-        if hasattr(self, 'WindowDockable'):
-            return self.WindowDockable
         if not raw and self.__wasDocked is not None:
             return self.__wasDocked
         return self.__dockable

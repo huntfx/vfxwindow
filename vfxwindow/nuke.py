@@ -680,6 +680,7 @@ class NukeWindow(AbstractWindow):
                 except (AttributeError, KeyError):
                     docked = True
 
+        dockOverride = False
         if docked:
             # Attempt to find the module in the global scope
             # If it can't be found, then it can't be docked
@@ -687,6 +688,7 @@ class NukeWindow(AbstractWindow):
             if namespace is None:
                 #nukeSettings['docked'] = docked = cls.WindowDockable = False
                 docked = cls.WindowDockable = False
+                dockOverride = True
 
         #Return new class instance and show window
         if docked:
@@ -720,4 +722,7 @@ class NukeWindow(AbstractWindow):
                     _removeMargins(widget)
                     return widget
         
-        return super(NukeWindow, cls).show(*args, **kwargs)
+        win = super(NukeWindow, cls).show(*args, **kwargs)
+        if dockOverride:
+            win.setDockable(True, override=True)
+        return win
