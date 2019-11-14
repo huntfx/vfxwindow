@@ -5,7 +5,6 @@ from __future__ import absolute_import
 import sys
 from functools import partial
 from multiprocessing import Queue, Process
-from threading import Thread
 
 from .abstract import AbstractWindow
 from .utils import setCoordinatesToScreen, hybridmethod

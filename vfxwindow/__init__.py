@@ -2,13 +2,13 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.2.4'
+__version__ = '1.2.5'
 
 import os
 
 # The imports are nested as an easy way to stop importing once a window is found
 try:
-    import maya.cmds as cmds
+    import maya.standalone
 
 except ImportError:
     try:

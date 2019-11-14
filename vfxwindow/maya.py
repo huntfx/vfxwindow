@@ -1,4 +1,19 @@
-"""Window class for Maya."""
+"""Window class for Maya.
+
+mayapy.exe:
+    This is not yet automated.
+    In order to load a standalone window with mayapy, the code should look like this:
+        app = QApplication(sys.argv)    # Start the application BEFORE anything else
+        import pymel.core               # Use pymel to set up Maya the best it can
+        
+        import MyWindow                 # Import your own window
+        if __name__ == '__main__':
+            MyWindow.show()             # Call the show method as normal
+            app.exec_()                 # Run the window
+
+    Note that the pymel import automatically handles maya.standalone.
+    See: https://help.autodesk.com/cloudhelp/2018/JPN/Maya-Tech-Docs/PyMel/standalone.html
+"""
 
 from __future__ import absolute_import, print_function
 
@@ -17,6 +32,8 @@ from .utils.Qt import QtWidgets, QtCompat, QtCore
 
 
 MAYA_VERSION = int(versions.flavor())
+
+MAYA_BATCH = pm.about(batch=True)
 
 
 def getMainWindow(windowID=None, wrapInstance=True):
@@ -220,7 +237,7 @@ class MayaWindow(AbstractWindow):
             parent = getMainWindow()
         super(MayaWindow, self).__init__(parent, **kwargs)
         self.maya = True
-        self.batch = pm.about(batch=True)
+        self.batch = MAYA_BATCH
         self.setDockable(dockable, override=True)
 
         # The line below can save the window preferences, but this window automatically does it
@@ -429,7 +446,7 @@ class MayaWindow(AbstractWindow):
             except RuntimeError:
                 return None
         else:
-            parentGeometry = self.parent().frameGeometry()
+            parentGeometry = None
         return super(MayaWindow, self).centreWindow(parentGeometry=parentGeometry)
     
     def saveWindowPosition(self):
@@ -896,8 +913,14 @@ class MayaWindow(AbstractWindow):
                 except (AttributeError, KeyError):
                     docked = True
 
+        # Override docked mode in case of mayabatch
+        batchOverride = False
+        if docked and MAYA_BATCH:
+            docked = cls.WindowDockable = False
+            batchOverride = True
+
         # Return new class instance and show window
-        if docked:
+        if docked and not dockOverride:
             if hasattr(cls, 'WindowDocked'):
                 floating = not cls.WindowDocked
             else:
@@ -922,5 +945,8 @@ class MayaWindow(AbstractWindow):
                 return dockControlWrap(cls, dock, resetFloating=True, *args, **kwargs)
             return workspaceControlWrap(cls, dock, resetFloating=True, *args, **kwargs)
 
-        return super(MayaWindow, cls).show(*args, **kwargs)
-        
+        win = super(MayaWindow, cls).show(*args, **kwargs)
+        if batchOverride:
+            cls.WindowDockable = True
+            win.setDockable(True, override=True)
+        return win
