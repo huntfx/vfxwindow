@@ -2,13 +2,14 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.2.5'
+__version__ = '1.2.6'
 
 import os
+import sys
 
 # The imports are nested as an easy way to stop importing once a window is found
 try:
-    import maya.standalone
+    import maya.cmds
 
 except ImportError:
     try:
@@ -37,5 +38,14 @@ except ImportError:
     else:
         from .nuke import NukeWindow as VFXWindow
 else:
-    from .maya import MayaWindow as VFXWindow
-    
+    if type(sys.stdout) == file:
+        # Attempt to start a QApplication automatically if Maya is in batch mode
+        # Important: This MUST happen before pymel.core is imported
+        from .utils.Qt import QtWidgets
+        try:
+            app = QtWidgets.QApplication(sys.argv)
+        except RuntimeError:
+            pass
+        from .maya import MayaBatchWindow as VFXWindow
+    else:
+        from .maya import MayaWindow as VFXWindow

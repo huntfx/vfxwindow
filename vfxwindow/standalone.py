@@ -57,6 +57,8 @@ class StandaloneWindow(AbstractWindow):
                 app = QtWidgets.QApplication.instance()
                 window = super(StandaloneWindow, cls).show(*args, **kwargs)
                 app.setActiveWindow(window)
+                if exec_:
+                    app.exec_()
             else:
                 _MultiAppLaunch(cls, *args, **kwargs).start()
         else:

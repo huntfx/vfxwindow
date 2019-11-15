@@ -1,19 +1,4 @@
-"""Window class for Maya.
-
-mayapy.exe:
-    This is not yet automated.
-    In order to load a standalone window with mayapy, the code should look like this:
-        app = QApplication(sys.argv)    # Start the application BEFORE anything else
-        import pymel.core               # Use pymel to set up Maya the best it can
-        
-        import MyWindow                 # Import your own window
-        if __name__ == '__main__':
-            MyWindow.show()             # Call the show method as normal
-            app.exec_()                 # Run the window
-
-    Note that the pymel import automatically handles maya.standalone.
-    See: https://help.autodesk.com/cloudhelp/2018/JPN/Maya-Tech-Docs/PyMel/standalone.html
-"""
+"""Window class for Maya."""
 
 from __future__ import absolute_import, print_function
 
@@ -27,6 +12,7 @@ import pymel.core as pm
 from pymel import versions
 
 from .abstract import AbstractWindow, getWindowSettings
+from .standalone import StandaloneWindow
 from .utils import hybridmethod, setCoordinatesToScreen
 from .utils.Qt import QtWidgets, QtCompat, QtCore
 
@@ -225,7 +211,18 @@ def toMObject(node):
     return selected.getDependNode(0)
 
 
-class MayaWindow(AbstractWindow):
+class MayaCommon(object):
+    def deferred(self, func, *args, **kwargs):
+        """Execute a deferred command.
+        If the window is a dialog, then execute now as Maya will pause.
+        """
+        if getattr(self, 'ForceDialog', False):
+            func()
+        else:
+            pm.evalDeferred(func, *args, **kwargs)
+
+
+class MayaWindow(MayaCommon, AbstractWindow):
     """Inhert from this for dockable Maya windows.
 
     This is an alternative to maya.app.general.mayaMixin.MayaQWidgetDockableMixin, as many features
@@ -849,15 +846,6 @@ class MayaWindow(AbstractWindow):
             return pm.setFocus(self.WindowID)
         return super(MayaWindow, self).setFocus()
 
-    def deferred(self, func, *args, **kwargs):
-        """Execute a deferred command.
-        If the window is a dialog, then execute now as Maya will pause.
-        """
-        if getattr(self, 'ForceDialog', False):
-            func()
-        else:
-            pm.evalDeferred(func, *args, **kwargs)
-
     @hybridmethod
     def show(cls, self, *args, **kwargs):
         """Show the window.
@@ -920,7 +908,7 @@ class MayaWindow(AbstractWindow):
             batchOverride = True
 
         # Return new class instance and show window
-        if docked and not dockOverride:
+        if docked and not batchOverride:
             if hasattr(cls, 'WindowDocked'):
                 floating = not cls.WindowDocked
             else:
@@ -950,3 +938,72 @@ class MayaWindow(AbstractWindow):
             cls.WindowDockable = True
             win.setDockable(True, override=True)
         return win
+
+
+class MayaBatchWindow(MayaCommon, StandaloneWindow):
+    """Variant of the Standalone window for Maya in batch mode.
+    While MayaWindow could be used, it can't be automatically setup.
+    """
+    def __init__(self, parent=None, **kwargs):
+        super(MayaBatchWindow, self).__init__(parent, **kwargs)
+        self.maya = True
+        self.batch = True
+        self.standalone = False
+
+    def saveWindowPosition(self):
+        """Save the window location."""
+        try:
+            mayaSettings = self.windowSettings['maya']
+        except KeyError:
+            mayaSettings = self.windowSettings['maya'] = {}
+        try:
+            mainWindowSettings = mayaSettings['batch']
+        except KeyError:
+            mainWindowSettings = mayaSettings['batch'] = {}
+        mainWindowSettings['width'] = self.width()
+        mainWindowSettings['height'] = self.height()
+        mainWindowSettings['x'] = self.x()
+        mainWindowSettings['y'] = self.y()
+
+        super(MayaBatchWindow, self).saveWindowPosition()
+
+    def loadWindowPosition(self):
+        """Set the position of the window when loaded."""
+        try:
+            width = self.windowSettings['maya']['batch']['width']
+            height = self.windowSettings['maya']['batch']['height']
+            x = self.windowSettings['maya']['batch']['x']
+            y = self.windowSettings['maya']['batch']['y']
+        except KeyError:
+            super(MayaBatchWindow, self).loadWindowPosition()
+        else:
+            x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
+            self.resize(width, height)
+            self.move(x, y)
+
+    @hybridmethod
+    def show(cls, self, *args, **kwargs):
+        """Load the window in Maya batch mode.
+
+        The QApplication MUST be initialised before pymel.core, since
+        pymel sets up a fake application. This is done automatically
+        in vfxwindow/__init__.py, since at the time of calling this
+        method, it is already too late.
+        Once the window has been created, it can be shown with
+        QApplication.instance().exec_(). If the QApplication has not
+        been successfully set up, it will complain that it's not able
+        to create a widget without a QApplication.
+        See: https://help.autodesk.com/cloudhelp/2018/JPN/Maya-Tech-Docs/PyMel/standalone.html
+        """
+        # Window is already initialised
+        if self is not cls:
+            return super(MayaBatchWindow, cls).show()
+        
+        # Close down window if it exists and open a new one
+        try:
+            cls.clearWindowInstance(cls.WindowID)
+        except AttributeError:
+            pass
+        kwargs['instance'] = True
+        kwargs['exec_'] = True
+        return super(MayaBatchWindow, cls).show(*args, **kwargs)
