@@ -21,9 +21,13 @@ class _MultiAppLaunch(Process):
     
     def run(self):
         """Launch the app once the process has started."""
-        app = QtWidgets.QApplication(sys.argv)
+        try:
+            app = QtWidgets.QApplication(sys.argv)
+        except RuntimeError:
+            app = QtWidgets.QApplication.instance()
         window = super(StandaloneWindow, self.cls).show(*self.args, **self.kwargs)
-        app.setActiveWindow(window)
+        if isinstance(app, QtWidgets.QApplication):
+            app.setActiveWindow(window)
         sys.exit(app.exec_())
 
 
@@ -51,12 +55,14 @@ class StandaloneWindow(AbstractWindow):
         try:
             app = QtWidgets.QApplication(sys.argv)
             window = super(StandaloneWindow, cls).show(*args, **kwargs)
-            app.setActiveWindow(window)
+            if isinstance(app, QtWidgets.QApplication):
+                app.setActiveWindow(window)
         except RuntimeError:
             if instance:
                 app = QtWidgets.QApplication.instance()
                 window = super(StandaloneWindow, cls).show(*args, **kwargs)
-                app.setActiveWindow(window)
+                if isinstance(app, QtWidgets.QApplication):
+                    app.setActiveWindow(window)
                 if exec_:
                     app.exec_()
             else:

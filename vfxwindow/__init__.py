@@ -7,12 +7,28 @@ __version__ = '1.2.6'
 import os
 import sys
 
+
+def _setup_qapp():
+    """Attempt to start a QApplication automatically in batch mode.
+    The purpose of this is to override whatever the program uses.
+    This must happen before any libraries are imported, as it's usually
+    at that point when the QApplication is initialised.
+    """
+    from .utils.Qt import QtWidgets
+    try:
+        app = QtWidgets.QApplication(sys.argv)
+    except RuntimeError:
+        pass
+
+
 # The imports are nested as an easy way to stop importing once a window is found
 try:
     import maya.cmds
 
 except ImportError:
     try:
+        if os.path.sep+'Nuke' in sys.executable and type(sys.stdout) == file:
+            _setup_qapp()
         import nuke
         import nukescripts
 
@@ -36,16 +52,13 @@ except ImportError:
         else:
             from .houdini import HoudiniWindow as VFXWindow
     else:
-        from .nuke import NukeWindow as VFXWindow
+        if type(sys.stdout) == file:
+            from .nuke import NukeBatchWindow as VFXWindow
+        else:
+            from .nuke import NukeWindow as VFXWindow
 else:
     if type(sys.stdout) == file:
-        # Attempt to start a QApplication automatically if Maya is in batch mode
-        # Important: This MUST happen before pymel.core is imported
-        from .utils.Qt import QtWidgets
-        try:
-            app = QtWidgets.QApplication(sys.argv)
-        except RuntimeError:
-            pass
+        _setup_qapp()
         from .maya import MayaBatchWindow as VFXWindow
     else:
         from .maya import MayaWindow as VFXWindow

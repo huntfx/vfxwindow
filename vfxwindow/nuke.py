@@ -12,6 +12,7 @@ import nuke
 from nukescripts import panels, utils
 
 from .abstract import AbstractWindow, getWindowSettings
+from .standalone import StandaloneWindow
 from .utils import hybridmethod, setCoordinatesToScreen, searchGlobals
 from .utils.Qt import QtWidgets
 
@@ -187,7 +188,11 @@ class Pane(object):
     ]
 
 
-class NukeWindow(AbstractWindow):
+class NukeCommon(object):
+    pass
+        
+
+class NukeWindow(NukeCommon, AbstractWindow):
     """Base class for docking windows in Nuke.
 
     Usage:
@@ -620,6 +625,7 @@ class NukeWindow(AbstractWindow):
                 pass
 
     def deferred(self, func, *args, **kwargs):
+        """Execute a deferred command."""
         utils.executeDeferred(func, *args, **kwargs)
 
     def parent(self, *args, **kwargs):
@@ -715,3 +721,70 @@ class NukeWindow(AbstractWindow):
             cls.WindowDockable = True
             win.setDockable(True, override=True)
         return win
+
+
+class NukeBatchWindow(NukeCommon, StandaloneWindow):
+    """Variant of the Standalone window for Nuke in batch mode.
+
+    Warning: This does not yet work properly. It is able to launch a
+    process to run the GUI in (since batch mode uses a QCoreApplication
+    which does not allow windows), but that process is not able to
+    correctly import the "_nuke" library.
+    """
+
+    def __init__(self, parent=None, **kwargs):
+        super(NukeBatchWindow, self).__init__(parent, **kwargs)
+        self.nuke = False
+        self.batch = True
+        self.standalone = False
+
+    def setWindowPalette(self, program, version=None, style=True, force=False):
+        if force:
+            super(NukeBatchWindow, self).setWindowPalette(program, version, style)
+
+    def saveWindowPosition(self):
+        """Save the window location."""
+        try:
+            nukeSettings = self.windowSettings['nuke']
+        except KeyError:
+            nukeSettings = self.windowSettings['nuke'] = {}
+        try:
+            mainWindowSettings = nukeSettings['batch']
+        except KeyError:
+            mainWindowSettings = nukeSettings['batch'] = {}
+        mainWindowSettings['width'] = self.width()
+        mainWindowSettings['height'] = self.height()
+        mainWindowSettings['x'] = self.x()
+        mainWindowSettings['y'] = self.y()
+
+        super(NukeBatchWindow, self).saveWindowPosition()
+
+    def loadWindowPosition(self):
+        """Set the position of the window when loaded."""
+        try:
+            width = self.windowSettings['nuke']['batch']['width']
+            height = self.windowSettings['nuke']['batch']['height']
+            x = self.windowSettings['nuke']['batch']['x']
+            y = self.windowSettings['nuke']['batch']['y']
+        except KeyError:
+            super(NukeBatchWindow, self).loadWindowPosition()
+        else:
+            x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
+            self.resize(width, height)
+            self.move(x, y)
+
+    @hybridmethod
+    def show(cls, self, *args, **kwargs):
+        """Load the window in Nuke batch mode."""
+        # Window is already initialised
+        if self is not cls:
+            return super(NukeBatchWindow, cls).show()
+        
+        # Close down window if it exists and open a new one
+        try:
+            cls.clearWindowInstance(cls.WindowID)
+        except AttributeError:
+            pass
+        kwargs['instance'] = False
+        kwargs['exec_'] = True
+        return super(NukeBatchWindow, cls).show(*args, **kwargs)
