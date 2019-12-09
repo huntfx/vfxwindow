@@ -17,7 +17,7 @@ from .utils import hybridmethod, setCoordinatesToScreen
 from .utils.Qt import QtWidgets, QtCompat, QtCore
 
 
-MAYA_VERSION = int(versions.flavor())
+MAYA_VERSION = versions.flavor()
 
 MAYA_BATCH = pm.about(batch=True)
 
@@ -228,6 +228,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
     This is an alternative to maya.app.general.mayaMixin.MayaQWidgetDockableMixin, as many features
     were already implemented when I found it. It is missing a few parts I would have liked though.
     """
+    _Pre2017 = int(MAYA_VERSION) < 2017  # workspaceControl was added in 2017
 
     def __init__(self, parent=None, dockable=False, **kwargs):
         if parent is None:
@@ -252,7 +253,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         dockable = self.dockable()
         if not dockable:
             self.saveWindowPosition()
-        elif MAYA_VERSION < 2017:
+        elif self._Pre2017:
             try:
                 self.saveWindowPosition()
             except TypeError:
@@ -260,21 +261,21 @@ class MayaWindow(MayaCommon, AbstractWindow):
         self.clearWindowInstance(self.WindowID, deleteWindow=True)
 
         # If dockControl is being used, then Maya will crash if close is called
-        if dockable and MAYA_VERSION < 2017:
+        if dockable and self._Pre2017:
             event.ignore()
         else:
             return super(MayaWindow, self).closeEvent(event)
 
     def exists(self):
         if self.dockable():
-            if MAYA_VERSION < 2017:
+            if self._Pre2017:
                 return pm.dockControl(self.WindowID, query=True, exists=True)
             return pm.workspaceControl(self.WindowID, query=True, exists=True)
         return not self.isClosed()
 
     def raise_(self):
         if self.dockable():
-            if MAYA_VERSION < 2017:
+            if self._Pre2017:
                 return pm.dockControl(self.WindowID, edit=True, r=True)
             return pm.workspaceControl(self.WindowID, edit=True, restore=True)
         return super(MayaWindow, self).raise_()
@@ -282,7 +283,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def setWindowTitle(self, title):
         if self.dockable():
             try:
-                if MAYA_VERSION < 2017:
+                if self._Pre2017:
                     return pm.dockControl(self.WindowID, edit=True, label=title)
                 return pm.workspaceControl(self.WindowID, edit=True, label=title)
             except RuntimeError:
@@ -292,7 +293,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def isVisible(self):
         if self.dockable():
             try:
-                if MAYA_VERSION < 2017:
+                if self._Pre2017:
                     return pm.dockControl(self.WindowID, query=True, visible=True)
                 return pm.workspaceControl(self.WindowID, query=True, visible=True)
             except RuntimeError:
@@ -310,7 +311,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
     def setDocked(self, dock):
         if self.dockable() and self.floating() == dock:
-            if MAYA_VERSION < 2017:
+            if self._Pre2017:
                 self.raise_()
                 pm.dockControl(self.WindowID, edit=True, floating=not dock)
                 self.raise_()
@@ -335,7 +336,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         """Get the correct parent needed to query window data.
         It needs to be set to an attribute or Python will forget the C++ pointer.
         """
-        if MAYA_VERSION < 2017:
+        if self._Pre2017:
             return self.parent()
 
         #Determine if it's a new window, we need to get the C++ pointer again
@@ -352,7 +353,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         return self.__parentTemp
 
     def floating(self):
-        if MAYA_VERSION < 2017:
+        if self._Pre2017:
             return pm.dockControl(self.WindowID, query=True, floating=True)
         return pm.workspaceControl(self.WindowID, query=True, floating=True)
         
@@ -362,7 +363,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             height = width.height()
             width = width.width()
         if self.dockable():
-            if MAYA_VERSION < 2017:
+            if self._Pre2017:
                 if not self.floating():
                     return pm.dockControl(self.WindowID, edit=True, width=width, height=height)
             else:
@@ -371,13 +372,14 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
     def siblings(self):
         if self.dockable():
-            if MAYA_VERSION < 2017:
+            if self._Pre2017:
                 return []
             return self.parent().parent().children()
         return []
 
-    if MAYA_VERSION < 2017:
+    if _Pre2017:
         def area(self, *args, **kwargs):
+            """Return the Maya area name."""
             return pm.dockControl(self.WindowID, query=True, area=True)
     
     else:
@@ -872,7 +874,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             settings = getWindowSettings(cls.WindowID)
         
         # Open a dialog window that will force control
-        if MAYA_VERSION >= 2017 and getattr(cls, 'ForceDialog', False):
+        if not self._Pre2017 and getattr(cls, 'ForceDialog', False):
             cls.WindowDockable = False
             try:
                 return dialogWrapper(
@@ -923,13 +925,13 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 dock = False
             else:
                 try:
-                    if MAYA_VERSION < 2017:
+                    if self._Pre2017:
                         dock = settings['maya']['dock'].get('area', True)
                     else:
                         dock = settings['maya']['dock'].get('control', True)
                 except KeyError:
                     dock = True
-            if MAYA_VERSION < 2017:
+            if self._Pre2017:
                 return dockControlWrap(cls, dock, resetFloating=True, *args, **kwargs)
             return workspaceControlWrap(cls, dock, resetFloating=True, *args, **kwargs)
 
