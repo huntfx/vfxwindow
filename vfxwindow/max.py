@@ -11,7 +11,6 @@ import MaxPlus
 from .abstract import AbstractWindow, getWindowSettings
 from .utils import hybridmethod, setCoordinatesToScreen
 from .utils.Qt import QtWidgets, QtCompat, QtCore
-
 from .standalone import StandaloneWindow
 
 

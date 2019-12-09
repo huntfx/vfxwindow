@@ -33,8 +33,8 @@ if __name__ == '__main__':
 ```
 
 ### Compatibility
- - Maya (2011-2016, tested lightly on 2016) - standard, docked (`pymel.core.dockControl`), callbacks
- - Maya (2017+, tested on 2017-2019) - standard, docked (`pymel.core.workspaceControl`), dialog (`pymel.core.layoutDialog`), callbacks
+ - Maya (2011-2016, tested lightly on 2016) - standard, docked (`pymel.core.dockControl`), standalone, callbacks
+ - Maya (2017+, tested on 2017-2019) - standard, docked (`pymel.core.workspaceControl`), dialog (`pymel.core.layoutDialog`), standalone, callbacks
  - Nuke (tested on 9 and 10) - standard, docked (`nukescripts.panels`), callbacks
  - 3D Studio Max (2018+, tested on 2020) - standard
  - Houdini (tested on 16) - standard
