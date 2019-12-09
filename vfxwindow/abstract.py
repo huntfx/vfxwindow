@@ -96,6 +96,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self.maya = False
         self.nuke = False
         self.houdini = False
+        self.max = False
         self.fusion = False
         self.blender = False
         self.unreal = False

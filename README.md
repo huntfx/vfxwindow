@@ -5,7 +5,7 @@ The main purpose of the class is to integrate into the program UI, but it also c
 
 The intended usage is to make your window class inherit `VFXWindow` - which is an instance of `QMainWindow`. By calling `cls.show()`, it will launch the correct window type based on what program is loaded, and what settings were previously saved.
 
-This is perfectly stable, but there is still plenty that needs improvement. Maya, Nuke, Houdini, Blender and Unreal are currently supported, though help would be appreciated with adding support any other applications.
+This is perfectly stable, but there is still plenty that needs improvement. Maya, Nuke, 3DS Max, Houdini, Blender and Unreal are currently supported, though any help to extend those would be appreciated, as well as support for any other applications.
 
 ### Basic Example:
 ```python
@@ -36,6 +36,7 @@ if __name__ == '__main__':
  - Maya (2011-2016, tested lightly on 2016) - standard, docked (`pymel.core.dockControl`), callbacks
  - Maya (2017+, tested on 2017-2019) - standard, docked (`pymel.core.workspaceControl`), dialog (`pymel.core.layoutDialog`), callbacks
  - Nuke (tested on 9 and 10) - standard, docked (`nukescripts.panels`), callbacks
+ - 3D Studio Max (2018+, tested on 2020) - standard
  - Houdini (tested on 16) - standard
  - Blender (tested in 2.80) - standard, callbacks
  - Unreal (4.19+, tested in 4.23) - standard

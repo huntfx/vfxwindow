@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.2.6'
+__version__ = '1.3.0'
 
 import os
 import sys
@@ -44,7 +44,12 @@ except ImportError:
                 try:
                     import unreal
                 except ImportError:
-                    from .standalone import StandaloneWindow as VFXWindow
+                    try:
+                        import MaxPlus
+                    except ImportError:
+                        from .standalone import StandaloneWindow as VFXWindow
+                    else:
+                        from .max import MaxWindow as VFXWindow
                 else:
                     from .unreal import UnrealWindow as VFXWindow
             else:
