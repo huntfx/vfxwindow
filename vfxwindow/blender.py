@@ -128,107 +128,107 @@ class BlenderWindow(StandaloneWindow):
 
     def addCallbackFrameChangeAfter(self, func, persistent=True, group=None):
         """After frame change for playback and rendering."""
-        self._addApplicationHandler('frame_change_post', func, group)
+        self._addApplicationHandler('frame_change_post', func, persistent=persistent, group=group)
 
     def addCallbackFrameChangeBefore(self, func, persistent=True, group=None):
         """Before frame change for playback and rendering."""
-        self._addApplicationHandler('frame_change_pre', func, group)
+        self._addApplicationHandler('frame_change_pre', func, persistent=persistent, group=group)
 
     def addCallbackGameAfter(self, func, persistent=True, group=None):
         """On ending the game engine."""
-        self._addApplicationHandler('game_post', func, group)
+        self._addApplicationHandler('game_post', func, persistent=persistent, group=group)
 
     def addCallbackGameBefore(self, func, persistent=True, group=None):
         """On starting the game engine."""
-        self._addApplicationHandler('game_pre', func, group)
+        self._addApplicationHandler('game_pre', func, persistent=persistent, group=group)
 
     def addCallbackLoadSceneAfter(self, func, persistent=True, group=None):
         """After loading a new blend file."""
-        self._addApplicationHandler('load_post', func, group)
+        self._addApplicationHandler('load_post', func, persistent=persistent, group=group)
 
     def addCallbackLoadSceneBefore(self, func, persistent=True, group=None):
         """After loading a new blend file."""
-        self._addApplicationHandler('load_pre', func, group)
+        self._addApplicationHandler('load_pre', func, persistent=persistent, group=group)
 
     def addCallbackRenderCancel(self, func, persistent=True, group=None):
         """On canceling a render job."""
-        self._addApplicationHandler('render_cancel', func, group)
+        self._addApplicationHandler('render_cancel', func, persistent=persistent, group=group)
 
     def addCallbackRenderComplete(self, func, persistent=True, group=None):
         """On completion of render job."""
-        self._addApplicationHandler('render_complete', func, group)
+        self._addApplicationHandler('render_complete', func, persistent=persistent, group=group)
 
     def addCallbackRenderInit(self, func, persistent=True, group=None):
         """On initialisation of a render job."""
-        self._addApplicationHandler('render_init', func, group)
+        self._addApplicationHandler('render_init', func, persistent=persistent, group=group)
 
     def addCallbackRenderAfter(self, func, persistent=True, group=None):
         """After rendering."""
-        self._addApplicationHandler('render_post', func, group)
+        self._addApplicationHandler('render_post', func, persistent=persistent, group=group)
 
     def addCallbackRenderBefore(self, func, persistent=True, group=None):
         """Before rendering."""
-        self._addApplicationHandler('render_pre', func, group)
+        self._addApplicationHandler('render_pre', func, persistent=persistent, group=group)
 
     def addCallbackRenderStats(self, func, persistent=True, group=None):
         """On printing render statistics."""
-        self._addApplicationHandler('render_stats', func, group)
+        self._addApplicationHandler('render_stats', func, persistent=persistent, group=group)
 
     def addCallbackRenderWrite(self, func, persistent=True, group=None):
         """After writing a rendered frame."""
-        self._addApplicationHandler('render_write', func, group)
+        self._addApplicationHandler('render_write', func, persistent=persistent, group=group)
 
     def addCallbackSaveSceneAfter(self, func, persistent=True, group=None):
         """After saving a blend file."""
-        self._addApplicationHandler('save_post', func, group)
+        self._addApplicationHandler('save_post', func, persistent=persistent, group=group)
 
     def addCallbackSaveSceneBefore(self, func, persistent=True, group=None):
         """Before saving blend file."""
-        self._addApplicationHandler('save_pre', func, group)
+        self._addApplicationHandler('save_pre', func, persistent=persistent, group=group)
 
     def addCallbackSceneUpdateAfter(self, func, persistent=True, group=None):
         """After each scene data update.
         It does not necessarily imply that anything has changed.
         Removed in Blender 2.80
         """
-        self._addApplicationHandler('scene_update_post', func, group)
+        self._addApplicationHandler('scene_update_post', func, persistent=persistent, group=group)
 
     def addCallbackSceneUpdateBefore(self, func, persistent=True, group=None):
         """After each scene data update.
         It does not necessarily imply that anything has changed.
         Removed in Blender 2.80
         """
-        self._addApplicationHandler('scene_update_pre', func, group)
+        self._addApplicationHandler('scene_update_pre', func, persistent=persistent, group=group)
 
     def addCallbackVersionUpdate(self, func, persistent=True, group=None):
         """On ending the versioning code."""
-        self._addApplicationHandler('version_update', func, group)
+        self._addApplicationHandler('version_update', func, persistent=persistent, group=group)
 
     def addCallbackDepsgraphUpdateAfter(self, func, persistent=True, group=None):
         """After depsgraph update.
         Added in Blender 2.80.
         """
-        self._addApplicationHandler('depsgraph_update_post', func, group)
+        self._addApplicationHandler('depsgraph_update_post', func, persistent=persistent, group=group)
 
     def addCallbackDepsgraphUpdateBefore(self, func, persistent=True, group=None):
         """Before depsgraph update.
         Added in Blender 2.80.
         """
-        self._addApplicationHandler('depsgraph_update_pre', func, group)
+        self._addApplicationHandler('depsgraph_update_pre', func, persistent=persistent, group=group)
 
     def addCallbackUndoAfter(self, func, persistent=True, group=None):
         """After loading an undo step."""
-        self._addApplicationHandler('undo_post', func, group)
+        self._addApplicationHandler('undo_post', func, persistent=persistent, group=group)
 
     def addCallbackUndoBefore(self, func, persistent=True, group=None):
         """Before loading an undo step."""
-        self._addApplicationHandler('undo_pre', func, group)
+        self._addApplicationHandler('undo_pre', func, persistent=persistent, group=group)
 
     def addCallbackRedoAfter(self, func, persistent=True, group=None):
         """After loading a redo step."""
-        self._addApplicationHandler('redo_post', func, group)
+        self._addApplicationHandler('redo_post', func, persistent=persistent, group=group)
 
     def addCallbackRedoBefore(self, func, persistent=True, group=None):
         """Before loading a redo step."""
-        self._addApplicationHandler('redo_pre', func, group)
+        self._addApplicationHandler('redo_pre', func, persistent=persistent, group=group)
 
