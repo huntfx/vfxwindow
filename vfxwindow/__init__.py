@@ -3,6 +3,7 @@
 TODO:
     Substance callbacks
     Add dialog code for each application
+    Revise setDefault* methods
 
     # Potential breaking changes
     Change setDocked to setFloating
@@ -14,7 +15,7 @@ TODO:
 
 from __future__ import absolute_import
 
-__version__ = '1.4.0'
+__version__ = '1.4.1'
 
 import os
 import sys

@@ -7,6 +7,7 @@ from __future__ import absolute_import, print_function
 
 import inspect
 from collections import defaultdict
+from functools import partial
 
 import nuke
 from nukescripts import panels, utils
@@ -218,22 +219,23 @@ class NukeWindow(NukeCommon, AbstractWindow):
         'updateUI': ('addUpdateUI', 'removeUpdateUI'),
     }
 
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, parent=None, dockable=True, **kwargs):
+        """Create the Nuke window.
+        By default dockable must be True as Nuke provides no control
+        over it when creating a panel.
+        """
         if parent is None:
             parent = getMainWindow()
         super(NukeWindow, self).__init__(parent, **kwargs)
         self.nuke = True
 
         self.__windowHidden = False
-        try:
-            self.setDockable(self.windowSettings['nuke']['docked'], override=True)
-        except KeyError:
-            self.setDockable(getattr(self, 'WindowDockable', True), override=True)
+        self.setDockable(dockable, override=True)
 
         # Fix for parent bug
         # See NukeWindow.parent for more information
         self.__useNukeTemporaryParent = True
-        self.windowReady.connect(self.__disableTemporaryParent)
+        self.windowReady.connect(partial(setattr, self, '__useNukeTemporaryParent', False))
         
         # This line seemed to be recommended, but I'm not sure why
         #if not self.dockable():
@@ -376,25 +378,6 @@ class NukeWindow(NukeCommon, AbstractWindow):
             x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
             self.resize(width, height)
             self.move(x, y)
-
-    def hideEvent(self, event):
-        """Unregister callbacks and save window location."""
-        if not event.spontaneous() and not self.isClosed():
-            try:
-                self._unregisterNukeCallbacks()
-            except TypeError:
-                self.__windowHidden = True
-            self.saveWindowPosition()
-        return super(NukeWindow, self).hideEvent(event)
-
-    def showEvent(self, event):
-        """Register callbacks and update UI (if checkForChanges is defined)."""
-        if not event.spontaneous():
-            self._registerNukeCallbacks()
-            self.__windowHidden = False
-            if hasattr(self, 'checkForChanges'):
-                self.checkForChanges()
-        return super(NukeWindow, self).showEvent(event)
     
     def _parentOverride(self, usePane=False):
         """Get the widget that contains the correct size and position on screen."""
@@ -412,7 +395,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
                 raise
             else:
                 raise RuntimeError('window is currently in a quantum state (while dragging it technically doesn\'t exist)')
-    
+
     def width(self):
         if self.dockable():
             return self._parentOverride(usePane=True).width()
@@ -421,7 +404,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
     def height(self):
         if self.dockable():
             return self._parentOverride(usePane=True).width()
-        return super(NukeWindow, self).width()
+        return super(NukeWindow, self).height()
     
     def _registerNukeCallbacks(self):
         """Register all callbacks."""
@@ -643,10 +626,29 @@ class NukeWindow(NukeCommon, AbstractWindow):
         if not self.__useNukeTemporaryParent or self.dockable():
             return super(NukeWindow, self).parent(*args, **kwargs)
         return getMainWindow()
-    
-    def __disableTemporaryParent(self):
-        """See NukeWindow.parent for information."""
-        self.__useNukeTemporaryParent = False
+
+    def hideEvent(self, event):
+        """Unregister callbacks and save window location."""
+        if not event.spontaneous() and not self.isClosed():
+            try:
+                self._unregisterNukeCallbacks()
+            except TypeError:
+                self.__windowHidden = True
+            self.saveWindowPosition()
+        return super(NukeWindow, self).hideEvent(event)
+
+    def showEvent(self, event):
+        """Register callbacks and update UI (if checkForChanges is defined)."""
+        if not event.spontaneous():
+            self._registerNukeCallbacks()
+            self.__windowHidden = False
+            if hasattr(self, 'checkForChanges'):
+                self.checkForChanges()
+        return super(NukeWindow, self).showEvent(event)
+
+    def hide(self):
+        if not self.dockable():
+            return super(NukeWindow, self).hide()
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
@@ -659,6 +661,8 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """
         # Window is already initialised
         if self is not cls:
+            if self.dockable():
+                return None
             return super(NukeWindow, self).show()
 
         #Close down any instances of the window
@@ -716,6 +720,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
                 _removeMargins(widget)
                 return widget
         
+        kwargs['dockable'] = False
         win = super(NukeWindow, cls).show(*args, **kwargs)
         if dockOverride:
             cls.WindowDockable = True
