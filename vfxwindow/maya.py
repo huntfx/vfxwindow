@@ -834,19 +834,25 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 deleteWorkspaceControl(previousInstance['window'].WindowID)
         return previousInstance
 
-    def hide(self):
-        """Hide the window."""
-        if self.dockable():
-            if MAYA_VERSION < 2017:
-                return pm.dockControl(self.WindowID, edit=True, visible=False)
-            return pm.workspaceControl(self.WindowID, edit=True, visible=False)
-        return super(MayaWindow, self).hide()
-
     def setFocus(self):
         """Force Maya to focus on the window."""
         if self.dockable():
             return pm.setFocus(self.WindowID)
         return super(MayaWindow, self).setFocus()
+
+    def setVisible(self, visibility):
+        if visibility:
+            return self.show()
+        return self.hide()
+
+    def hide(self):
+        """Hide the window."""
+        if self.dockable():
+            if MAYA_VERSION < 2017:
+                return pm.dockControl(self.WindowID, edit=True, visible=False)
+            self.parent().setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
+            return pm.workspaceControl(self.WindowID, edit=True, visible=False)
+        return super(MayaWindow, self).hide()
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
@@ -861,7 +867,9 @@ class MayaWindow(MayaCommon, AbstractWindow):
             if self.dockable():
                 if MAYA_VERSION < 2017:
                     return pm.dockControl(self.WindowID, edit=True, visible=True)
-                return pm.workspaceControl(self.WindowID, edit=True, visible=True)
+                result = pm.workspaceControl(self.WindowID, edit=True, visible=True)
+                self.parent().setAttribute(QtCore.Qt.WA_DeleteOnClose)
+                return result
             return super(MayaWindow, self).show()
 
         # Close down any instances of the window
