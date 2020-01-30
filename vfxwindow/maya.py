@@ -1003,7 +1003,7 @@ class MayaBatchWindow(MayaCommon, StandaloneWindow):
         """
         # Window is already initialised
         if self is not cls:
-            return super(MayaBatchWindow, cls).show()
+            return super(MayaBatchWindow, self).show()
         
         # Close down window if it exists and open a new one
         try:

@@ -45,7 +45,7 @@ class StandaloneWindow(AbstractWindow):
         """
         # Window is already initialised
         if self is not cls:
-            return super(StandaloneWindow, cls).show()
+            return super(StandaloneWindow, self).show()
 
         # Open a new window
         instance = kwargs.pop('instance', False)

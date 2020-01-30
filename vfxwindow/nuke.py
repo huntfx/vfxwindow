@@ -659,7 +659,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """
         # Window is already initialised
         if self is not cls:
-            return super(NukeWindow, cls).show()
+            return super(NukeWindow, self).show()
 
         #Close down any instances of the window
         try:
@@ -778,7 +778,7 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
         """Load the window in Nuke batch mode."""
         # Window is already initialised
         if self is not cls:
-            return super(NukeBatchWindow, cls).show()
+            return super(NukeBatchWindow, self).show()
         
         # Close down window if it exists and open a new one
         try:

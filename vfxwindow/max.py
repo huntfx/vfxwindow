@@ -86,7 +86,7 @@ class MaxWindow(AbstractWindow):
     def show(cls, self, *args, **kwargs):
         # Window is already initialised
         if self is not cls:
-            return super(MaxWindow, cls).show()
+            return super(MaxWindow, self).show()
         
         # Close down window if it exists and open a new one
         try:

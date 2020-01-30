@@ -61,7 +61,7 @@ class UnrealWindow(StandaloneWindow):
     def show(cls, self, *args, **kwargs):
         # Window is already initialised
         if self is not cls:
-            return super(UnrealWindow, cls).show()
+            return super(UnrealWindow, self).show()
         
         # Close down window if it exists and open a new one
         try:
