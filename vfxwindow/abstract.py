@@ -90,6 +90,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         if self.__forceDisableSaving:
             self.WindowID = uuid.uuid4()
         self.setWindowTitle(getattr(self, 'WindowName', 'New Window'))
+        self._setChildWindow(False)
 
         # Track settings that to be read by any inherited windows
         self.batch = False
@@ -357,6 +358,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         # Create window with new ID and disable saving
         new = cls(parent=parent, **kwargs)
+        new._setChildWindow(True)
         new.WindowID = uuid.uuid4().hex
         cls._WINDOW_INSTANCES[new.WindowID] = cls._WINDOW_INSTANCES.pop(cls.WindowID)
         new.enableSaveWindowPosition(False)
@@ -369,7 +371,18 @@ class AbstractWindow(QtWidgets.QMainWindow):
         new.deferred(new.windowReady.emit)
         if isinstance(parent, AbstractWindow):
             parent.clearedInstance.connect(partial(cls.clearWindowInstance, new.WindowID))
+        
         return new
+
+    def isChildWindow(self):
+        """Get if the window is a child of another window."""
+        return self.__childWindow
+    
+    def _setChildWindow(self, value):
+        """Mark if the window is a child of another window.
+        This should not be manually called.
+        """
+        self.__childWindow = value
 
     def setDefaultSize(self, width, height):
         """Set a default size upon widget load."""

@@ -840,10 +840,16 @@ class MayaWindow(MayaCommon, AbstractWindow):
             return pm.setFocus(self.WindowID)
         return super(MayaWindow, self).setFocus()
 
-    def setVisible(self, visibility):
-        if visibility:
-            return self.show()
-        return self.hide()
+    def setVisible(self, visible):
+        """Override setVisible to make sure it behaves like show/hide.
+        If the window is a child window, this must be skipped as it
+        causes an infinite recursion error.
+        """
+        if self.isChildWindow():
+            return super(MayaWindow, self).setVisible(visible)
+        if visible:
+            return super(MayaWindow, self).show(self)
+        return super(MayaWindow, self).hide()
 
     def hide(self):
         """Hide the window."""
