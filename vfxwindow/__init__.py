@@ -75,6 +75,7 @@ except ImportError:
             from .houdini import HoudiniWindow as VFXWindow
     else:
         if type(sys.stdout) == file:
+            raise NotImplementedError('unable to use qt when nuke is in batch mode')
             from .nuke import NukeBatchWindow as VFXWindow
         else:
             from .nuke import NukeWindow as VFXWindow
