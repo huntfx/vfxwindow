@@ -21,6 +21,27 @@ MAYA_VERSION = versions.flavor()
 
 MAYA_BATCH = pm.about(batch=True)
 
+# Map each function required for each callback
+SCENE_CALLBACKS = {
+    None: om.MSceneMessage.addCallback,  # Default option
+    om.MSceneMessage.kBeforeNewCheck: om.MSceneMessage.addCheckCallback,
+    om.MSceneMessage.kBeforeImportCheck: om.MSceneMessage.addCheckCallback,
+    om.MSceneMessage.kBeforeOpenCheck: om.MSceneMessage.addCheckCallback,
+    om.MSceneMessage.kBeforeExportCheck: om.MSceneMessage.addCheckCallback,
+    om.MSceneMessage.kBeforeSaveCheck: om.MSceneMessage.addCheckCallback,
+    om.MSceneMessage.kBeforeCreateReferenceCheck: om.MSceneMessage.addCheckCallback,
+    om.MSceneMessage.kBeforeLoadReferenceCheck: om.MSceneMessage.addCheckCallback,
+    om.MSceneMessage.kBeforeImportCheck: om.MSceneMessage.addCheckFileCallback,
+    om.MSceneMessage.kBeforeOpenCheck: om.MSceneMessage.addCheckFileCallback,
+    om.MSceneMessage.kBeforeExportCheck: om.MSceneMessage.addCheckFileCallback,
+    om.MSceneMessage.kBeforeCreateReferenceCheck: om.MSceneMessage.addCheckFileCallback,
+    om.MSceneMessage.kBeforeLoadReferenceCheck: om.MSceneMessage.addCheckFileCallback,
+    om.MSceneMessage.kBeforePluginLoad: om.MSceneMessage.addStringArrayCallback,
+    om.MSceneMessage.kAfterPluginLoad: om.MSceneMessage.addStringArrayCallback,
+    om.MSceneMessage.kBeforePluginUnload: om.MSceneMessage.addStringArrayCallback,
+    om.MSceneMessage.kAfterPluginUnload: om.MSceneMessage.addStringArrayCallback,
+}
+
 
 def getMainWindow(windowID=None, wrapInstance=True):
     """Get pointer to main Maya window.
@@ -763,7 +784,9 @@ class MayaWindow(MayaCommon, AbstractWindow):
         self._addMayaCallbackGroup(group)
         if not isinstance(callback, int):
             callback = getattr(om.MSceneMessage, callback)
-        self.windowInstance()['callback'][group]['scene'].append(om.MSceneMessage.addCallback(callback, func, clientData))
+        
+        apiFunction = SCENE_CALLBACKS.get(callback, SCENE_CALLBACKS[None])
+        self.windowInstance()['callback'][group]['scene'].append(apiFunction(callback, func, clientData))
 
     def addCallbackJobEvent(self, callback, func, group=None, runOnce=False):
         self._addMayaCallbackGroup(group)
