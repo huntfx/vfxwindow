@@ -184,7 +184,7 @@ def dockControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs)
     return windowInstance
 
 
-def dialogWrapper(windowClass, title=None, clsArgs=(), clsKwargs={}):
+def dialogWrap(windowClass, title=None, *args, **kwargs):
     """Wrapper for Maya's layoutDialogue class.
     It will take focus of the entire program.
 
@@ -199,7 +199,7 @@ def dialogWrapper(windowClass, title=None, clsArgs=(), clsKwargs={}):
         windowInstance = cls(parent, *clsArgs, **clsKwargs)
         windowInstance.windowReady.emit()
         return windowInstance
-    return pm.layoutDialog(ui=partial(uiScript, windowClass, clsArgs=clsArgs, clsKwargs=clsKwargs), title=title)
+    return pm.layoutDialog(ui=partial(uiScript, windowClass, clsArgs=args, clsKwargs=kwargs), title=title)
 
 
 def toMObject(node):
@@ -332,7 +332,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             return 'Maya.{}'.format(MAYA_VERSION)
         return currentPalette
 
-    def _parentOverride(self, create=True):
+    def _parentOverride(self):
         """Get the correct parent needed to query window data.
         It needs to be set to an attribute or Python will forget the C++ pointer.
         """
@@ -876,13 +876,9 @@ class MayaWindow(MayaCommon, AbstractWindow):
         # Open a dialog window that will force control
         if not self._Pre2017 and getattr(cls, 'ForceDialog', False):
             cls.WindowDockable = False
+            title = getattr(cls, 'WindowName', 'New Window')
             try:
-                return dialogWrapper(
-                    cls,
-                    title=getattr(cls, 'WindowName', 'New Window'),
-                    clsArgs=args,
-                    clsKwargs=kwargs
-                )
+                return dialogWrap(cls, title=title, *args, **kwargs)
             finally:
                 cls.clearWindowInstance(cls.WindowID)
 

@@ -1,8 +1,20 @@
-"""Set the window class to be specific to whichever program is loaded."""
+"""Set the window class to be specific to whichever program is loaded.
+
+TODO:
+    Substance callbacks
+    Add dialog code for each application
+
+    # Potential breaking changes
+    Change setDocked to setFloating
+    Remove docked in favour of floating
+    Remove *_VERSION constants
+    Changed dialog to isDialog
+    Add dialog classmethod to replace cls.ForceDialog = True
+"""
 
 from __future__ import absolute_import
 
-__version__ = '1.3.0'
+__version__ = '1.4.0'
 
 import os
 import sys
@@ -47,7 +59,12 @@ except ImportError:
                     try:
                         import MaxPlus
                     except ImportError:
-                        from .standalone import StandaloneWindow as VFXWindow
+                        try:
+                            import sd
+                        except ImportError:
+                            from .standalone import StandaloneWindow as VFXWindow
+                        else:
+                            from .substance import SubstanceWindow as VFXWindow
                     else:
                         from .max import MaxWindow as VFXWindow
                 else:

@@ -100,6 +100,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self.fusion = False
         self.blender = False
         self.unreal = False
+        self.substance = False
         self.standalone = False
 
         # Read settings
@@ -179,6 +180,15 @@ class AbstractWindow(QtWidgets.QMainWindow):
             for signal, func in signalCache[group]:
                 self.signalConnect(signal, func, group=group)
 
+    def _getSettingsKey(self):
+        """Get the key to use when saving settings."""
+        if self.dockable():
+            return 'dock'
+        elif self.dialog():
+            return 'dialog'
+        else:
+            return 'main'
+
     def dockable(self, raw=False):
         """Return if the window is dockable.
         
@@ -214,6 +224,10 @@ class AbstractWindow(QtWidgets.QMainWindow):
     def setDocked(self, docked):
         """Force the window to dock or undock."""
         pass
+
+    def dialog(self):
+        """Return if the window is a dialog."""
+        return getattr(self, 'ForceDialog', False)
     
     def loadWindowPosition(self):
         """Load the previous position or centre the window.
@@ -408,10 +422,11 @@ class AbstractWindow(QtWidgets.QMainWindow):
         for windowID in tuple(cls._WINDOW_INSTANCES):
             cls.clearWindowInstance(windowID)
 
-    def close(self):
+    def closeEvent(self, event):
         """Close the window and mark it as closed."""
         self.__closed = True
-        super(AbstractWindow, self).close()
+        self.clearWindowInstance(self.WindowID)
+        return super(AbstractWindow, self).closeEvent(event)
 
     def isClosed(self):
         """Return if the window has been closed."""
@@ -452,41 +467,57 @@ class AbstractWindow(QtWidgets.QMainWindow):
             x = x.x()
         if self.dockable():
             return self._parentOverride().move(x, y)
+        elif self.dialog():
+            return self.parent().move(x, y)
         return super(AbstractWindow, self).move(x, y)
     
     def geometry(self):
         if self.dockable():
             return self._parentOverride().geometry()
+        elif self.dialog():
+            return self.parent().geometry()
         return super(AbstractWindow, self).geometry()
 
     def frameGeometry(self):
         if self.dockable():
             return self._parentOverride().frameGeometry()
+        elif self.dialog():
+            return self.parent().frameGeometry()
         return super(AbstractWindow, self).frameGeometry()
 
     def rect(self):
         if self.dockable():
             return self._parentOverride().rect()
+        elif self.dialog():
+            return self.parent().rect()
         return super(AbstractWindow, self).rect()
 
     def width(self):
         if self.dockable():
             return self._parentOverride().width()
+        elif self.dialog():
+            return self.parent().width()
         return super(AbstractWindow, self).width()
 
     def height(self):
         if self.dockable():
             return self._parentOverride().height()
+        elif self.dialog():
+            return self.parent().height()
         return super(AbstractWindow, self).height()
 
     def x(self):
         if self.dockable():
             return self._parentOverride().x()
+        elif self.dialog():
+            return self.parent().x()
         return super(AbstractWindow, self).x()
 
     def y(self):
         if self.dockable():
             return self._parentOverride().y()
+        elif self.dialog():
+            return self.parent().y()
         return super(AbstractWindow, self).y()
 
     def resize(self, width, height=None):
@@ -495,20 +526,28 @@ class AbstractWindow(QtWidgets.QMainWindow):
             width = width.width()
         if self.dockable():
             return self._parentOverride().resize(width, height)
+        elif self.dialog():
+            return self.parent().resize(width, height)
         return super(AbstractWindow, self).resize(width, height)
 
     def centreWindow(self, parentGeometry=None, childGeometry=None):
         """Centre the current window to its parent.
         In the case of overrides, the parent or child geometry may be provided.
         """
-        if parentGeometry is None:
-            try:
-                parentGeometry = self.parent().frameGeometry()
-            except AttributeError:
-                parentGeometry = QtWidgets.QApplication.desktop().screenGeometry()
+        if parentGeometry is None or childGeometry is None:
+            if self.dialog():
+                base = self.parent()
+            else:
+                base = self
 
-        if childGeometry is None:
-            childGeometry = self.frameGeometry()
+            if parentGeometry is None:
+                try:
+                    parentGeometry = base.parent().frameGeometry()
+                except AttributeError:
+                    parentGeometry = QtWidgets.QApplication.desktop().screenGeometry()
+
+            if childGeometry is None:
+                childGeometry = base.frameGeometry()
 
         self.move(
             parentGeometry.x() + (parentGeometry.width() - childGeometry.width()) / 2,

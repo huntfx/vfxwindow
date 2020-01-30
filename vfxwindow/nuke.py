@@ -607,15 +607,15 @@ class NukeWindow(NukeCommon, AbstractWindow):
                 nuke.addUpdateUI(func, nodeClass=nodeClass)
 
     @classmethod
-    def clearWindowInstance(self, windowID):
+    def clearWindowInstance(cls, windowID):
         """Close the last class instance."""
         try:
-            previousInstance = super(NukeWindow, self).clearWindowInstance(windowID)
+            previousInstance = super(NukeWindow, cls).clearWindowInstance(windowID)
         except TypeError:
             return
         if previousInstance is None:
             return
-        self.removeCallbacks(windowInstance=previousInstance)
+        cls.removeCallbacks(windowInstance=previousInstance)
 
         #Shut down the window
         if not previousInstance['window'].isClosed():
