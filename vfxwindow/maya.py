@@ -54,7 +54,7 @@ def getMainWindow(windowID=None, wrapInstance=True):
                 qtObj = pm.uitypes.toQtObject(windowID)
                 if qtObj is not None:
                     return qtObj
-            
+
             # ID is an existing window
             pointer = omUI.MQtUtil.findControl(windowID)
         else:
@@ -101,7 +101,7 @@ def deleteDockControl(windowID):
     if windowWrap is not None:
         if windowWrap.parent().parent() is not None:
             getMainWindow(windowID).parent().close()
-    
+
     if floating is not None:
         try:
             pm.dockControl(windowID, edit=True, floating=floating)
@@ -155,7 +155,7 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
         windowInstance.loadWindowPosition()
     except (AttributeError, TypeError):
         pass
-    
+
     # Restore the window (after maya is ready) since it may not be visible
     windowInstance.deferred(windowInstance.raise_)
     windowInstance.deferred(windowInstance.windowReady.emit)
@@ -163,7 +163,7 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
 
 
 def dockControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs):
-    
+
     def attachToDockControl(windowInstance, dock=True, area='right'):
         """This needs to be deferred as it can run before the previous dockControl has closed."""
 
@@ -187,12 +187,12 @@ def dockControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs)
         windowInstance.setWindowTitle(getattr(windowInstance, 'WindowName', 'New Window'))
         windowInstance.deferred(windowInstance.raise_)
         windowInstance.deferred(windowInstance.windowReady.emit)
-        
+
     # Set WindowID if needed but disable saving
     if not hasattr(windowClass, 'WindowID'):
         windowClass.WindowID = str(uuid.uuid4())
         windowClass.saveWindowPosition = lambda *args, **kwargs: None
-    
+
     # Remove existing window
     deleteDockControl(windowClass.WindowID)
 
@@ -262,6 +262,8 @@ class MayaWindow(MayaCommon, AbstractWindow):
         # The line below can save the window preferences, but this window automatically does it
         #self.setProperty("saveWindowPref", True)
 
+        self.__windowReady = False
+        self.windowReady.connect(self.__setWindowReady)
         self.__parentTemp = None
 
     def visibleChangeEvent(self, *args, **kwargs):
@@ -320,7 +322,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             except RuntimeError:
                 return False
         return super(MayaWindow, self).isVisible()
-    
+
     def dockable(self, *args, **kwargs):
         """Catch an error caused if dockable is called too early.
         At this point it doesn't matter if it is dockable or not.
@@ -338,7 +340,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 self.raise_()
             else:
                 pm.workspaceControl(self.WindowID, edit=True, floating=not dock)
-    
+
     def setWindowPalette(self, program, version=None, style=True, force=False):
         """Set the palette of the window.
         This will cause issues in the Maya GUI so it's disabled by default.
@@ -377,7 +379,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         if self._Pre2017:
             return pm.dockControl(self.WindowID, query=True, floating=True)
         return pm.workspaceControl(self.WindowID, query=True, floating=True)
-        
+
     def resize(self, width, height=None):
         """Resize the window."""
         if isinstance(width, QtCore.QSize):
@@ -402,13 +404,13 @@ class MayaWindow(MayaCommon, AbstractWindow):
         def area(self, *args, **kwargs):
             """Return the Maya area name."""
             return pm.dockControl(self.WindowID, query=True, area=True)
-    
+
     else:
         def control(self, *args, **kwargs):
             """Return the Maya Control name, so it can be attached again."""
             if not self.dockable():
                 return None
-            
+
             workspaces = [
                 mel.eval('$gViewportWorkspaceControl=$gViewportWorkspaceControl'),
                 mel.eval('getUIComponentDockControl("Tool Settings", false)'),
@@ -468,7 +470,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         else:
             parentGeometry = None
         return super(MayaWindow, self).centreWindow(parentGeometry=parentGeometry)
-    
+
     def saveWindowPosition(self):
         """Save the window location."""
         try:
@@ -507,7 +509,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             pass
         else:
             super(MayaWindow, self).saveWindowPosition()
-        
+
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
         try:
@@ -575,7 +577,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         # Handle normal method
         elif windowInstance is None:
             windowInstance = self.windowInstance()
-            
+
         # Select all groups if specific one not provided
         if group is None:
             groups = windowInstance['callback'].keys()
@@ -583,7 +585,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             if group not in windowInstance['callback']:
                 return 0
             groups = [group]
-        
+
         # Iterate through each callback to remove certain groups
         numEvents = 0
         for group in groups:
@@ -669,15 +671,6 @@ class MayaWindow(MayaCommon, AbstractWindow):
             clientData
 
         All Callbacks/Attributes: https://help.autodesk.com/view/MAYAUL/2016/ENU/?guid=__py_ref_class_open_maya_1_1_m_node_message_html
-
-        Example:
-            def callback(msg, plug, otherPlug, *args):
-                if msg & om.MNodeMessage.kAttributeLocked:
-                    print 'Attribute {} was locked.'.format(plug1.name())
-                if msg & om.MNodeMessage.kAttributeUnlocked:
-                    print 'Attribute {} was unlocked.'.format(plug1.name())
-            callbackID = addNodeCallback('pCubeShape1')
-            om.MNodeMessage.removeCallback(callbackID)
         """
         self._addMayaCallbackGroup(group)
         self.windowInstance()['callback'][group]['node'].append(callback(toMObject(node), func, clientData))
@@ -697,7 +690,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
     def addCallbackAttributeAddOrRemove(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when an attribute is added.
-        
+
         Official Documentation:
             This is a more specific version of addAttributeChanged as only attribute
             added and attribute removed messages will trigger the callback.
@@ -784,7 +777,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         self._addMayaCallbackGroup(group)
         if not isinstance(callback, int):
             callback = getattr(om.MSceneMessage, callback)
-        
+
         apiFunction = SCENE_CALLBACKS.get(callback, SCENE_CALLBACKS[None])
         self.windowInstance()['callback'][group]['scene'].append(apiFunction(callback, func, clientData))
 
@@ -863,16 +856,23 @@ class MayaWindow(MayaCommon, AbstractWindow):
             return pm.setFocus(self.WindowID)
         return super(MayaWindow, self).setFocus()
 
+    def __setWindowReady(self):
+        """Mark the window as ready.
+        This is needed for a recursion error caused by setVisiblity for
+        floating windows.
+        """
+        self.__windowReady = True
+
     def setVisible(self, visible):
         """Override setVisible to make sure it behaves like show/hide.
         If the window is a child window, this must be skipped as it
         causes an infinite recursion error.
         """
-        if self.isChildWindow():
+        if not self.__windowReady or self.isChildWindow():
             return super(MayaWindow, self).setVisible(visible)
         if visible:
-            return super(MayaWindow, self).show(self)
-        return super(MayaWindow, self).hide()
+            return self.show()
+        return self.hide()
 
     def hide(self):
         """Hide the window."""
@@ -909,7 +909,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             settings = {}
         else:
             settings = getWindowSettings(cls.WindowID)
-        
+
         # Open a dialog window that will force control
         if not self._Pre2017 and getattr(cls, 'ForceDialog', False):
             cls.WindowDockable = False
@@ -1033,7 +1033,7 @@ class MayaBatchWindow(MayaCommon, StandaloneWindow):
         # Window is already initialised
         if self is not cls:
             return super(MayaBatchWindow, self).show()
-        
+
         # Close down window if it exists and open a new one
         try:
             cls.clearWindowInstance(cls.WindowID)
