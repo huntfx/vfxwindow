@@ -19,7 +19,7 @@ MAX_VERSION = sys.executable.split(os.path.sep)[-2][8:]
 
 def getMainWindow():
     """Returns the main window.
-    
+
     Source: https://stackoverflow.com/a/46739609/2403000, https://autode.sk/36jLSbE
     """
     try:
@@ -87,7 +87,7 @@ class MaxWindow(AbstractWindow):
         # Window is already initialised
         if self is not cls:
             return super(MaxWindow, self).show()
-        
+
         # Close down window if it exists and open a new one
         try:
             cls.clearWindowInstance(cls.WindowID)

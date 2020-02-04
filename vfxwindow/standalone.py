@@ -18,7 +18,7 @@ class _MultiAppLaunch(Process):
         self.args = args
         self.kwargs = kwargs
         super(_MultiAppLaunch, self).__init__()
-    
+
     def run(self):
         """Launch the app once the process has started."""
         try:

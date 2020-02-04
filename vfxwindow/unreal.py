@@ -62,7 +62,7 @@ class UnrealWindow(StandaloneWindow):
         # Window is already initialised
         if self is not cls:
             return super(UnrealWindow, self).show()
-        
+
         # Close down window if it exists and open a new one
         try:
             cls.clearWindowInstance(cls.WindowID)

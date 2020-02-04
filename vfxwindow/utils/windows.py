@@ -11,7 +11,7 @@ class RECT(ctypes.Structure):
         ('right', ctypes.c_long),
         ('bottom', ctypes.c_long)
     ]
-  
+
     def dump(self):
         return tuple(map(int, (self.left, self.top, self.right, self.bottom)))
 
@@ -80,7 +80,7 @@ def setCoordinatesToScreen(x, y, w, h, padding=0):
         x_max = max(location_groups[2])
         y_min = min(location_groups[1])
         y_max = max(location_groups[3])
-        
+
         if x < x_min:
             x = x_min
         elif x > x_max:
@@ -89,7 +89,7 @@ def setCoordinatesToScreen(x, y, w, h, padding=0):
             y = y_min
         elif y > y_max:
             y = y_max
-        
+
         #Check offset to find closest monitor
         monitor_offsets = {}
         for monitor_location in monitor_adjusted:

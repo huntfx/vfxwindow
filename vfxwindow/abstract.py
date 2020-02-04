@@ -70,7 +70,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
             x()
             y()
             resize(width, height)
-    
+
     Startup Commands:
         setDefaultSize(width, height)       # Set size if settings can't be read
         setDefaultPosition(x, y)            # Set position if settings can't be read
@@ -78,12 +78,12 @@ class AbstractWindow(QtWidgets.QMainWindow):
     """
     clearedInstance = QtCore.Signal()
     windowReady = QtCore.Signal()
-    
+
     _WINDOW_INSTANCES = {}
 
     def __init__(self, parent=None, **kwargs):
         super(AbstractWindow, self).__init__(parent, **kwargs)
-        
+
         # Setup window attributes and saving
         self.enableSaveWindowPosition(True)
         self.__forceDisableSaving = not hasattr(self, 'WindowID')
@@ -170,7 +170,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """
         if not groups:
             groups = self._signals
-        
+
         signalCache = {}
         for group in groups:
             signalCache[group] = self.signalDisconnect(group)
@@ -192,7 +192,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def dockable(self, raw=False):
         """Return if the window is dockable.
-        
+
         Parameters:
             raw (bool): If True, get the current state of the window,
                 otherwise get the current setting, which may require
@@ -229,7 +229,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
     def dialog(self):
         """Return if the window is a dialog."""
         return getattr(self, 'ForceDialog', False)
-    
+
     def loadWindowPosition(self):
         """Load the previous position or centre the window.
         The loading must be done in an override.
@@ -264,7 +264,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         The setCheckBox command was added in Qt 5.2.
         Even if it is not available, its state will still be returned.
-        
+
         Parameters:
             title (str): Title of the window.
             message (str): Short sentence with a question or statement.
@@ -325,7 +325,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         # The window has already been initialised
         if self is not cls:
             return super(AbstractWindow, self).show()
-        
+
         # Close down any existing windows and open a new one
         try:
             cls.clearWindowInstance(cls.WindowID)
@@ -371,13 +371,13 @@ class AbstractWindow(QtWidgets.QMainWindow):
         new.deferred(new.windowReady.emit)
         if isinstance(parent, AbstractWindow):
             parent.clearedInstance.connect(partial(cls.clearWindowInstance, new.WindowID))
-        
+
         return new
 
     def isChildWindow(self):
         """Get if the window is a child of another window."""
         return self.__childWindow
-    
+
     def _setChildWindow(self, value):
         """Mark if the window is a child of another window.
         This should not be manually called.
@@ -399,7 +399,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
     def setDefaultPosition(self, x, y):
         """Set a default position upon widget load."""
         self.__initialPosOverride = (x, y)
-    
+
     @hybridmethod
     def windowInstance(cls, self, windowID=None, delete=False):
         """Get the instance of the current window or one with an ID."""
@@ -450,14 +450,14 @@ class AbstractWindow(QtWidgets.QMainWindow):
         This is mainly to be used if the window palette is auto generated.
         """
         return savePaletteData(program, version, self.palette())
-    
+
     def setWindowPalette(self, program, version=None, style=True, **kwargs):
         """Set the palette of the window."""
         setPalette(program, version, style=style)
         self._windowPalette = program
         if version is not None:
             self._windowPalette += '.{}'.format(version)
-    
+
     def windowPalette(self):
         """Find the current palette of the window."""
         if hasattr(self, '_windowPalette'):
@@ -483,7 +483,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         elif self.dialog():
             return self.parent().move(x, y)
         return super(AbstractWindow, self).move(x, y)
-    
+
     def geometry(self):
         if self.dockable():
             return self._parentOverride().geometry()

@@ -32,7 +32,7 @@ def getPaletteObjects():
         if isinstance(attrObj, PALETTE_GROUP) and attrObj not in (PALETTE_GROUP.NColorGroups, PALETTE_GROUP.All):
             groups.append(attrObj)
     return {PALETTE_ROLE: roles, PALETTE_GROUP: groups}
-    
+
 
 def getPaletteColours(palette=None):
     """Return the colours of the current palette."""
@@ -45,12 +45,12 @@ def getPaletteColours(palette=None):
         for group in paletteObjects[PALETTE_GROUP]:
             paletteData['{}:{}'.format(role.name.decode('ascii'), group.name.decode('ascii'))] = palette.color(group, role).rgb()
     return paletteData
-    
+
 
 def savePaletteData(program, version=None, palette=None):
     """Save the current palette colours in a json file."""
     paletteData = json.dumps(getPaletteColours(palette), indent=2)
-        
+
     program = ''.join(i for i in str(program) if i in ascii_letters)
     if version is not None:
         version = ''.join(i for i in str(version) if i in digits or i == '.')
@@ -58,7 +58,7 @@ def savePaletteData(program, version=None, palette=None):
     else:
         fileName = '{}.{}'.format(program, FILE_EXT)
     filePath = os.path.join(DIR, fileName)
-    
+
     with open(filePath, 'w') as f:
         f.write(paletteData)
     return filePath
@@ -93,7 +93,7 @@ def setPalette(program, version=None, style=True):
         paletteName = '{}.{}.{}'.format(program, version, FILE_EXT)
     paletteFile = os.path.join(DIR, paletteName)
     paletteData = readPalette(paletteFile)
-    
+
     palette = QtGui.QPalette()
     for paletteType, colour in paletteData.items():
         roleName, groupName = paletteType.split(':')
@@ -104,7 +104,7 @@ def setPalette(program, version=None, style=True):
             continue
         if role is not None and group is not None:
             palette.setColor(group, role, QtGui.QColor(colour))
-    
+
     QtWidgets.QApplication.setPalette(palette)
     if style:
         setStyle()

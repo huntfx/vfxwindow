@@ -60,7 +60,7 @@ def dockWrap(windowClass, *args, **kwargs):
     layout.setContentsMargins(0, 0, 0, 0)
     layout.addWidget(windowInstance)
     dock.setLayout(layout)
-    
+
     windowInstance.deferred(windowInstance.windowReady.emit)
     return windowInstance
 
@@ -112,7 +112,7 @@ class SubstanceWindow(AbstractWindow):
         """Change the dock state."""
         if self.dockable():
             self.parent().parent().setFloating(not docked)
-        
+
     def setWindowPalette(self, program, version=None, style=True, force=False):
         """Set the palette of the window.
         This doesn't seem to do anything so it's disabled by default.
@@ -148,7 +148,7 @@ class SubstanceWindow(AbstractWindow):
         """Set the position of the window when loaded."""
         if self.dockable():
             return
-        
+
         key = self._getSettingsKey()
         try:
             width = self.windowSettings['substance'][key]['width']
@@ -161,7 +161,7 @@ class SubstanceWindow(AbstractWindow):
             x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
             self.resize(width, height)
             self.move(x, y)
-    
+
     def centreWindow(self, *args, **kwargs):
         """The dialog is already centered so skip."""
         if not self.dialog():
@@ -223,7 +223,7 @@ class SubstanceWindow(AbstractWindow):
         # Window is already initialised
         if self is not cls:
             return self._parentOverride().show()
-        
+
         # Close down window if it exists and open a new one
         try:
             cls.clearWindowInstance(cls.WindowID)

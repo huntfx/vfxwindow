@@ -191,7 +191,7 @@ class Pane(object):
 
 class NukeCommon(object):
     pass
-        
+
 
 class NukeWindow(NukeCommon, AbstractWindow):
     """Base class for docking windows in Nuke.
@@ -236,7 +236,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         # See NukeWindow.parent for more information
         self.__useNukeTemporaryParent = True
         self.windowReady.connect(partial(setattr, self, '__useNukeTemporaryParent', False))
-        
+
         # This line seemed to be recommended, but I'm not sure why
         #if not self.dockable():
         #    self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
@@ -322,7 +322,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
     def getAttachedPane(self):
         """Find the name of the pane the window is attached to."""
         return Pane.find(self.WindowID)
-    
+
     def saveWindowPosition(self):
         """Save the window location."""
         if 'nuke' not in self.windowSettings:
@@ -340,7 +340,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             panel = self.getAttachedPane()
             if panel is not None:
                 self.windowSettings['nuke']['dock']['panel'] = panel
-            
+
             # TODO: Figure out how to launch a floating docked window
             try:
                 dockWindowSettings['width'] = self.width()
@@ -361,7 +361,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             mainWindowSettings['y'] = self.y()
 
         super(NukeWindow, self).saveWindowPosition()
-        
+
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
         if self.dockable():
@@ -378,7 +378,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
             self.resize(width, height)
             self.move(x, y)
-    
+
     def _parentOverride(self, usePane=False):
         """Get the widget that contains the correct size and position on screen."""
         try:
@@ -400,12 +400,12 @@ class NukeWindow(NukeCommon, AbstractWindow):
         if self.dockable():
             return self._parentOverride(usePane=True).width()
         return super(NukeWindow, self).width()
-    
+
     def height(self):
         if self.dockable():
             return self._parentOverride(usePane=True).width()
         return super(NukeWindow, self).height()
-    
+
     def _registerNukeCallbacks(self):
         """Register all callbacks."""
         numEvents = 0
@@ -713,13 +713,13 @@ class NukeWindow(NukeCommon, AbstractWindow):
                 create=True,
             )
             panel.addToPane(pane)
-                
+
             panelObject = panel.customKnob.getObject()
             if panelObject is not None:
                 widget = panelObject.widget
                 _removeMargins(widget)
                 return widget
-        
+
         kwargs['dockable'] = False
         win = super(NukeWindow, cls).show(*args, **kwargs)
         if dockOverride:
@@ -784,7 +784,7 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
         # Window is already initialised
         if self is not cls:
             return super(NukeBatchWindow, self).show()
-        
+
         # Close down window if it exists and open a new one
         try:
             cls.clearWindowInstance(cls.WindowID)

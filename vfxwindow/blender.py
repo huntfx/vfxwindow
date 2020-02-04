@@ -57,7 +57,7 @@ class BlenderWindow(StandaloneWindow):
         # Window is already initialised
         if self is not cls:
             return super(BlenderWindow, self).show()
-        
+
         # Close down window if it exists and open a new one
         try:
             cls.clearWindowInstance(cls.ID)
@@ -83,7 +83,7 @@ class BlenderWindow(StandaloneWindow):
         # Handle normal method
         elif windowInstance is None:
             windowInstance = self.windowInstance()
-            
+
         # Select all groups if specific one not provided
         if group is None:
             groups = windowInstance['callback'].keys()

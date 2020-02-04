@@ -34,7 +34,7 @@ class HoudiniWindow(AbstractWindow):
             parent = getMainWindow()
         super(HoudiniWindow, self).__init__(parent, **kwargs)
         self.houdini = True
-        
+
         # Fix some issues with widgets not taking the correct style
         self.setStyleSheet("""
             QScrollArea{
