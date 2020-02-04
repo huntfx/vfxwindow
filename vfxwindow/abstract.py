@@ -112,7 +112,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self.windowSettings = getWindowSettings(self.WindowID, path=self._windowDataPath)
 
         self._signals = defaultdict(list)
-        self.__closed = False
+        self._windowClosed = self._windowLoaded = False
         self.__dockable = getattr(self, 'WindowDockable', False)
         self.__wasDocked = None
         self.__initialPosOverride = None
@@ -124,6 +124,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
             'window': self,
             'callback': {}
         }
+
+        self.windowReady.connect(lambda: setattr(self, '_windowLoaded', True))
 
     def processEvents(self):
         """Wrapper over the inbult processEvents method.
@@ -437,13 +439,17 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         """Close the window and mark it as closed."""
-        self.__closed = True
+        self._windowClosed = True
         self.clearWindowInstance(self.WindowID)
         return super(AbstractWindow, self).closeEvent(event)
 
     def isClosed(self):
         """Return if the window has been closed."""
-        return self.__closed
+        return self._windowClosed
+
+    def isLoaded(self):
+        """Return if the window is currently loaded."""
+        return self._windowLoaded and not self.isClosed()
 
     def saveWindowPalette(self, program, version):
         """Save the palette as a file.

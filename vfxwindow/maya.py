@@ -262,8 +262,6 @@ class MayaWindow(MayaCommon, AbstractWindow):
         # The line below can save the window preferences, but this window automatically does it
         #self.setProperty("saveWindowPref", True)
 
-        self.__windowReady = False
-        self.windowReady.connect(self.__setWindowReady)
         self.__parentTemp = None
 
     def visibleChangeEvent(self, *args, **kwargs):
@@ -856,19 +854,12 @@ class MayaWindow(MayaCommon, AbstractWindow):
             return pm.setFocus(self.WindowID)
         return super(MayaWindow, self).setFocus()
 
-    def __setWindowReady(self):
-        """Mark the window as ready.
-        This is needed for a recursion error caused by setVisiblity for
-        floating windows.
-        """
-        self.__windowReady = True
-
     def setVisible(self, visible):
         """Override setVisible to make sure it behaves like show/hide.
         This can cause recursion errors, so make sure the window has
         been loaded and not closed.
         """
-        if not self.__windowReady or self.isClosed() or self.isChildWindow():
+        if not self.isLoaded() or self.isChildWindow():
             return super(MayaWindow, self).setVisible(visible)
         if visible:
             return self.show()

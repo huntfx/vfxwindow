@@ -11,6 +11,8 @@ TODO:
     Remove *_VERSION constants
     Changed dialog to isDialog
     Add dialog classmethod to replace cls.ForceDialog = True
+    Remove processEvents
+    Remove signalExists
 """
 
 from __future__ import absolute_import
