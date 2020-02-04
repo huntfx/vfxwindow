@@ -865,10 +865,10 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
     def setVisible(self, visible):
         """Override setVisible to make sure it behaves like show/hide.
-        If the window is a child window, this must be skipped as it
-        causes an infinite recursion error.
+        This can cause recursion errors, so make sure the window has
+        been loaded and not closed.
         """
-        if not self.__windowReady or self.isChildWindow():
+        if not self.__windowReady or self.isClosed() or self.isChildWindow():
             return super(MayaWindow, self).setVisible(visible)
         if visible:
             return self.show()
