@@ -339,6 +339,17 @@ class AbstractWindow(QtWidgets.QMainWindow):
         new.deferred(new.windowReady.emit)
         return new
 
+    def setVisible(self, visible):
+        """Override setVisible to make sure it behaves like show/hide.
+        This can cause recursion errors, so make sure the window has
+        been loaded and not closed.
+        """
+        if not self.isLoaded() or self.isInstance():
+            return super(AbstractWindow, self).setVisible(visible)
+        if visible:
+            return self.show()
+        return self.hide()
+
     @classmethod
     def instance(cls, parent=None, **kwargs):
         """Setup the window without showing it.
@@ -376,7 +387,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         return new
 
-    def isChildWindow(self):
+    def isInstance(self):
         """Get if the window is a child of another window."""
         return self.__childWindow
 

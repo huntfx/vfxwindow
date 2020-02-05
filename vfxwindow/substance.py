@@ -210,10 +210,10 @@ class SubstanceWindow(AbstractWindow):
     def isVisible(self):
         return self._parentOverride().isVisible()
 
-    def setVisible(self, visibility):
-        if self.isChildWindow():
+    def setVisible(self, visible):
+        if self.isInstance():
             return super(SubstanceWindow, self).setVisible(visible)
-        return self._parentOverride().setVisible(visibility)
+        return self._parentOverride().setVisible(visible)
 
     def hide(self):
         return self._parentOverride().hide()
