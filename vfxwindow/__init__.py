@@ -17,10 +17,15 @@ TODO:
 
 from __future__ import absolute_import
 
+__all__ = ['VFXWindow']
 __version__ = '1.4.5'
 
 import os
 import sys
+try:
+    from importlib.util import find_spec as importable
+except ImportError:
+    from pkgutil import find_loader as importable
 
 
 def _setup_qapp():
@@ -36,55 +41,34 @@ def _setup_qapp():
         pass
 
 
-# The imports are nested as an easy way to stop importing once a window is found
-try:
-    import maya.cmds
-
-except ImportError:
-    try:
-        if os.path.sep+'Nuke' in sys.executable and type(sys.stdout) == file:
-            _setup_qapp()
-        import nuke
-        import nukescripts
-
-    except ImportError:
-        try:
-            import hou
-            hou.qt  # The hou module works outside of Houdini, so also check for qt
-
-        except (ImportError, AttributeError):
-            try:
-                import bpy
-            except ImportError:
-                try:
-                    import unreal
-                except ImportError:
-                    try:
-                        import MaxPlus
-                    except ImportError:
-                        try:
-                            import sd
-                        except ImportError:
-                            from .standalone import StandaloneWindow as VFXWindow
-                        else:
-                            from .substance import SubstanceWindow as VFXWindow
-                    else:
-                        from .max import MaxWindow as VFXWindow
-                else:
-                    from .unreal import UnrealWindow as VFXWindow
-            else:
-                from .blender import BlenderWindow as VFXWindow
-        else:
-            from .houdini import HoudiniWindow as VFXWindow
-    else:
-        if type(sys.stdout) == file:
-            raise NotImplementedError('unable to use qt when nuke is in batch mode')
-            from .nuke import NukeBatchWindow as VFXWindow
-        else:
-            from .nuke import NukeWindow as VFXWindow
-else:
+if importable('maya') and 'maya.exe' in sys.executable:
     if type(sys.stdout) == file:
         _setup_qapp()
         from .maya import MayaBatchWindow as VFXWindow
     else:
         from .maya import MayaWindow as VFXWindow
+
+elif importable('nuke') and 'Nuke' in sys.executable:
+    if type(sys.stdout) == file:
+        raise NotImplementedError('unable to use qt when nuke is in batch mode')
+        from .nuke import NukeBatchWindow as VFXWindow
+    else:
+        from .nuke import NukeWindow as VFXWindow
+
+elif importable('hou') and 'houdini' in sys.executable:
+    from .houdini import HoudiniWindow as VFXWindow
+
+elif importable('bpy') and 'blender.exe' in sys.executable:
+    from .blender import BlenderWindow as VFXWindow
+
+elif importable('unreal') and 'UE4Editor.exe' in sys.executable:
+    from .unreal import UnrealWindow as VFXWindow
+
+elif importable('MaxPlus') and '3dsmax.exe' in sys.executable:
+    from .max import MaxWindow as VFXWindow
+
+elif importable('sd') and 'Substance Designer.exe' in sys.executable:
+    from .substance import SubstanceWindow as VFXWindow
+
+else:
+    from .standalone import StandaloneWindow as VFXWindow
