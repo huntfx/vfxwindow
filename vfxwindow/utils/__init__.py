@@ -6,6 +6,7 @@ import site
 import sys
 from functools import wraps
 from types import ModuleType
+from .Qt import QtWidgets
 
 if os.name == 'nt':
     from .windows import setCoordinatesToScreen
@@ -47,11 +48,11 @@ def searchGlobals(cls, globalsDict=None, visited=None):
     # Read the globals from the module at the top of the stack
     if globalsDict is None:
         globalsDict = inspect.stack()[-1][0].f_globals
-    
+
     # Initially mark every builtin module as visisted
     if visited is None:
         visited = set(filter(bool, map(sys.modules.get, sys.builtin_module_names)))
-    
+
     for k, v in globalsDict.items():
         if v == cls:
             return k
@@ -68,8 +69,26 @@ def searchGlobals(cls, globalsDict=None, visited=None):
             # Skip any installed modules
             if modulePath is None or any(modulePath.startswith(i) for i in SITE_PACKAGES):
                 continue
-            
+
             # Recursively search the next module
             result = searchGlobals(cls, v.__dict__, visited=visited)
             if result:
                 return k + '.' + result
+
+
+def forceMenuBar(win):
+    """Force add the menuBar if it is not there by default.
+    In Maya this is needed for docked windows.
+
+    Each menuBar appears to contain a QToolButton and then the menus,
+    so check how many children
+    This only works with .insertWidget() - creating a new layout and
+    adding both widgets won't do anything.
+    """
+    menu = win.menuBar()
+    for child in menu.children():
+        if isinstance(child, QtWidgets.QMenu):
+            break
+    else:
+        return
+    win.centralWidget().layout().insertWidget(0, menu)

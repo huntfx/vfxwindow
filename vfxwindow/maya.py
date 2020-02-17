@@ -13,7 +13,7 @@ from pymel import versions
 
 from .abstract import AbstractWindow, getWindowSettings
 from .standalone import StandaloneWindow
-from .utils import hybridmethod, setCoordinatesToScreen
+from .utils import forceMenuBar, hybridmethod, setCoordinatesToScreen
 from .utils.Qt import QtWidgets, QtCompat, QtCore
 
 
@@ -144,6 +144,7 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
     workspaceControlWin = getMainWindow(windowClass.WindowID)
     workspaceControlWin.setAttribute(QtCore.Qt.WA_DeleteOnClose)
     windowInstance = windowClass(parent=workspaceControlWin, dockable=True, *args, **kwargs)
+    forceMenuBar(windowInstance)
 
     # Attach callbacks
     windowInstance.signalConnect(workspaceControlWin.destroyed, windowInstance.close, group='__mayaDockWinDestroy')
@@ -199,6 +200,7 @@ def dockControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs)
     # Setup main window and parent to Maya
     mayaWin = getMainWindow(wrapInstance=False)
     windowInstance = windowClass(parent=mayaWin, dockable=True, *args, **kwargs)
+    forceMenuBar(windowInstance)
     windowInstance.deferred(partial(attachToDockControl, windowInstance, dock))
 
     # Restore the window (after maya is ready) since it may not be visible
