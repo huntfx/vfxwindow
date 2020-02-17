@@ -91,4 +91,5 @@ def forceMenuBar(win):
             break
     else:
         return
+    menu.setSizePolicy(menu.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Fixed)
     win.centralWidget().layout().insertWidget(0, menu)
