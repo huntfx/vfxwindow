@@ -52,12 +52,12 @@ def importable(program):
         return None
 
 
-if importable('maya') and 'maya.exe' in sys.executable:
-    if type(sys.stdout) == file:
-        _setup_qapp()
-        from .maya import MayaBatchWindow as VFXWindow
-    else:
-        from .maya import MayaWindow as VFXWindow
+if importable('maya') and 'mayapy.exe' in sys.executable:
+    _setup_qapp()
+    from .maya import MayaBatchWindow as VFXWindow
+
+elif importable('maya') and 'maya.exe' in sys.executable:
+    from .maya import MayaWindow as VFXWindow
 
 elif importable('nuke') and 'Nuke' in sys.executable:
     if type(sys.stdout) == file:
