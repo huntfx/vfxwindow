@@ -23,9 +23,9 @@ __version__ = '1.4.6'
 import os
 import sys
 try:
-    from importlib.util import find_spec as importable
+    from importlib.util import find_spec as _importable
 except ImportError:
-    from pkgutil import find_loader as importable
+    from pkgutil import find_loader as _importable
 
 
 def _setup_qapp():
@@ -39,6 +39,17 @@ def _setup_qapp():
         app = QtWidgets.QApplication(sys.argv)
     except RuntimeError:
         pass
+
+
+def importable(program):
+    """Find which imports can be performed.
+    In rare circumstances a TypeError can be raised, but it's safe to
+    ignore and assume it's not the correct program.
+    """
+    try:
+        return bool(_importable(program))
+    except TypeError:
+        return None
 
 
 if importable('maya') and 'maya.exe' in sys.executable:
