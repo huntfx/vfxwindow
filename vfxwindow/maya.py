@@ -17,9 +17,9 @@ from .utils import forceMenuBar, hybridmethod, setCoordinatesToScreen
 from .utils.Qt import QtWidgets, QtCompat, QtCore
 
 
-MAYA_VERSION = versions.flavor()
+VERSION = versions.flavor()
 
-MAYA_BATCH = pm.about(batch=True)
+BATCH = pm.about(batch=True)
 
 # Map each function required for each callback
 SCENE_CALLBACKS = {
@@ -251,14 +251,14 @@ class MayaWindow(MayaCommon, AbstractWindow):
     This is an alternative to maya.app.general.mayaMixin.MayaQWidgetDockableMixin, as many features
     were already implemented when I found it. It is missing a few parts I would have liked though.
     """
-    _Pre2017 = int(MAYA_VERSION) < 2017  # workspaceControl was added in 2017
+    _Pre2017 = int(VERSION) < 2017  # workspaceControl was added in 2017
 
     def __init__(self, parent=None, dockable=False, **kwargs):
         if parent is None:
             parent = getMainWindow()
         super(MayaWindow, self).__init__(parent, **kwargs)
         self.maya = True
-        self.batch = MAYA_BATCH
+        self.batch = BATCH
         self.setDockable(dockable, override=True)
 
         # The line below can save the window preferences, but this window automatically does it
@@ -352,7 +352,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def windowPalette(self):
         currentPalette = super(MayaWindow, self).windowPalette()
         if currentPalette is None:
-            return 'Maya.{}'.format(MAYA_VERSION)
+            return 'Maya.{}'.format(VERSION)
         return currentPalette
 
     def _parentOverride(self):
@@ -489,7 +489,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 dockWindowSettings['x'] = self.x()
                 dockWindowSettings['y'] = self.y()
                 dockWindowSettings['floating'] = self.floating()
-                if MAYA_VERSION < 2017:
+                if VERSION < 2017:
                     dockWindowSettings['area'] = self.area()
                 else:
                     dockWindowSettings['control'] = self.control()
@@ -844,7 +844,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         # because it will also delete the window location
         # It's better to handle it elsewhere if possible
         if deleteWindow and previousInstance['window'].dockable():
-            if MAYA_VERSION < 2017:
+            if VERSION < 2017:
                 deleteDockControl(previousInstance['window'].WindowID)
             else:
                 deleteWorkspaceControl(previousInstance['window'].WindowID)
@@ -859,7 +859,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def hide(self):
         """Hide the window."""
         if self.dockable():
-            if MAYA_VERSION < 2017:
+            if VERSION < 2017:
                 return pm.dockControl(self.WindowID, edit=True, visible=False)
             self.parent().setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
             return pm.workspaceControl(self.WindowID, edit=True, visible=False)
@@ -876,7 +876,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         if self is not cls:
             # Case where window is already initialised
             if self.dockable():
-                if MAYA_VERSION < 2017:
+                if VERSION < 2017:
                     return pm.dockControl(self.WindowID, edit=True, visible=True)
                 result = pm.workspaceControl(self.WindowID, edit=True, visible=True)
                 self.parent().setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -920,7 +920,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
         # Override docked mode in case of mayabatch
         batchOverride = False
-        if docked and MAYA_BATCH:
+        if docked and BATCH:
             docked = cls.WindowDockable = False
             batchOverride = True
 

@@ -18,7 +18,7 @@ from .utils import hybridmethod, setCoordinatesToScreen, searchGlobals
 from .utils.Qt import QtWidgets
 
 
-NUKE_VERSION = float('{}.{}'.format(nuke.env['NukeVersionMajor'], nuke.env['NukeVersionMinor']))
+VERSION = float('{}.{}'.format(nuke.env['NukeVersionMajor'], nuke.env['NukeVersionMinor']))
 
 
 def getMainWindow():
@@ -289,7 +289,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
     def windowPalette(self):
         currentPalette = super(NukeWindow, self).windowPalette()
         if currentPalette is None:
-            return 'Nuke.{}'.format(NUKE_VERSION)
+            return 'Nuke.{}'.format(VERSION)
         return currentPalette
 
     def exists(self, alternative=False):

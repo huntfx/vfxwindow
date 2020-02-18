@@ -18,7 +18,7 @@ TODO:
 from __future__ import absolute_import
 
 __all__ = ['VFXWindow']
-__version__ = '1.4.6'
+__version__ = '1.5.0'
 
 import os
 import sys
@@ -80,6 +80,9 @@ elif importable('MaxPlus') and '3dsmax.exe' in sys.executable:
 
 elif importable('sd') and 'Substance Designer.exe' in sys.executable:
     from .substance import SubstanceWindow as VFXWindow
+
+elif importable('fusionscript') and 'Fusion.exe' in sys.executable:
+    from .fusion import FusionWindow as VFXWindow
 
 else:
     from .standalone import StandaloneWindow as VFXWindow

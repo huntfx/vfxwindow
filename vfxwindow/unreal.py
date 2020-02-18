@@ -11,7 +11,7 @@ from .utils import setCoordinatesToScreen, hybridmethod
 from .standalone import StandaloneWindow
 
 
-UNREAL_VERSION = sys.executable.split(os.path.sep)[-5][3:]
+VERSION = sys.executable.split(os.path.sep)[-5][3:]
 
 
 class UnrealWindow(StandaloneWindow):

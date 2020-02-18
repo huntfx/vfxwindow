@@ -11,7 +11,7 @@ from .utils.Qt import QtWidgets
 from .standalone import StandaloneWindow
 
 
-BLENDER_VERSION = bpy.app.version_string
+VERSION = bpy.app.version_string
 
 
 class BlenderWindow(StandaloneWindow):

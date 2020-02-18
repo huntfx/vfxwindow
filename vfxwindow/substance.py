@@ -36,7 +36,7 @@ APPLICATION = sd.getContext().getSDApplication()
 
 MANAGER = APPLICATION.getQtForPythonUIMgr()
 
-SUBSTANCE_VERSION = None  # TODO: Find out how to get the version
+VERSION = None  # TODO: Find out how to get the version
 
 
 def getMainWindow():

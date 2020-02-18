@@ -14,7 +14,7 @@ from .utils.Qt import QtWidgets, QtCompat, QtCore
 from .standalone import StandaloneWindow
 
 
-MAX_VERSION = sys.executable.split(os.path.sep)[-2][8:]
+VERSION = sys.executable.split(os.path.sep)[-2][8:]
 
 
 def getMainWindow():
@@ -79,7 +79,7 @@ class MaxWindow(AbstractWindow):
     def windowPalette(self):
         currentPalette = super(MaxWindow, self).windowPalette()
         if currentPalette is None:
-            return 'Max.{}'.format(MAX_VERSION)
+            return 'Max.{}'.format(VERSION)
         return currentPalette
 
     @hybridmethod

@@ -34,7 +34,8 @@ setup(
     },
     keywords = [
         'qt', 'pyside', 'pyside2', 'pyqt', 'pyqt4', 'pyqt5', 'gui', 'window',
-        'maya', 'mayapy', 'nuke', 'nukescripts', 'houdini', 'unreal', 'ue4', 'blender', '3dsmax', '3ds',
+        'maya', 'mayapy', 'nuke', 'nukescripts', 'houdini', 'unreal', 'ue4',
+        'blender', '3dsmax', '3ds', 'blackmagic', 'fusion',
         'vfx', 'visualfx', 'fx', 'cgi', '3d',
     ],
     package_data={'vfxwindow': ['palettes/*.json']},

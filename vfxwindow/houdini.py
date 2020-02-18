@@ -9,7 +9,7 @@ from .abstract import AbstractWindow
 from .utils import setCoordinatesToScreen
 
 
-HOUDINI_VERSION = hou.applicationVersion()[0]
+VERSION = hou.applicationVersion()[0]
 
 
 def getMainWindow():
@@ -64,7 +64,7 @@ class HoudiniWindow(AbstractWindow):
     def windowPalette(self):
         currentPalette = super(HoudiniWindow, self).windowPalette()
         if currentPalette is None:
-            return 'Houdini.{}'.format(HOUDINI_VERSION)
+            return 'Houdini.{}'.format(VERSION)
         return currentPalette
 
     def saveWindowPosition(self):
