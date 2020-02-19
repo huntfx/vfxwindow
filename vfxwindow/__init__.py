@@ -81,7 +81,7 @@ elif importable('MaxPlus') and '3dsmax.exe' in sys.executable:
 elif importable('sd') and 'Substance Designer.exe' in sys.executable:
     from .substance import SubstanceWindow as VFXWindow
 
-elif importable('fusionscript') and 'Fusion.exe' in sys.executable:
+elif importable('fusionscript') or importable('PeyeonScript') and 'Fusion.exe' in sys.executable:
     from .fusion import FusionWindow as VFXWindow
 
 else:

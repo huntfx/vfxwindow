@@ -5,8 +5,12 @@ from __future__ import absolute_import
 import os
 import sys
 
-import fusionscript
-fusion = fusionscript.scriptapp('Fusion')
+try:
+    import fusionscript
+    fusion = fusionscript.scriptapp('Fusion')
+except ImportError:
+    import PeyeonScript as eyeon
+    fusion = eyeon.scriptapp('Fusion')
 
 from .utils import setCoordinatesToScreen, hybridmethod
 from .standalone import StandaloneWindow
@@ -15,8 +19,17 @@ from .standalone import StandaloneWindow
 VERSION = str(int(fusion.GetAppInfo()['Version']))
 
 
+def getMainWindow():
+    """Get a pointer to the Fusion window.
+    However as of Fusion 9, this doesn't seem to return anything.
+    """
+    return fusion.GetMainWindow()
+
+
 class FusionWindow(StandaloneWindow):
     def __init__(self, parent=None, **kwargs):
+        if parent is None:
+            parent = getMainWindow()
         super(FusionWindow, self).__init__(parent, **kwargs)
         self.fusion = True
         self.standalone = False
