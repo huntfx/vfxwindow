@@ -16,7 +16,7 @@ from .utils import setCoordinatesToScreen, hybridmethod
 from .standalone import StandaloneWindow
 
 
-VERSION = str(int(fusion.GetAppInfo()['Version']))
+VERSION = str(int(fusion.Version))
 
 
 def getMainWindow():
