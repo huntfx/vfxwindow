@@ -6,12 +6,13 @@ import os
 import sys
 
 import fusionscript
+fusion = fusionscript.scriptapp('Fusion')
 
 from .utils import setCoordinatesToScreen, hybridmethod
 from .standalone import StandaloneWindow
 
 
-VERSION = sys.executable.split(os.path.sep)[-2].split(' ')[1]
+VERSION = str(int(fusion.GetAppInfo()['Version']))
 
 
 class FusionWindow(StandaloneWindow):
