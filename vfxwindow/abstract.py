@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 
+import inspect
 import json
 import os
 import tempfile
@@ -320,6 +321,23 @@ class AbstractWindow(QtWidgets.QMainWindow):
         if checkBox is not None:
             return (result, checkBox.isChecked())
         return result
+
+    def about(self, text=None):
+        """Make an "about" popup message.
+        If no text is provided, this will first attempt to read the doc
+        string of the current class, and if that fails, it will grab
+        the docstring of the module.
+        """
+        if text is None:
+            docstring = self.__class__.__doc__ or inspect.getmodule(self).__doc__
+            if docstring is None:
+                raise ValueError('unable to find docstring')
+            text = inspect.cleandoc(docstring)
+
+        self.displayMessage(
+            title='About {}'.format(self.WindowName),
+            message=text,
+        )
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
