@@ -84,5 +84,8 @@ elif importable('sd') and 'Substance Designer.exe' in sys.executable:
 elif importable('fusionscript') or importable('PeyeonScript') and 'Fusion.exe' in sys.executable:
     from .fusion import FusionWindow as VFXWindow
 
+elif importable('SandboxBridge') and 'Sandbox.exe' in sys.executable:
+    from .cryengine import CryWindow as VFXWindow
+
 else:
     from .standalone import StandaloneWindow as VFXWindow
