@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import sys
+from collections import defaultdict
 
 import bpy
 
@@ -102,7 +103,7 @@ class BlenderWindow(StandaloneWindow):
             del windowInstance['callback'][group]
         return numEvents
 
-    def __addBlenderCallbackGroup(self, group):
+    def _addBlenderCallbackGroup(self, group):
         windowInstance = self.windowInstance()
         if group in windowInstance['callback']:
             return
