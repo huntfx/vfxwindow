@@ -72,6 +72,11 @@ if __name__ == '__main__':
  - Dock window into panels
  - Dialog window
 
+### Non-Python Applications
+Certain Windows applications have dispatch based COM interface, which will allow a link between Python and the application. See [photoshop-scripting-python](https://github.com/lohriialo/photoshop-scripting-python) for an example on how to connect to an application.
+
+Currently there is no way of launching `VFXWindow` from inside these applications.
+
 ### Special Thanks
  - [Blue Zoo](https://www.blue-zoo.co.uk/) - I've been building this up while working there
  - [Lior Ben Horin](https://gist.github.com/liorbenhorin): [Simple_MayaDockingClass.py](https://gist.github.com/liorbenhorin/69da10ec6f22c6d7b92deefdb4a4f475) - used for main Maya docking code
