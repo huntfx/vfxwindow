@@ -9,6 +9,7 @@ import SandboxBridge
 
 from .abstract import getWindowSettings
 from .utils import setCoordinatesToScreen, hybridmethod
+from .utils.Qt import QtWidgets
 from .standalone import StandaloneWindow
 
 
@@ -17,10 +18,12 @@ VERSION = sys.executable.split(os.path.sep)[5].split('_')[1]
 
 def getMainWindow():
     """Get a pointer to the CryEngine window.
-    Currently it doesn't appear to be accessible to Python.
+    This doesn't appear to make any difference to a standalone window.
     """
 
-    return None
+    for widget in QtWidgets.QApplication.topLevelWidgets():
+        if type(widget) == QtWidgets.QWidget and widget.parentWidget() is None and widget.objectName() == 'mainWindow':
+            return widget
 
 
 class CryWindow(StandaloneWindow):
