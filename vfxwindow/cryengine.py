@@ -89,22 +89,17 @@ class CryWindow(StandaloneWindow):
             settings = getWindowSettings(cls.WindowID)
 
         #Load settings
-        try:
-            nukeSettings = settings['nuke']
-        except KeyError:
-            nukeSettings = settings['nuke'] = {}
-
         if hasattr(cls, 'WindowDockable'):
             docked = cls.WindowDockable
         else:
             try:
-                docked = nukeSettings['docked']
+                docked = settings['cryengine']['docked']
             except KeyError:
                 try:
                     docked = cls.WindowDefaults['docked']
                 except (AttributeError, KeyError):
                     docked = True
-                    
+        
         if docked:
             # Unable to test this yet
             return SandboxBridge.register_window(
