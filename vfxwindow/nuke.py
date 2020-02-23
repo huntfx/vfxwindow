@@ -1,6 +1,7 @@
 """Window class for Nuke.
 
 TODO: Get callbacks from https://learn.foundry.com/nuke/developers/110/pythonreference/
+TODO: Figure out how to launch a floating panel
 """
 
 from __future__ import absolute_import, print_function
@@ -21,10 +22,18 @@ from .utils.Qt import QtWidgets
 VERSION = float('{}.{}'.format(nuke.env['NukeVersionMajor'], nuke.env['NukeVersionMinor']))
 
 
+class RuntimeDraggingError(RuntimeError):
+    """Custom error message for when a window is being dragged."""
+
+    def __init__(self):
+        super(RuntimeDraggingError, self).__init__("window is currently in a quantum state (while dragging it technically doesn't exist)")
+
+
 def getMainWindow():
-    """Returns Nuke's main window
+    """Returns Nukes main window
     Source: https://github.com/fredrikaverpil/pyvfx-boilerplate/blob/master/boilerplate.py
     """
+
     for obj in QtWidgets.QApplication.topLevelWidgets():
         if obj.inherits('QMainWindow') and obj.metaObject().className() == 'Foundry::UI::DockMainWindow':
             return obj
@@ -35,6 +44,7 @@ def deleteQtWindow(windowId):
     """Delete a window.
     Source: https://github.com/fredrikaverpil/pyvfx-boilerplate/blob/master/boilerplate.py
     """
+
     for obj in QtWidgets.QApplication.allWidgets():
         if obj.objectName() == windowId:
             obj.deleteLater()
@@ -44,6 +54,7 @@ def _removeMargins(widget):
     """Remove Nuke margins when docked UI
     Source: https://gist.github.com/maty974/4739917
     """
+
     for parent in (widget.parentWidget().parentWidget(), widget.parentWidget().parentWidget().parentWidget().parentWidget()):
         parent.layout().setContentsMargins(0, 0, 0, 0)
 
@@ -60,6 +71,7 @@ class Pane(object):
         """Automatically select a pane to attach to.
         If there are somehow no panels that exist then None will be returned.
         """
+
         for pane_func in cls.__PRIORITY:
             pane = pane_func.__get__(cls, None)()
             if pane is not None:
@@ -68,6 +80,7 @@ class Pane(object):
     @classmethod
     def find(cls, windowID):
         """Find which pane the WindowID is docked to."""
+
         current_pane = nuke.getPaneFor(windowID)
         if current_pane is None:
             return None
@@ -196,16 +209,23 @@ class NukeCommon(object):
 class NukeWindow(NukeCommon, AbstractWindow):
     """Base class for docking windows in Nuke.
 
-    Usage:
-        class MainWindow(NukeWindow):
-            ...
-        MainWindow.show()
+    Docked Window Workarounds:
+        Because Nuke only "hides" docked windows and never closes them,
+        a few special workarounds need to be done on some features.
 
-    Important:
-        To save any window preferences, such as its location, do it it in "saveWindowPosition",
-         which will run once each time the window is hidden (or closed).
-        To update the window with any scene changes, use "updateToCurrent",
-         which will run once each time the window is shown (required as callbacks are unregistered when the window is hidden).
+        Window Position:
+            This must be run every time the window is hidden, to ensure
+            the location is as up to date as possible. The process of
+            dragging a window actually sends a hideEvent, but will
+            cause errors when trying to query positions as it gets
+            detached from all parents.
+
+        Callbacks:
+            Since there is no closeEvent to catch, every callback will
+            unregister when the window is hidden, and be registered
+            again when the window appears again.
+            By defining a "checkForChanges" method, code can be run
+            after re-registering the callbacks.
     """
 
     _CALLBACKS = {
@@ -224,6 +244,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         By default dockable must be True as Nuke provides no control
         over it when creating a panel.
         """
+
         if parent is None:
             parent = getMainWindow()
         super(NukeWindow, self).__init__(parent, **kwargs)
@@ -242,6 +263,8 @@ class NukeWindow(NukeCommon, AbstractWindow):
         #    self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
     def closeEvent(self, event):
+        """Special case for closing docked windows."""
+
         super(NukeWindow, self).clearWindowInstance(self.WindowID)
 
         if self.dockable():
@@ -260,21 +283,25 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def setDefaultSize(self, width, height):
         """Override of setDefaultSize to disable it if window is docked."""
+
         if not self.dockable():
             super(NukeWindow, self).setDefaultSize(width, height)
 
     def setDefaultWidth(self, width):
         """Override of setDefaultWidth to disable it if window is docked."""
+
         if not self.dockable():
             super(NukeWindow, self).setDefaultWidth(width)
 
     def setDefaultHeight(self, height):
         """Override of setDefaultHeight to disable it if window is docked."""
+
         if not self.dockable():
             super(NukeWindow, self).setDefaultHeight(height)
 
     def setDefaultPosition(self, x, y):
         """Override of setDefaultPosition to disable it if window is docked."""
+
         if not self.dockable():
             super(NukeWindow, self).setDefaultPosition(x, y)
 
@@ -283,10 +310,13 @@ class NukeWindow(NukeCommon, AbstractWindow):
         This will change the entire Nuke GUI so it's disabled by default.
         The force parameter can be set to override this behaviour.
         """
+
         if force:
             super(NukeWindow, self).setWindowPalette(program, version, style)
 
     def windowPalette(self):
+        """Get the current window palette."""
+
         currentPalette = super(NukeWindow, self).windowPalette()
         if currentPalette is None:
             return 'Nuke.{}'.format(VERSION)
@@ -296,6 +326,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """Check if the window still exists.
         See if it is attached to any pane, or check the parents up to the QStackedWidget.
         """
+
         if self.dockable():
             if alternative:
                 return self.parent().parent().parent().parent().parent().parent().parent().parent() is not None
@@ -304,6 +335,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def floating(self, alternative=False):
         """Determine if the window is floating."""
+
         if self.dockable():
             if alternative:
                 return self.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent() is not None
@@ -312,6 +344,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def siblings(self):
         """Count the number of siblings in the QStackedWidget."""
+
         if self.dockable():
             try:
                 return self.parent().parent().parent().parent().parent().parent().parent().parent().count()
@@ -321,49 +354,43 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def getAttachedPane(self):
         """Find the name of the pane the window is attached to."""
+
         return Pane.find(self.WindowID)
 
     def saveWindowPosition(self):
         """Save the window location."""
+
         if 'nuke' not in self.windowSettings:
             self.windowSettings['nuke'] = {}
-        try:
-            nukeSettings = self.windowSettings['nuke']
-        except KeyError:
-            nukeSettings = self.windowSettings['nuke'] = {}
-        self.windowSettings['nuke']['docked'] = self.dockable(raw=True)
-        if self.dockable():
-            try:
-                dockWindowSettings = self.windowSettings['nuke']['dock']
-            except KeyError:
-                dockWindowSettings = self.windowSettings['nuke']['dock'] = {}
-            panel = self.getAttachedPane()
-            if panel is not None:
-                self.windowSettings['nuke']['dock']['panel'] = panel
+        settings = self.windowSettings['nuke']
+        settings['docked'] = self.dockable(raw=True)
 
-            # TODO: Figure out how to launch a floating docked window
-            try:
-                dockWindowSettings['width'] = self.width()
-                dockWindowSettings['height'] = self.height()
-                dockWindowSettings['x'] = self.x()
-                dockWindowSettings['y'] = self.y()
-            except RuntimeError as e:
-                if str(e) != 'window is currently in a quantum state (while dragging it technically doesn\'t exist)':
-                    raise
-        else:
-            try:
-                mainWindowSettings = self.windowSettings['nuke']['main']
-            except KeyError:
-                mainWindowSettings = self.windowSettings['nuke']['main'] = {}
-            mainWindowSettings['width'] = self.width()
-            mainWindowSettings['height'] = self.height()
-            mainWindowSettings['x'] = self.x()
-            mainWindowSettings['y'] = self.y()
+        key = self._getSettingsKey()
+        if key not in settings:
+            settings[key] = {}
+
+        try:
+            settings[key]['width'] = self.width()
+            settings[key]['height'] = self.height()
+            settings[key]['x'] = self.x()
+            settings[key]['y'] = self.y()
+
+            # Save docked specific settings
+            if self.dockable():
+                panel = self.getAttachedPane()
+                if panel is not None:
+                    settings[key]['panel'] = panel
+
+        # Catch error if window is being dragged at this moment
+        except RuntimeDraggingError as e:
+            if self.dockable():
+                raise
 
         super(NukeWindow, self).saveWindowPosition()
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
+
         if self.dockable():
             return
         try:
@@ -381,6 +408,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def _parentOverride(self, usePane=False):
         """Get the widget that contains the correct size and position on screen."""
+
         try:
             if usePane:
                 pane = Pane.get(self.WindowID)
@@ -394,20 +422,25 @@ class NukeWindow(NukeCommon, AbstractWindow):
             if self.exists():
                 raise
             else:
-                raise RuntimeError('window is currently in a quantum state (while dragging it technically doesn\'t exist)')
+                raise RuntimeDraggingError
 
     def width(self):
+        """Override to get docked width."""
+
         if self.dockable():
             return self._parentOverride(usePane=True).width()
         return super(NukeWindow, self).width()
 
     def height(self):
+        """Override to get docked height."""
+
         if self.dockable():
             return self._parentOverride(usePane=True).width()
         return super(NukeWindow, self).height()
 
     def _registerNukeCallbacks(self):
         """Register all callbacks."""
+
         numEvents = 0
         windowInstance = self.windowInstance()
         for group in windowInstance['callback'].keys():
@@ -423,6 +456,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def _unregisterNukeCallbacks(self, group=None):
         """Unregister all callbacks."""
+
         numEvents = 0
         windowInstance = self.windowInstance()
         for group in windowInstance['callback'].keys():
@@ -438,6 +472,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def removeCallback(self, func, group=None, nodeClass=None):
         """Remove an individual callback."""
+
         windowInstance = self.windowInstance()
         if group is None:
             groups = windowInstance['callback'].keys()
@@ -467,6 +502,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
     @hybridmethod
     def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
         """Remove a callback group or all callbacks."""
+
         # Handle classmethod
         if self is cls:
             if windowInstance is None and windowID is not None:
@@ -510,6 +546,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """Executed whenever a node is created by the user.
         Not called when loading existing scripts, pasting nodes, or undoing a delete.
         """
+
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onUserCreate'][func].add(nodeClass)
         if not self.__windowHidden:
@@ -522,6 +559,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """Executed when any node is created.
         Examples include loading a script (includes new file), pasting a node, selecting a menu item, or undoing a delete.
         """
+
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onCreate'][func].add(nodeClass)
         if not self.__windowHidden:
@@ -534,6 +572,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """Executed when a script is loaded.
         This will be called by onCreate (for root), and straight after onCreate.
         """
+
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onScriptLoad'][func].add(nodeClass)
         if not self.__windowHidden:
@@ -544,6 +583,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def addCallbackOnScriptSave(self, func, nodeClass=None, group=None):
         """Executed when the user tries to save a script."""
+
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onScriptSave'][func].add(nodeClass)
         if not self.__windowHidden:
@@ -554,6 +594,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def addCallbackOnScriptClose(self, func, nodeClass=None, group=None):
         """Executed when Nuke is exited or the script is closed."""
+
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onScriptClose'][func].add(nodeClass)
         if not self.__windowHidden:
@@ -592,6 +633,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
     @classmethod
     def clearWindowInstance(cls, windowID):
         """Close the last class instance."""
+
         try:
             previousInstance = super(NukeWindow, cls).clearWindowInstance(windowID)
         except TypeError:
@@ -609,6 +651,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def deferred(self, func, *args, **kwargs):
         """Execute a deferred command."""
+
         utils.executeDeferred(func, *args, **kwargs)
 
     def parent(self, *args, **kwargs):
@@ -623,12 +666,14 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
         This fix runs getMainWindow if loading isn't complete.
         """
+
         if not self.__useNukeTemporaryParent or self.dockable():
             return super(NukeWindow, self).parent(*args, **kwargs)
         return getMainWindow()
 
     def hideEvent(self, event):
         """Unregister callbacks and save window location."""
+
         if not event.spontaneous() and not self.isClosed():
             try:
                 self._unregisterNukeCallbacks()
@@ -639,6 +684,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def showEvent(self, event):
         """Register callbacks and update UI (if checkForChanges is defined)."""
+
         if not event.spontaneous():
             self._registerNukeCallbacks()
             self.__windowHidden = False
@@ -647,18 +693,15 @@ class NukeWindow(NukeCommon, AbstractWindow):
         return super(NukeWindow, self).showEvent(event)
 
     def hide(self):
+        """Hide the Nuke window."""
+
         if not self.dockable():
             return super(NukeWindow, self).hide()
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
-        """Show the Nuke window.
+        """Show the Nuke window."""
 
-        IMPORTANT:
-            If using the dockable window, then the namespace needs to be set.
-            This is simply a string of how the window is called, such as "module.MyWindow.show(namespace='module.MyWindow')".
-            It's not ideal and can't be error checked, but it's required for the time being.
-        """
         # Window is already initialised
         if self is not cls:
             if self.dockable():
@@ -749,28 +792,31 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        try:
-            nukeSettings = self.windowSettings['nuke']
-        except KeyError:
-            nukeSettings = self.windowSettings['nuke'] = {}
-        try:
-            mainWindowSettings = nukeSettings['batch']
-        except KeyError:
-            mainWindowSettings = nukeSettings['batch'] = {}
-        mainWindowSettings['width'] = self.width()
-        mainWindowSettings['height'] = self.height()
-        mainWindowSettings['x'] = self.x()
-        mainWindowSettings['y'] = self.y()
+
+        if 'nuke' not in self.windowSettings:
+            self.windowSettings['nuke'] = {}
+        settings = self.windowSettings['nuke']
+
+        key = self._getSettingsKey()
+        if key not in settings:
+            settings[key] = {}
+
+        settings[key]['width'] = self.width()
+        settings[key]['height'] = self.height()
+        settings[key]['x'] = self.x()
+        settings[key]['y'] = self.y()
 
         super(NukeBatchWindow, self).saveWindowPosition()
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
+
+        key = self._getSettingsKey()
         try:
-            width = self.windowSettings['nuke']['batch']['width']
-            height = self.windowSettings['nuke']['batch']['height']
-            x = self.windowSettings['nuke']['batch']['x']
-            y = self.windowSettings['nuke']['batch']['y']
+            width = self.windowSettings['nuke'][key]['width']
+            height = self.windowSettings['nuke'][key]['height']
+            x = self.windowSettings['nuke'][key]['x']
+            y = self.windowSettings['nuke'][key]['y']
         except KeyError:
             super(NukeBatchWindow, self).loadWindowPosition()
         else:
@@ -781,6 +827,7 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
     @hybridmethod
     def show(cls, self, *args, **kwargs):
         """Load the window in Nuke batch mode."""
+
         # Window is already initialised
         if self is not cls:
             return super(NukeBatchWindow, self).show()

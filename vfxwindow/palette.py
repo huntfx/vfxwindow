@@ -23,6 +23,7 @@ FILE_EXT = 'json'
 
 def getPaletteObjects():
     """Get the available group/role objects."""
+
     roles = []
     groups = []
     for attrName in dir(QtGui.QPalette):
@@ -36,6 +37,7 @@ def getPaletteObjects():
 
 def getPaletteColours(palette=None):
     """Return the colours of the current palette."""
+
     if palette is None:
         palette = QtGui.QPalette()
 
@@ -49,6 +51,7 @@ def getPaletteColours(palette=None):
 
 def savePaletteData(program, version=None, palette=None):
     """Save the current palette colours in a json file."""
+
     paletteData = json.dumps(getPaletteColours(palette), indent=2)
 
     program = ''.join(i for i in str(program) if i in ascii_letters)
@@ -66,16 +69,18 @@ def savePaletteData(program, version=None, palette=None):
 
 def readPalette(filePath):
     """Read the contents of a palette file."""
+
     with open(filePath, 'r') as f:
         return json.loads(f.read())
 
 
 def setStyle(style=None):
     """Set the style of the window.
-    WARNING: Only do this on standalone windows or it'll mess up the program.
+    Only do this on standalone windows or it may mess up the program.
     """
+
     availableStyles = getStyleList()
-    if style not in availableStyles:
+    if style is None:
         if 'Fusion' in availableStyles:
             style = 'Fusion'
         elif 'Plastique' in availableStyles:
@@ -87,6 +92,7 @@ def setStyle(style=None):
 
 def setPalette(program, version=None, style=True):
     """Apply a palette to the current window."""
+
     if version is None:
         paletteName = '{}.{}'.format(program, FILE_EXT)
     else:
@@ -112,6 +118,7 @@ def setPalette(program, version=None, style=True):
 
 def getPaletteList():
     """Return a sorted list of available palettes starting with the default ones."""
+
     ext = '.' + FILE_EXT
     extLen = len(ext)
     palettes = set(i[:-extLen] for i in os.listdir(DIR) if i[-extLen:] == ext)
@@ -121,11 +128,13 @@ def getPaletteList():
 
 def getStyleList():
     """Return a list of all available styles."""
+
     return QtWidgets.QStyleFactory.keys()
 
 
 def matchPaletteToFile():
     """Find which file the current palette relates to."""
+
     currentPalette = getPaletteColours()
     files = getPaletteList()
     files = ['Nuke.10']
@@ -135,7 +144,3 @@ def matchPaletteToFile():
         if paletteData == currentPalette:
             return fileName
     return None
-
-
-if __name__ == '__main__':
-    savePaletteData('loaded-program', 'program-version')

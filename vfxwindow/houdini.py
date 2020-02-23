@@ -14,6 +14,7 @@ VERSION = hou.applicationVersion()[0]
 
 def getMainWindow():
     """Get an instance of the main window."""
+
     return hou.ui.mainQtWindow()
 
 
@@ -21,14 +22,15 @@ def getStyleSheet():
     """Get the Houdini stylesheet, possibly for use outside the program.
     For inside Houdini, use setProperty('houdiniStyle', True).
     """
+
     return hou.qt.styleSheet()
 
 
 class HoudiniWindow(AbstractWindow):
     """Window to use for Houdini.
-    It has support for automatically saving the position when closed,
-    and performs some necessary CSS edits to fix colours.
+    This also performs some necessary CSS edits to fix colours.
     """
+
     def __init__(self, parent=None, **kwargs):
         if parent is None:
             parent = getMainWindow()
@@ -53,12 +55,14 @@ class HoudiniWindow(AbstractWindow):
 
     def closeEvent(self, event):
         """Save the window location on window close."""
+
         self.saveWindowPosition()
         self.clearWindowInstance(self.WindowID)
         return super(HoudiniWindow, self).closeEvent(event)
 
     def displayMessage(self, message):
         """Show a popup message."""
+
         hou.ui.displayMessage(message)
 
     def windowPalette(self):
@@ -69,28 +73,31 @@ class HoudiniWindow(AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        try:
-            houdiniSettings = self.windowSettings['houdini']
-        except KeyError:
-            houdiniSettings = self.windowSettings['houdini'] = {}
-        try:
-            mainWindowSettings = houdiniSettings['main']
-        except KeyError:
-            mainWindowSettings = houdiniSettings['main'] = {}
 
-        mainWindowSettings['width'] = self.width()
-        mainWindowSettings['height'] = self.height()
-        mainWindowSettings['x'] = self.x()
-        mainWindowSettings['y'] = self.y()
+        if 'houdini' not in self.windowSettings:
+            self.windowSettings['houdini'] = {}
+        settings = self.windowSettings['houdini']
+
+        key = self._getSettingsKey()
+        if key not in settings:
+            settings[key] = {}
+        
+        settings[key]['width'] = self.width()
+        settings[key]['height'] = self.height()
+        settings[key]['x'] = self.x()
+        settings[key]['y'] = self.y()
+
         super(HoudiniWindow, self).saveWindowPosition()
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
+
+        key = self._getSettingsKey()
         try:
-            x = self.windowSettings['houdini']['main']['x']
-            y = self.windowSettings['houdini']['main']['y']
-            width = self.windowSettings['houdini']['main']['width']
-            height = self.windowSettings['houdini']['main']['height']
+            x = self.windowSettings['houdini'][key]['x']
+            y = self.windowSettings['houdini'][key]['y']
+            width = self.windowSettings['houdini'][key]['width']
+            height = self.windowSettings['houdini'][key]['height']
         except KeyError:
             super(HoudiniWindow, self).loadWindowPosition()
         else:
@@ -101,6 +108,7 @@ class HoudiniWindow(AbstractWindow):
     @classmethod
     def clearWindowInstance(self, windowID):
         """Close the last class instance."""
+
         previousInstance = super(HoudiniWindow, self).clearWindowInstance(windowID)
         if previousInstance is None:
             return
@@ -113,4 +121,6 @@ class HoudiniWindow(AbstractWindow):
                 pass
 
     def deferred(self, func, *args, **kwargs):
+        """Defer function until Houdini is ready."""
+
         hdefereval.executeDeferred(func, *args, **kwargs)

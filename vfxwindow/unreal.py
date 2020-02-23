@@ -28,28 +28,31 @@ class UnrealWindow(StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        try:
-            unrealSettings = self.windowSettings['unreal']
-        except KeyError:
-            unrealSettings = self.windowSettings['unreal'] = {}
-        try:
-            mainWindowSettings = unrealSettings['main']
-        except KeyError:
-            mainWindowSettings = unrealSettings['main'] = {}
-        mainWindowSettings['width'] = self.width()
-        mainWindowSettings['height'] = self.height()
-        mainWindowSettings['x'] = self.x()
-        mainWindowSettings['y'] = self.y()
+
+        if 'unreal' not in self.windowSettings:
+            self.windowSettings['unreal'] = {}
+        settings = self.windowSettings['unreal']
+
+        key = self._getSettingsKey()
+        if key not in settings:
+            settings[key] = {}
+
+        settings[key]['width'] = self.width()
+        settings[key]['height'] = self.height()
+        settings[key]['x'] = self.x()
+        settings[key]['y'] = self.y()
 
         super(UnrealWindow, self).saveWindowPosition()
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
+
+        key = self._getSettingsKey()
         try:
-            width = self.windowSettings['unreal']['main']['width']
-            height = self.windowSettings['unreal']['main']['height']
-            x = self.windowSettings['unreal']['main']['x']
-            y = self.windowSettings['unreal']['main']['y']
+            width = self.windowSettings['unreal'][key]['width']
+            height = self.windowSettings['unreal'][key]['height']
+            x = self.windowSettings['unreal'][key]['x']
+            y = self.windowSettings['unreal'][key]['y']
         except KeyError:
             super(UnrealWindow, self).loadWindowPosition()
         else:

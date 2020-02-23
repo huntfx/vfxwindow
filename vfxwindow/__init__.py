@@ -34,6 +34,7 @@ def _setup_qapp():
     This must happen before any libraries are imported, as it's usually
     at that point when the QApplication is initialised.
     """
+
     from .utils.Qt import QtWidgets
     try:
         app = QtWidgets.QApplication(sys.argv)
@@ -46,6 +47,7 @@ def importable(program):
     In rare circumstances a TypeError can be raised, but it's safe to
     ignore and assume it's not the correct program.
     """
+
     try:
         return bool(_importable(program))
     except TypeError:

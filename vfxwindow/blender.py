@@ -17,6 +17,7 @@ VERSION = bpy.app.version_string
 
 class BlenderWindow(StandaloneWindow):
     """Window to use for Blender."""
+
     def __init__(self, parent=None, **kwargs):
         super(BlenderWindow, self).__init__(parent, **kwargs)
         self.blender = True
@@ -24,28 +25,31 @@ class BlenderWindow(StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        try:
-            blenderSettings = self.windowSettings['blender']
-        except KeyError:
-            blenderSettings = self.windowSettings['blender'] = {}
-        try:
-            mainWindowSettings = blenderSettings['main']
-        except KeyError:
-            mainWindowSettings = blenderSettings['main'] = {}
 
-        mainWindowSettings['width'] = self.width()
-        mainWindowSettings['height'] = self.height()
-        mainWindowSettings['x'] = self.x()
-        mainWindowSettings['y'] = self.y()
+        if 'blender' not in self.windowSettings:
+            self.windowSettings['blender'] = {}
+        settings = self.windowSettings['blender']
+
+        key = self._getSettingsKey()
+        if key not in settings:
+            settings[key] = {}
+
+        settings[key]['width'] = self.width()
+        settings[key]['height'] = self.height()
+        settings[key]['x'] = self.x()
+        settings[key]['y'] = self.y()
+
         super(BlenderWindow, self).saveWindowPosition()
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
+
+        key = self._getSettingsKey()
         try:
-            x = self.windowSettings['blender']['main']['x']
-            y = self.windowSettings['blender']['main']['y']
-            width = self.windowSettings['blender']['main']['width']
-            height = self.windowSettings['blender']['main']['height']
+            x = self.windowSettings['blender'][key]['x']
+            y = self.windowSettings['blender'][key]['y']
+            width = self.windowSettings['blender'][key]['width']
+            height = self.windowSettings['blender'][key]['height']
         except KeyError:
             super(BlenderWindow, self).loadWindowPosition()
         else:
@@ -55,6 +59,8 @@ class BlenderWindow(StandaloneWindow):
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
+        """Show the Blender window."""
+
         # Window is already initialised
         if self is not cls:
             return super(BlenderWindow, self).show()
@@ -75,6 +81,7 @@ class BlenderWindow(StandaloneWindow):
 
         Either windowInstance or windowID is needed if calling without a class instance.
         """
+
         # Handle classmethod
         if self is cls:
             if windowInstance is None and windowID is not None:
@@ -104,6 +111,8 @@ class BlenderWindow(StandaloneWindow):
         return numEvents
 
     def _addBlenderCallbackGroup(self, group):
+        """Add a callback group."""
+
         windowInstance = self.windowInstance()
         if group in windowInstance['callback']:
             return
@@ -114,6 +123,7 @@ class BlenderWindow(StandaloneWindow):
 
         Reference: https://docs.blender.org/api/2.79/bpy.app.handlers.html
         """
+
         self._addBlenderCallbackGroup(group)
 
         # Persistent handlers appear to just have the _bpy_persistent attribute added
@@ -129,62 +139,77 @@ class BlenderWindow(StandaloneWindow):
 
     def addCallbackFrameChangeAfter(self, func, persistent=True, group=None):
         """After frame change for playback and rendering."""
+
         self._addApplicationHandler('frame_change_post', func, persistent=persistent, group=group)
 
     def addCallbackFrameChangeBefore(self, func, persistent=True, group=None):
         """Before frame change for playback and rendering."""
+
         self._addApplicationHandler('frame_change_pre', func, persistent=persistent, group=group)
 
     def addCallbackGameAfter(self, func, persistent=True, group=None):
         """On ending the game engine."""
+
         self._addApplicationHandler('game_post', func, persistent=persistent, group=group)
 
     def addCallbackGameBefore(self, func, persistent=True, group=None):
         """On starting the game engine."""
+
         self._addApplicationHandler('game_pre', func, persistent=persistent, group=group)
 
     def addCallbackLoadSceneAfter(self, func, persistent=True, group=None):
         """After loading a new blend file."""
+
         self._addApplicationHandler('load_post', func, persistent=persistent, group=group)
 
     def addCallbackLoadSceneBefore(self, func, persistent=True, group=None):
         """After loading a new blend file."""
+
         self._addApplicationHandler('load_pre', func, persistent=persistent, group=group)
 
     def addCallbackRenderCancel(self, func, persistent=True, group=None):
         """On canceling a render job."""
+
         self._addApplicationHandler('render_cancel', func, persistent=persistent, group=group)
 
     def addCallbackRenderComplete(self, func, persistent=True, group=None):
         """On completion of render job."""
+
         self._addApplicationHandler('render_complete', func, persistent=persistent, group=group)
 
     def addCallbackRenderInit(self, func, persistent=True, group=None):
         """On initialisation of a render job."""
+
         self._addApplicationHandler('render_init', func, persistent=persistent, group=group)
 
     def addCallbackRenderAfter(self, func, persistent=True, group=None):
         """After rendering."""
+
         self._addApplicationHandler('render_post', func, persistent=persistent, group=group)
 
     def addCallbackRenderBefore(self, func, persistent=True, group=None):
         """Before rendering."""
+
         self._addApplicationHandler('render_pre', func, persistent=persistent, group=group)
 
     def addCallbackRenderStats(self, func, persistent=True, group=None):
         """On printing render statistics."""
+
         self._addApplicationHandler('render_stats', func, persistent=persistent, group=group)
 
     def addCallbackRenderWrite(self, func, persistent=True, group=None):
         """After writing a rendered frame."""
+
         self._addApplicationHandler('render_write', func, persistent=persistent, group=group)
 
     def addCallbackSaveSceneAfter(self, func, persistent=True, group=None):
         """After saving a blend file."""
+
         self._addApplicationHandler('save_post', func, persistent=persistent, group=group)
 
     def addCallbackSaveSceneBefore(self, func, persistent=True, group=None):
         """Before saving blend file."""
+
         self._addApplicationHandler('save_pre', func, persistent=persistent, group=group)
 
     def addCallbackSceneUpdateAfter(self, func, persistent=True, group=None):
@@ -192,6 +217,7 @@ class BlenderWindow(StandaloneWindow):
         It does not necessarily imply that anything has changed.
         Removed in Blender 2.80
         """
+
         self._addApplicationHandler('scene_update_post', func, persistent=persistent, group=group)
 
     def addCallbackSceneUpdateBefore(self, func, persistent=True, group=None):
@@ -199,37 +225,44 @@ class BlenderWindow(StandaloneWindow):
         It does not necessarily imply that anything has changed.
         Removed in Blender 2.80
         """
+
         self._addApplicationHandler('scene_update_pre', func, persistent=persistent, group=group)
 
     def addCallbackVersionUpdate(self, func, persistent=True, group=None):
         """On ending the versioning code."""
+
         self._addApplicationHandler('version_update', func, persistent=persistent, group=group)
 
     def addCallbackDepsgraphUpdateAfter(self, func, persistent=True, group=None):
         """After depsgraph update.
         Added in Blender 2.80.
         """
+
         self._addApplicationHandler('depsgraph_update_post', func, persistent=persistent, group=group)
 
     def addCallbackDepsgraphUpdateBefore(self, func, persistent=True, group=None):
         """Before depsgraph update.
         Added in Blender 2.80.
         """
+
         self._addApplicationHandler('depsgraph_update_pre', func, persistent=persistent, group=group)
 
     def addCallbackUndoAfter(self, func, persistent=True, group=None):
         """After loading an undo step."""
+
         self._addApplicationHandler('undo_post', func, persistent=persistent, group=group)
 
     def addCallbackUndoBefore(self, func, persistent=True, group=None):
         """Before loading an undo step."""
+
         self._addApplicationHandler('undo_pre', func, persistent=persistent, group=group)
 
     def addCallbackRedoAfter(self, func, persistent=True, group=None):
         """After loading a redo step."""
+
         self._addApplicationHandler('redo_post', func, persistent=persistent, group=group)
 
     def addCallbackRedoBefore(self, func, persistent=True, group=None):
         """Before loading a redo step."""
-        self._addApplicationHandler('redo_pre', func, persistent=persistent, group=group)
 
+        self._addApplicationHandler('redo_pre', func, persistent=persistent, group=group)
