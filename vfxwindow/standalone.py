@@ -5,10 +5,10 @@ from __future__ import absolute_import
 import sys
 from functools import partial
 from multiprocessing import Queue, Process
+from Qt import QtWidgets, IsPySide, IsPyQt4, IsPySide2, IsPyQt5
 
 from .abstract import AbstractWindow
 from .utils import setCoordinatesToScreen, hybridmethod
-from .utils.Qt import QtWidgets, IsPySide, IsPyQt4, IsPySide2, IsPyQt5
 
 
 class _MultiAppLaunch(Process):

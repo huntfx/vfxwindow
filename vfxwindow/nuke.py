@@ -9,6 +9,7 @@ from __future__ import absolute_import, print_function
 import inspect
 from collections import defaultdict
 from functools import partial
+from Qt import QtWidgets
 
 import nuke
 from nukescripts import panels, utils
@@ -16,7 +17,6 @@ from nukescripts import panels, utils
 from .abstract import AbstractWindow, getWindowSettings
 from .standalone import StandaloneWindow
 from .utils import hybridmethod, setCoordinatesToScreen, searchGlobals
-from .utils.Qt import QtWidgets
 
 
 VERSION = float('{}.{}'.format(nuke.env['NukeVersionMajor'], nuke.env['NukeVersionMinor']))

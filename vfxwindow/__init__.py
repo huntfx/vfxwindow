@@ -35,7 +35,7 @@ def _setup_qapp():
     at that point when the QApplication is initialised.
     """
 
-    from .utils.Qt import QtWidgets
+    from Qt import QtWidgets
     try:
         app = QtWidgets.QApplication(sys.argv)
     except RuntimeError:

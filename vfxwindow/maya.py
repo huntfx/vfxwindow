@@ -4,6 +4,7 @@ from __future__ import absolute_import, print_function
 
 import uuid
 from functools import partial
+from Qt import QtWidgets, QtCompat, QtCore
 
 import maya.mel as mel
 import maya.api.OpenMaya as om
@@ -14,7 +15,6 @@ from pymel import versions
 from .abstract import AbstractWindow, getWindowSettings
 from .standalone import StandaloneWindow
 from .utils import forceMenuBar, hybridmethod, setCoordinatesToScreen
-from .utils.Qt import QtWidgets, QtCompat, QtCore
 
 
 VERSION = versions.flavor()

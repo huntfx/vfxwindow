@@ -8,8 +8,7 @@ from __future__ import absolute_import
 import json
 import os
 from string import ascii_letters, digits
-
-from .utils.Qt import QtGui, QtWidgets
+from Qt import QtGui, QtWidgets
 
 
 PALETTE_ROLE = QtGui.QPalette.ColorRole

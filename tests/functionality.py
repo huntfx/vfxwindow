@@ -5,11 +5,11 @@ from __future__ import absolute_import, print_function
 import os
 import random
 import sys
-sys.path.append(os.path.abspath(__file__).rsplit(os.path.sep, 2)[0])
+from Qt import QtWidgets
 
+sys.path.append(os.path.abspath(__file__).rsplit(os.path.sep, 2)[0])
 from vfxwindow import VFXWindow
-from vfxwindow.palette import getPaletteList
-from vfxwindow.utils.Qt import QtWidgets
+from vfxwindow.utils.palette import getPaletteList
 
 
 class Window(VFXWindow):
@@ -42,7 +42,7 @@ class Window(VFXWindow):
         )
         print('Chosen value: {}'.format(value))
         return value
-    
+
     def confirm(self):
         """Test confirmation box."""
         value = self.displayMessage(

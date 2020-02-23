@@ -15,6 +15,10 @@ with open(os.path.join(os.path.dirname(__file__), 'vfxwindow/__init__.py'), 'r')
     else:
         raise RuntimeError('no version found')
 
+# Get the pip requirements
+with open(os.path.join(os.path.dirname(__file__), 'requirements.txt'), 'r') as f:
+    requirements = [line.strip() for line in f]
+
 setup(
     name = 'vfxwindow',
     packages = find_packages(),
@@ -39,7 +43,7 @@ setup(
         'vfx', 'visualfx', 'fx', 'cgi', '3d',
     ],
     package_data={'vfxwindow': ['palettes/*.json']},
-    install_requires=[],
+    install_requires=requirements,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

@@ -10,10 +10,10 @@ import uuid
 from collections import defaultdict
 from contextlib import contextmanager
 from functools import partial
+from Qt import QtCore, QtGui, QtWidgets
 
-from .palette import savePaletteData, setPalette
 from .utils import hybridmethod, setCoordinatesToScreen
-from .utils.Qt import QtCore, QtGui, QtWidgets
+from .utils.palette import savePaletteData, setPalette
 
 
 def getWindowSettingsPath(windowID):

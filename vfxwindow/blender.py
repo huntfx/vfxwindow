@@ -4,11 +4,11 @@ from __future__ import absolute_import
 
 import sys
 from collections import defaultdict
+from Qt import QtWidgets
 
 import bpy
 
 from .utils import setCoordinatesToScreen, hybridmethod
-from .utils.Qt import QtWidgets
 from .standalone import StandaloneWindow
 
 

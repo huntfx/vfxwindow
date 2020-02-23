@@ -5,12 +5,12 @@ from __future__ import absolute_import, print_function
 
 import os
 import sys
+from Qt import QtWidgets, QtCompat, QtCore
 
 import MaxPlus
 
 from .abstract import AbstractWindow, getWindowSettings
 from .utils import hybridmethod, setCoordinatesToScreen
-from .utils.Qt import QtWidgets, QtCompat, QtCore
 from .standalone import StandaloneWindow
 
 

@@ -24,12 +24,12 @@ from __future__ import absolute_import
 import os
 import sys
 import uuid
+from Qt import QtWidgets
 
 import sd
 
 from .abstract import AbstractWindow, getWindowSettings
 from .utils import setCoordinatesToScreen, hybridmethod
-from .utils.Qt import QtWidgets
 
 
 APPLICATION = sd.getContext().getSDApplication()
