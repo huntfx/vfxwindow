@@ -121,6 +121,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self.__dockable = getattr(self, 'WindowDockable', False)
         self.__wasDocked = None
         self.__initialPosOverride = None
+        self.__signalCache = defaultdict(list)
 
         # Store the window data so it can be closed later
         # In some cases such as Maya's layoutDialog, the window will
@@ -144,6 +145,19 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         return len(self.signal(group) or [])
 
+    def signalConnect(self, signal, func, group=None):
+        """Add a new signal for the current group.
+
+        >>> self.signalConnect(widget.currentIndexChanged, self.widgetChanged, 'widget_changed')
+        """
+
+        if self.signalPaused(group):
+            self.__signalCache[group].append((signal, func))
+        else:
+            self._signals[group].append((signal, func))
+            signal.connect(func)
+        return func
+
     def signalDisconnect(self, group):
         """Disconnect and return all functions for a current group.
         If none exist, and empty list will be returned.
@@ -152,8 +166,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         [self.widgetChanged]
         >>> self.signalDisconnect('widget_changed')
         []
-
         """
+
         signals = []
         for (signal, func) in self._signals.pop(group, []):
             try:
@@ -164,34 +178,31 @@ class AbstractWindow(QtWidgets.QMainWindow):
                 signals.append((signal, func))
         return signals
 
-    def signalConnect(self, signal, func, group=None):
-        """Add a new signal for the current group.
-
-        >>> self.signalConnect(widget.currentIndexChanged, self.widgetChanged, 'widget_changed')
-        """
-
-        self._signals[group].append((signal, func))
-        signal.connect(func)
-        return func
-
     @contextmanager
     def signalPause(self, *groups):
         """Pause a certain set of signals during execution.
         This will remove the signals, and re-apply them after.
         """
 
+        skip = set()
         if not groups:
             groups = self._signals
 
-        signalCache = {}
         for group in groups:
-            signalCache[group] = self.signalDisconnect(group)
+            if self.signalPaused(group):
+                skip.add(group)
+            self.__signalCache[group] = self.signalDisconnect(group)
 
         yield
 
-        for group in groups:
-            for signal, func in signalCache[group]:
+        for group in set(groups) - skip:
+            for signal, func in self.__signalCache.pop(group):
                 self.signalConnect(signal, func, group=group)
+
+    def signalPaused(self, group):
+        """Determine if a signal group is paused."""
+
+        return group in self.__signalCache
 
     def _getSettingsKey(self):
         """Get the key to use when saving settings."""
