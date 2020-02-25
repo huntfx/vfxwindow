@@ -15,7 +15,7 @@ PALETTE_ROLE = QtGui.QPalette.ColorRole
 
 PALETTE_GROUP = QtGui.QPalette.ColorGroup
 
-DIR = os.path.join(os.path.dirname(__file__), 'palettes')
+DIR = os.path.join(os.path.dirname(__file__).rsplit(os.path.sep, 1)[0], 'palettes')
 
 FILE_EXT = 'json'
 
