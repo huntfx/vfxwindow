@@ -191,7 +191,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         for group in groups:
             if self.signalPaused(group):
                 skip.add(group)
-            self.__signalCache[group] = self.signalDisconnect(group)
+            self.__signalCache[group] += self.signalDisconnect(group)
 
         yield
 
