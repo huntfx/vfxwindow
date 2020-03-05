@@ -158,7 +158,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
             signal.connect(func)
         return func
 
-    def signalDisconnect(self, group):
+    def signalDisconnect(self, group, _pause=False):
         """Disconnect and return all functions for a current group.
         If none exist, and empty list will be returned.
 
@@ -169,7 +169,13 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """
 
         signals = []
-        for (signal, func) in self._signals.pop(group, []):
+
+        # If paused, then just remove the signals from cache
+        if not _pause and self.signalPaused(group):
+            signals += self.__signalCache.pop(group)
+
+        # Disconnect the signals
+        for (signal, func) in self._signals.pop(group, ()):
             try:
                 signal.disconnect(func)
             except RuntimeError:
@@ -187,17 +193,19 @@ class AbstractWindow(QtWidgets.QMainWindow):
         skip = set()
         if not groups:
             groups = self._signals
+        groups = set(groups)
 
         for group in groups:
             if self.signalPaused(group):
                 skip.add(group)
-            self.__signalCache[group] += self.signalDisconnect(group)
+            self.__signalCache[group] += self.signalDisconnect(group, _pause=True)
 
         yield
 
         for group in set(groups) - skip:
-            for signal, func in self.__signalCache.pop(group):
-                self.signalConnect(signal, func, group=group)
+            if group in self.__signalCache:
+                for signal, func in self.__signalCache.pop(group):
+                    self.signalConnect(signal, func, group=group)
 
     def signalPaused(self, group):
         """Determine if a signal group is paused."""
