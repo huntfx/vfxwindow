@@ -7,6 +7,7 @@ TODO: Figure out how to launch a floating panel
 from __future__ import absolute_import, print_function
 
 import inspect
+import uuid
 from collections import defaultdict
 from functools import partial
 from Qt import QtWidgets
@@ -269,14 +270,18 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
         if self.dockable():
             if self.exists():
-                #Delete the pane if it is floating by itself
-                if self.floating(alternative=True) and self.siblings() == 1:
-                    self.parent().parent().parent().parent().parent().parent().parent().parent().parent().close()
+                try:
+                    #Delete the pane if it is floating by itself
+                    if self.floating(alternative=True) and self.siblings() == 1:
+                        self.parent().parent().parent().parent().parent().parent().parent().parent().parent().close()
 
-                #Remove the tab and pane if by itself
-                else:
-                    self.parent().parent().parent().parent().parent().parent().parent().close()
-                    deleteQtWindow(self.WindowID)
+                    #Remove the tab and pane if by itself
+                    else:
+                        self.parent().parent().parent().parent().parent().parent().parent().close()
+                        deleteQtWindow(self.WindowID)
+
+                except RuntimeDraggingError:
+                    pass
         else:
             self.saveWindowPosition()
         return super(NukeWindow, self).closeEvent(event)
@@ -338,7 +343,10 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
         if self.dockable():
             if alternative:
-                return self.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent() is not None
+                try:
+                    return self.parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().parent() is not None
+                except AttributeError:
+                    raise RuntimeDraggingError
             return Pane.find(self.WindowID) is None
         return True
 
@@ -351,6 +359,28 @@ class NukeWindow(NukeCommon, AbstractWindow):
             except AttributeError:
                 return 0
         return None
+
+    def resize(self, *args, **kwargs):
+        """Resize the window.
+        Only resize after loading has finished if it's not docked to a panel.
+        """
+
+        if not self._windowLoaded:
+            return self.windowReady.connect(partial(self.resize, *args, **kwargs))
+
+        if not self.dockable() or self.floating():
+            super(NukeWindow, self).resize(*args, **kwargs)
+
+    def move(self, *args, **kwargs):
+        """Move the window.
+        Only move after loading has finished if it's not docked to a panel.
+        """
+
+        if not self._windowLoaded:
+            return self.windowReady.connect(partial(self.move, *args, **kwargs))
+
+        if not self.dockable() or self.floating():
+            super(NukeWindow, self).move(*args, **kwargs)
 
     def getAttachedPane(self):
         """Find the name of the pane the window is attached to."""
@@ -383,7 +413,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
         # Catch error if window is being dragged at this moment
         except RuntimeDraggingError as e:
-            if self.dockable():
+            if not self.dockable():
                 raise
 
         super(NukeWindow, self).saveWindowPosition()
@@ -749,6 +779,10 @@ class NukeWindow(NukeCommon, AbstractWindow):
             except KeyError:
                 pane = Pane.auto()
 
+            if not hasattr(cls, 'WindowID'):
+                cls.WindowID = str(uuid.uuid4())
+                cls.saveWindowPosition = lambda *args, **kwargs: None
+
             panel = panels.registerWidgetAsPanel(
                 widget=namespace,
                 name=getattr(cls, 'WindowName', 'New Window'),
@@ -801,12 +835,16 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
         if key not in settings:
             settings[key] = {}
 
-        settings[key]['width'] = self.width()
-        settings[key]['height'] = self.height()
-        settings[key]['x'] = self.x()
-        settings[key]['y'] = self.y()
-
-        super(NukeBatchWindow, self).saveWindowPosition()
+        try:
+            settings[key]['width'] = self.width()
+            settings[key]['height'] = self.height()
+            settings[key]['x'] = self.x()
+            settings[key]['y'] = self.y()
+        except RuntimeDraggingError:
+            if not self.dockable():
+                raise
+        else:
+            super(NukeBatchWindow, self).saveWindowPosition()
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
