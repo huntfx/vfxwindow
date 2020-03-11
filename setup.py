@@ -28,7 +28,7 @@ setup(
     long_description=readme,
     long_description_content_type='text/markdown',
     author = 'Peter Hunt',
-    author_email='peterh@blue-zoo.co.uk',
+    author_email='peter@huntfx.uk',
     url = 'https://github.com/Peter92/vfxwindow',
     download_url = 'https://github.com/Peter92/vfxwindow/archive/{}.tar.gz'.format(version),
     project_urls={
@@ -38,8 +38,8 @@ setup(
     },
     keywords = [
         'qt', 'pyside', 'pyside2', 'pyqt', 'pyqt4', 'pyqt5', 'gui', 'window',
-        'maya', 'mayapy', 'nuke', 'nukescripts', 'houdini', 'unreal', 'ue4',
-        'blender', '3dsmax', '3ds', 'blackmagic', 'fusion',
+        'maya', 'mayapy', 'nuke', 'nukescripts', 'houdini', 'unreal', 'engine', 'ue4',
+        'blender', '3dsmax', '3ds', 'blackmagic', 'fusion', 'substance', 'designer',
         'vfx', 'visualfx', 'fx', 'cgi', '3d',
     ],
     package_data={'vfxwindow': ['palettes/*.json']},
