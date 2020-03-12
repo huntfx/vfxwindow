@@ -221,6 +221,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
             return 'dock'
         elif self.isDialog():
             return 'dialog'
+        elif self.isInstance():
+            return 'instance'
         else:
             return 'main'
 
@@ -274,6 +276,9 @@ class AbstractWindow(QtWidgets.QMainWindow):
         The loading must be done in an override.
         """
 
+        if self.isInstance():
+            return
+
         if self.__initialPosOverride is not None:
             x, y = self.__initialPosOverride
             x, y = setCoordinatesToScreen(x, y, self.width(), self.height(), padding=5)
@@ -288,6 +293,9 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def saveWindowPosition(self, path=None):
         """Save the window settings into a file."""
+
+        if self.isInstance():
+            return
 
         if self.__forceDisableSaving or not self._enableSave:
             return False
@@ -615,7 +623,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         As this is a base window only, it will always be floating.
         """
 
-        return True
+        return not self.isInstance()
 
     def move(self, x, y=None):
         if isinstance(x, QtCore.QPoint):
@@ -677,6 +685,9 @@ class AbstractWindow(QtWidgets.QMainWindow):
         return super(AbstractWindow, self).y()
 
     def resize(self, width, height=None):
+        if self.isInstance():
+            return
+
         if isinstance(width, QtCore.QSize):
             height = width.height()
             width = width.width()
