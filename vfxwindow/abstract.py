@@ -219,7 +219,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
             return 'batch'
         if self.dockable():
             return 'dock'
-        elif self.dialog():
+        elif self.isDialog():
             return 'dialog'
         else:
             return 'main'
@@ -264,10 +264,10 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         pass
 
-    def dialog(self):
+    def isDialog(self):
         """Return if the window is a dialog."""
 
-        return getattr(self, 'ForceDialog', False)
+        return isinstance(self.parent(), QtWidgets.QDialog)
 
     def loadWindowPosition(self):
         """Load the previous position or centre the window.
@@ -400,13 +400,41 @@ class AbstractWindow(QtWidgets.QMainWindow):
         new.deferred(new.windowReady.emit)
         return new
 
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog."""
+
+        # Make a copy of the class to set attributes
+        class windowClass(cls):
+            if not hasattr(cls, 'WindowID'):
+                WindowID = uuid.uuid4().hex
+            WindowDockable = False
+
+        dialog = QtWidgets.QDialog(parent=parent)
+        dialog.setWindowTitle(getattr(windowClass, 'WindowTitle', 'New Window'))
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        windowInstance = windowClass(*args, **kwargs)
+        layout.addWidget(windowInstance)
+        dialog.setLayout(layout)
+
+        windowInstance.loadWindowPosition()
+        windowInstance.windowReady.emit()
+        dialog.exec_()
+        windowInstance.saveWindowPosition()
+        try:
+            return windowInstance
+        finally:
+            windowClass.clearWindowInstance(windowClass.WindowID)
+
     def setVisible(self, visible):
         """Override setVisible to make sure it behaves like show/hide.
         This can cause recursion errors, so make sure the window has
         been loaded and not closed.
         """
 
-        if not self.isLoaded() or self.isInstance():
+        if not self.isLoaded() or self.isInstance() or self.isDialog():
             return super(AbstractWindow, self).setVisible(visible)
         if visible:
             return self.show()
@@ -577,56 +605,56 @@ class AbstractWindow(QtWidgets.QMainWindow):
             x = x.x()
         if self.dockable():
             return self._parentOverride().move(x, y)
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().move(x, y)
         return super(AbstractWindow, self).move(x, y)
 
     def geometry(self):
         if self.dockable():
             return self._parentOverride().geometry()
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().geometry()
         return super(AbstractWindow, self).geometry()
 
     def frameGeometry(self):
         if self.dockable():
             return self._parentOverride().frameGeometry()
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().frameGeometry()
         return super(AbstractWindow, self).frameGeometry()
 
     def rect(self):
         if self.dockable():
             return self._parentOverride().rect()
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().rect()
         return super(AbstractWindow, self).rect()
 
     def width(self):
         if self.dockable():
             return self._parentOverride().width()
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().width()
         return super(AbstractWindow, self).width()
 
     def height(self):
         if self.dockable():
             return self._parentOverride().height()
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().height()
         return super(AbstractWindow, self).height()
 
     def x(self):
         if self.dockable():
             return self._parentOverride().x()
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().x()
         return super(AbstractWindow, self).x()
 
     def y(self):
         if self.dockable():
             return self._parentOverride().y()
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().y()
         return super(AbstractWindow, self).y()
 
@@ -636,7 +664,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
             width = width.width()
         if self.dockable():
             return self._parentOverride().resize(width, height)
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().resize(width, height)
         return super(AbstractWindow, self).resize(width, height)
 
@@ -646,7 +674,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """
 
         if parentGeometry is None or childGeometry is None:
-            if self.dialog():
+            if self.isDialog():
                 base = self.parent()
             else:
                 base = self

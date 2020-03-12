@@ -34,9 +34,9 @@ if __name__ == '__main__':
 
 ### Compatibility
  - Maya (2011-2016, tested lightly on 2016) - standard, docked (`pymel.core.dockControl`), standalone, callbacks
- - Maya (2017+, tested on 2017-2019) - standard, docked (`pymel.core.workspaceControl`), dialog (`pymel.core.layoutDialog`, buggy), standalone, callbacks
+ - Maya (2017+, tested on 2017-2019) - standard, docked (`pymel.core.workspaceControl`), standalone, callbacks
  - Nuke (tested on 9-12) - standard, docked (`nukescripts.panels`), callbacks
- - Substance Designer (tested on 2019.3) - standard, docked (unable to save/load position), dialog
+ - Substance Designer (tested on 2019.3) - standard, docked (unable to save/load position)
  - 3D Studio Max (2018+, tested on 2020) - standard
  - Houdini (tested on 16) - standard
  - Blender (tested on 2.80) - standard, callbacks
@@ -53,10 +53,10 @@ if __name__ == '__main__':
  - Set palette to that of another program
  - Auto close if opening a duplicate window
  - Close down all windows at once
+ - Create dialog windows automatically attached to the application
 
 ### Maya Features
  - Dock window using workspaceControl
- - Dialog window using layoutDialog
  - Save/restore position of workspaceControl window (floating+docked)
  - Easy access to callbacks
 
@@ -70,7 +70,6 @@ if __name__ == '__main__':
 
 ### Substance Features
  - Dock window into panels
- - Dialog window
 
 ### Non-Python Applications
 Certain Windows applications have dispatch based COM interface, which will allow a link between Python and the application. See [photoshop-scripting-python](https://github.com/lohriialo/photoshop-scripting-python) for an example on how to connect to an application.

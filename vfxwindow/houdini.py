@@ -81,7 +81,7 @@ class HoudiniWindow(AbstractWindow):
         key = self._getSettingsKey()
         if key not in settings:
             settings[key] = {}
-        
+
         settings[key]['width'] = self.width()
         settings[key]['height'] = self.height()
         settings[key]['x'] = self.x()
@@ -104,6 +104,14 @@ class HoudiniWindow(AbstractWindow):
             x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
             self.resize(width, height)
             self.move(x, y)
+
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog."""
+
+        if parent is None:
+            parent = getMainWindow()
+        return super(HoudiniWindow, cls).dialog(parent=parent, *args, **kwargs)
 
     @classmethod
     def clearWindowInstance(self, windowID):

@@ -103,6 +103,14 @@ class MaxWindow(AbstractWindow):
             pass
         return super(MaxWindow, cls).show(*args, **kwargs)
 
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog."""
+
+        if parent is None:
+            parent = getMainWindow()
+        return super(MaxWindow, cls).dialog(parent=parent, *args, **kwargs)
+
     def closeEvent(self, event):
         """Save the position before closing."""
 

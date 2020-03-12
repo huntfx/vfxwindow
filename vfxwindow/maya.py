@@ -211,25 +211,6 @@ def dockControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs)
     return windowInstance
 
 
-def dialogWrap(windowClass, title=None, *args, **kwargs):
-    """Wrapper for Maya's layoutDialogue class.
-    It will take focus of the entire program.
-
-    Note: Due to Python 2 limitations, *args and **kwargs can't be unpacked with the title keyword
-    present, so don't try to clean up the code by enabling unpacking again.
-    """
-
-    def uiScript(cls, clsArgs=(), clsKwargs={}):
-        form = pm.setParent(query=True)
-        parent = pm.uitypes.toQtObject(form)
-        parent.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-
-        windowInstance = cls(parent, *clsArgs, **clsKwargs)
-        windowInstance.windowReady.emit()
-        return windowInstance
-    return pm.layoutDialog(ui=partial(uiScript, windowClass, clsArgs=args, clsKwargs=kwargs), title=title)
-
-
 def toMObject(node):
     """Convert a node to an MObject."""
 
@@ -941,15 +922,6 @@ class MayaWindow(MayaCommon, AbstractWindow):
         else:
             settings = getWindowSettings(cls.WindowID)
 
-        # Open a dialog window that will force control
-        if not self._Pre2017 and getattr(cls, 'ForceDialog', False):
-            cls.WindowDockable = False
-            title = getattr(cls, 'WindowName', 'New Window')
-            try:
-                return dialogWrap(cls, title=title, *args, **kwargs)
-            finally:
-                cls.clearWindowInstance(cls.WindowID)
-
         # Load settings
         try:
             mayaSettings = settings['maya']
@@ -1004,6 +976,42 @@ class MayaWindow(MayaCommon, AbstractWindow):
             cls.WindowDockable = True
             win.setDockable(True, override=True)
         return win
+
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog.
+        For Maya versions after 2017, pm.layoutDialog is used.
+        """
+
+        # This is quite buggy and can lock up Maya, so disable for now
+        if False and not cls._Pre2017:
+            # Note: Due to Python 2 limitations, *args and **kwargs can't be unpacked with the
+            # title keyword present, so don't try to clean up the code by enabling unpacking again.
+            def uiScript(cls, clsArgs=(), clsKwargs={}):
+                form = pm.setParent(query=True)
+                parent = pm.uitypes.toQtObject(form)
+                parent.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+
+                class windowClass(windowClass):
+                    if not hasattr(windowClass, 'WindowID'):
+                        WindowID = uuid.uuid4().hex
+                    WindowDockable = False
+
+                windowInstance = cls(parent, *clsArgs, **clsKwargs)
+                windowInstance.windowReady.emit()
+                return windowInstance
+
+            try:
+                return pm.layoutDialog(
+                    ui=partial(uiScript, windowClass, clsArgs=args, clsKwargs=kwargs),
+                    title=getattr(cls, 'WindowTitle', 'New Window'),
+                )
+            finally:
+                cls.clearWindowInstance(cls.WindowID)
+
+        if parent is None:
+            parent = getMainWindow()
+        return super(MayaWindow, cls).dialog(parent=parent, *args, **kwargs)
 
 
 class MayaBatchWindow(MayaCommon, StandaloneWindow):
@@ -1078,3 +1086,11 @@ class MayaBatchWindow(MayaCommon, StandaloneWindow):
         kwargs['instance'] = True
         kwargs['exec_'] = True
         return super(MayaBatchWindow, cls).show(*args, **kwargs)
+
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog."""
+
+        if parent is None:
+            parent = getMainWindow()
+        return super(NukeWindow, cls).dialog(parent=parent, *args, **kwargs)

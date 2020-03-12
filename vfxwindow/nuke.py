@@ -804,6 +804,14 @@ class NukeWindow(NukeCommon, AbstractWindow):
             win.setDockable(True, override=True)
         return win
 
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog."""
+
+        if parent is None:
+            parent = getMainWindow()
+        return super(NukeWindow, cls).dialog(parent=parent, *args, **kwargs)
+
 
 class NukeBatchWindow(NukeCommon, StandaloneWindow):
     """Variant of the Standalone window for Nuke in batch mode.
@@ -878,3 +886,11 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
         kwargs['instance'] = False
         kwargs['exec_'] = True
         return super(NukeBatchWindow, cls).show(*args, **kwargs)
+
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog."""
+
+        if parent is None:
+            parent = getMainWindow()
+        return super(NukeWindow, cls).dialog(parent=parent, *args, **kwargs)

@@ -67,29 +67,6 @@ def dockWrap(windowClass, *args, **kwargs):
     return windowInstance
 
 
-def dialogWrap(windowClass, title=None, *args, **kwargs):
-    """Create the window as a dialog."""
-
-    if not hasattr(windowClass, 'WindowID'):
-        windowClass.WindowID = str(uuid.uuid4())
-
-    dialog = QtWidgets.QDialog(parent=getMainWindow())
-    dialog.setWindowTitle(title)
-
-    layout = QtWidgets.QVBoxLayout()
-    layout.setContentsMargins(0, 0, 0, 0)
-    windowClass.WindowDockable = False
-    windowInstance = windowClass(*args, **kwargs)
-    layout.addWidget(windowInstance)
-    dialog.setLayout(layout)
-
-    windowInstance.loadWindowPosition()
-    windowInstance.windowReady.emit()
-    dialog.exec_()
-    windowInstance.saveWindowPosition()
-    return windowInstance
-
-
 class SubstanceWindow(AbstractWindow):
     def __init__(self, parent=None, dockable=False, **kwargs):
         if parent is None:
@@ -102,7 +79,7 @@ class SubstanceWindow(AbstractWindow):
         """Apply y offset for dialogs."""
 
         y = super(SubstanceWindow, self).y()
-        if self.dialog():
+        if self.isDialog():
             return y - 30
         return y
 
@@ -134,7 +111,7 @@ class SubstanceWindow(AbstractWindow):
         if 'substance' not in self.windowSettings:
             self.windowSettings['substance'] = {}
         settings = self.windowSettings['substance']
-        substanceSettings['docked'] = self.dockable(raw=True)
+        settings['docked'] = self.dockable(raw=True)
 
         # Save docked settings
         if self.dockable():
@@ -176,7 +153,7 @@ class SubstanceWindow(AbstractWindow):
     def centreWindow(self, *args, **kwargs):
         """The dialog is already centered so skip."""
 
-        if not self.dialog():
+        if not self.isDialog():
             return super(SubstanceWindow, self).centreWindow(*args, **kwargs)
 
     def closeEvent(self, event):
@@ -254,13 +231,6 @@ class SubstanceWindow(AbstractWindow):
         else:
             settings = getWindowSettings(cls.WindowID)
 
-        if getattr(cls, 'ForceDialog', False):
-            title = getattr(cls, 'WindowName', 'New Window')
-            try:
-                return dialogWrap(cls, title=title, *args, **kwargs)
-            finally:
-                cls.clearWindowInstance(cls.WindowID)
-
         if hasattr(cls, 'WindowDockable'):
             docked = cls.WindowDockable
         else:
@@ -282,3 +252,11 @@ class SubstanceWindow(AbstractWindow):
             return dockWrap(cls, *args, **kwargs)
 
         return super(SubstanceWindow, cls).show(*args, **kwargs)
+
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog."""
+
+        if parent is None:
+            parent = getMainWindow()
+        return super(SubstanceWindow, cls).dialog(parent=parent, *args, **kwargs)

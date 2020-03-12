@@ -10,7 +10,6 @@ TODO:
     Remove docked in favour of floating
     Remove *_VERSION constants
     Changed dialog to isDialog
-    Add dialog classmethod to replace cls.ForceDialog = True
     Remove processEvents
     Remove signalExists
 """
@@ -18,7 +17,7 @@ TODO:
 from __future__ import absolute_import
 
 __all__ = ['VFXWindow']
-__version__ = '1.5.5'
+__version__ = '1.6.0'
 
 import os
 import sys
