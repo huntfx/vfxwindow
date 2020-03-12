@@ -53,7 +53,7 @@ if __name__ == '__main__':
  - Set palette to that of another program
  - Auto close if opening a duplicate window
  - Close down all windows at once
- - Create dialog windows automatically attached to the application
+ - Create dialog windows automatically attached to the application (and return data)
 
 ### Maya Features
  - Dock window using workspaceControl

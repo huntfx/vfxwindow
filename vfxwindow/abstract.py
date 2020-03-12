@@ -402,30 +402,48 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     @classmethod
     def dialog(cls, parent=None, *args, **kwargs):
-        """Create the window as a dialog."""
+        """Create the window as a dialog.
+        Methods of .dialogAccept and .dialogReject will be added.
+        Any variables given to these will be returned.
 
-        # Make a copy of the class to set attributes
+        Output: (accepted[bool], data[list])
+        """
+
+        dialog = QtWidgets.QDialog(parent=parent)
+        dialog.setWindowTitle(getattr(cls, 'WindowTitle', 'New Window'))
+
+        # Inheirt the class to set attributes
         class windowClass(cls):
             if not hasattr(cls, 'WindowID'):
                 WindowID = uuid.uuid4().hex
             WindowDockable = False
+            _DialogData = []
 
-        dialog = QtWidgets.QDialog(parent=parent)
-        dialog.setWindowTitle(getattr(windowClass, 'WindowTitle', 'New Window'))
+            # Method of getting data returned from dialog
+            def dialogAccept(self, *args):
+                self._DialogData += args
+                return dialog.accept()
 
+            def dialogReject(self, *args):
+                self._DialogData += args
+                return dialog.reject()
+
+        # Setup layout
         layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         windowInstance = windowClass(*args, **kwargs)
         layout.addWidget(windowInstance)
         dialog.setLayout(layout)
 
+        # Finish setting up window
         windowInstance.loadWindowPosition()
         windowInstance.windowReady.emit()
-        dialog.exec_()
-        windowInstance.saveWindowPosition()
+
         try:
-            return windowInstance
+            return (dialog.exec_(), windowInstance._DialogData)
         finally:
+            windowInstance.saveWindowPosition()
             windowClass.clearWindowInstance(windowClass.WindowID)
 
     def setVisible(self, visible):
