@@ -534,7 +534,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """
 
         inst = cls._WINDOW_INSTANCES.pop(windowID, None)
-        if inst is not None and not getattr(inst['window'], 'ForceDialog', False):
+        if inst is not None and not inst['window'].isDialog():
             try:
                 inst['window'].clearedInstance.emit()
             except RuntimeError:
