@@ -518,15 +518,12 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
 
+        key = self._getSettingsKey()
         try:
-            if self.dockable():
-                settings = self.windowSettings['maya']['dock']
-            else:
-                settings = self.windowSettings['maya']['main']
-            x = settings['x']
-            y = settings['y']
-            width = settings['width']
-            height = settings['height']
+            x = self.windowSettings['maya'][key]['x']
+            y = self.windowSettings['maya'][key]['y']
+            width = self.windowSettings['maya'][key]['width']
+            height = self.windowSettings['maya'][key]['height']
         except KeyError:
             super(MayaWindow, self).loadWindowPosition()
         else:
@@ -992,14 +989,16 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 parent = pm.uitypes.toQtObject(form)
                 parent.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
 
-                class windowClass(windowClass):
-                    if not hasattr(windowClass, 'WindowID'):
-                        WindowID = uuid.uuid4().hex
-                    WindowDockable = False
-
                 windowInstance = cls(parent, *clsArgs, **clsKwargs)
                 windowInstance.windowReady.emit()
                 return windowInstance
+
+            # TODO: Override output to match AbstractWindow.dialog
+            # cmds.layoutDialog(dismiss=str(data)) to self.dialogAccept(data)
+            class windowClass(windowClass):
+                if not hasattr(windowClass, 'WindowID'):
+                    WindowID = uuid.uuid4().hex
+                WindowDockable = False
 
             try:
                 return pm.layoutDialog(
