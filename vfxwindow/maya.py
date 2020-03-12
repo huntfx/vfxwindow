@@ -227,7 +227,7 @@ class MayaCommon(object):
         If the window is a dialog, then execute now as Maya will pause.
         """
 
-        if getattr(self, 'ForceDialog', False):
+        if self.isDialog9):
             func()
         else:
             pm.evalDeferred(func, *args, **kwargs)
