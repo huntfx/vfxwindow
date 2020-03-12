@@ -121,13 +121,15 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
     Source (heavily modified): https://gist.github.com/liorbenhorin/69da10ec6f22c6d7b92deefdb4a4f475
     """
 
-    # Set window ID if needed but disable saving
-    if not hasattr(windowClass, 'WindowID'):
-        windowClass.WindowID = str(uuid.uuid4())
-        windowClass.saveWindowPosition = lambda *args, **kwargs: None
+    # Set WindowID if needed but disable saving
+    class WindowClass(windowClass):
+        if not hasattr(windowClass, 'WindowID'):
+            WindowID = uuid.uuid4().hex
+            def enableSaveWindowPosition(self, enable):
+                return super(WindowClass, self).enableSaveWindowPosition(False)
 
     # Remove existing window
-    floating = deleteWorkspaceControl(windowClass.WindowID, resetFloating=resetFloating)
+    floating = deleteWorkspaceControl(WindowClass.WindowID, resetFloating=resetFloating)
     if not resetFloating and floating is None:
         floating = not dock
 
@@ -137,23 +139,23 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
         if isinstance(dock, (bool, int)):
             dock = defaultDock
         try:
-            pm.workspaceControl(windowClass.WindowID, retain=True, label=getattr(windowClass, 'WindowName', 'New Window'), tabToControl=[dock, -1])
+            pm.workspaceControl(WindowClass.WindowID, retain=True, label=getattr(WindowClass, 'WindowName', 'New Window'), tabToControl=[dock, -1])
         except RuntimeError:
-            deleteWorkspaceControl(windowClass.WindowID, resetFloating=resetFloating)
-            pm.workspaceControl(windowClass.WindowID, retain=True, label=getattr(windowClass, 'WindowName', 'New Window'), tabToControl=[defaultDock, -1])
+            deleteWorkspaceControl(WindowClass.WindowID, resetFloating=resetFloating)
+            pm.workspaceControl(WindowClass.WindowID, retain=True, label=getattr(WindowClass, 'WindowName', 'New Window'), tabToControl=[defaultDock, -1])
     else:
-        pm.workspaceControl(windowClass.WindowID, retain=True, label=getattr(windowClass, 'WindowName', 'New Window'), floating=True)
+        pm.workspaceControl(WindowClass.WindowID, retain=True, label=getattr(WindowClass, 'WindowName', 'New Window'), floating=True)
 
     # Setup main window and parent to Maya
-    workspaceControlWin = getMainWindow(windowClass.WindowID)
+    workspaceControlWin = getMainWindow(WindowClass.WindowID)
     workspaceControlWin.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-    windowInstance = windowClass(parent=workspaceControlWin, dockable=True, *args, **kwargs)
+    windowInstance = WindowClass(parent=workspaceControlWin, dockable=True, *args, **kwargs)
     forceMenuBar(windowInstance)
 
     # Attach callbacks
     windowInstance.signalConnect(workspaceControlWin.destroyed, windowInstance.close, group='__mayaDockWinDestroy')
     try:
-        pm.workspaceControl(windowClass.WindowID, edit=True, visibleChangeCommand=windowInstance.visibleChangeEvent)
+        pm.workspaceControl(WindowClass.WindowID, edit=True, visibleChangeCommand=windowInstance.visibleChangeEvent)
     except (AttributeError, TypeError):
         pass
     try:
@@ -194,16 +196,18 @@ def dockControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs)
         windowInstance.deferred(windowInstance.windowReady.emit)
 
     # Set WindowID if needed but disable saving
-    if not hasattr(windowClass, 'WindowID'):
-        windowClass.WindowID = str(uuid.uuid4())
-        windowClass.saveWindowPosition = lambda *args, **kwargs: None
+    class WindowClass(windowClass):
+        if not hasattr(windowClass, 'WindowID'):
+            WindowID = uuid.uuid4().hex
+            def enableSaveWindowPosition(self, enable):
+                return super(WindowClass, self).enableSaveWindowPosition(False)
 
     # Remove existing window
-    deleteDockControl(windowClass.WindowID)
+    deleteDockControl(WindowClass.WindowID)
 
     # Setup main window and parent to Maya
     mayaWin = getMainWindow(wrapInstance=False)
-    windowInstance = windowClass(parent=mayaWin, dockable=True, *args, **kwargs)
+    windowInstance = WindowClass(parent=mayaWin, dockable=True, *args, **kwargs)
     forceMenuBar(windowInstance)
     windowInstance.deferred(partial(attachToDockControl, windowInstance, dock))
 
@@ -993,16 +997,18 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 windowInstance.windowReady.emit()
                 return windowInstance
 
+            # Set WindowID if needed but disable saving
             # TODO: Override output to match AbstractWindow.dialog
             # cmds.layoutDialog(dismiss=str(data)) to self.dialogAccept(data)
-            class windowClass(windowClass):
+            class WindowClass(windowClass):
                 if not hasattr(windowClass, 'WindowID'):
                     WindowID = uuid.uuid4().hex
-                WindowDockable = False
+                    def enableSaveWindowPosition(self, enable):
+                        return super(WindowClass, self).enableSaveWindowPosition(False)
 
             try:
                 return pm.layoutDialog(
-                    ui=partial(uiScript, windowClass, clsArgs=args, clsKwargs=kwargs),
+                    ui=partial(uiScript, WindowClass, clsArgs=args, clsKwargs=kwargs),
                     title=getattr(cls, 'WindowTitle', 'New Window'),
                 )
             finally:

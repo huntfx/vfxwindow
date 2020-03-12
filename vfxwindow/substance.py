@@ -51,10 +51,13 @@ def dockWrap(windowClass, *args, **kwargs):
     must be relaunched from the menu.
     """
 
-    # Set window ID if needed but disable saving
-    if not hasattr(windowClass, 'WindowID'):
-        windowClass.WindowID = str(uuid.uuid4())
-        windowClass.saveWindowPosition = lambda *args, **kwargs: None
+    class WindowClass(windowClass):
+        # Set window ID if needed but disable saving
+        if not hasattr(windowClass, 'WindowID'):
+            windowClass.WindowID = uuid.uuid4().hex
+            def enableSaveWindowPosition(self, enable):
+                return super(WindowClass, self).enableSaveWindowPosition(False)
+
     windowInstance = windowClass(parent=None, dockable=True, *args, **kwargs)
 
     dock = MANAGER.newDockWidget(identifier=windowClass.WindowID, title=getattr(windowInstance, 'WindowName', 'New Window'))

@@ -368,7 +368,11 @@ class NukeWindow(NukeCommon, AbstractWindow):
         if not self._windowLoaded:
             return self.windowReady.connect(partial(self.resize, *args, **kwargs))
 
-        if not self.dockable() or self.floating():
+        try:
+            floating = self.floating()
+        except RuntimeDraggingError:
+            floating = False
+        if not self.dockable() or floating:
             super(NukeWindow, self).resize(*args, **kwargs)
 
     def move(self, *args, **kwargs):
@@ -779,14 +783,17 @@ class NukeWindow(NukeCommon, AbstractWindow):
             except KeyError:
                 pane = Pane.auto()
 
-            if not hasattr(cls, 'WindowID'):
-                cls.WindowID = str(uuid.uuid4())
-                cls.saveWindowPosition = lambda *args, **kwargs: None
+            # Set WindowID if needed but disable saving
+            class WindowClass(cls):
+                if not hasattr(cls, 'WindowID'):
+                    WindowID = uuid.uuid4().hex
+                    def enableSaveWindowPosition(self, enable):
+                        return super(WindowClass, self).enableSaveWindowPosition(False)
 
             panel = panels.registerWidgetAsPanel(
                 widget=namespace,
-                name=getattr(cls, 'WindowName', 'New Window'),
-                id=cls.WindowID,
+                name=getattr(WindowClass, 'WindowName', 'New Window'),
+                id=WindowClass.WindowID,
                 create=True,
             )
             panel.addToPane(pane)
