@@ -146,16 +146,15 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         return len(self.signal(group) or [])
 
-    def signalConnect(self, signal, func, group=None):
+    def signalConnect(self, signal, func, type=QtCore.Qt.AutoConnection, group=None):
         """Add a new signal for the current group.
 
-        >>> self.signalConnect(widget.currentIndexChanged, self.widgetChanged, 'widget_changed')
+        >>> self.signalConnect(widget.currentIndexChanged, self.widgetChanged, group='widget_changed')
         """
-
         if self.signalPaused(group):
-            self.__signalCache[group].append((signal, func))
+            self.__signalCache[group].append((signal, func, type))
         else:
-            self._signals[group].append((signal, func))
+            self._signals[group].append((signal, func, type))
             signal.connect(func)
         return func
 
@@ -176,13 +175,13 @@ class AbstractWindow(QtWidgets.QMainWindow):
             signals += self.__signalCache.pop(group)
 
         # Disconnect the signals
-        for (signal, func) in self._signals.pop(group, ()):
+        for (signal, func, type) in self._signals.pop(group, ()):
             try:
                 signal.disconnect(func)
             except RuntimeError:
                 pass
             else:
-                signals.append((signal, func))
+                signals.append((signal, func, type))
         return signals
 
     @contextmanager
@@ -205,8 +204,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         for group in set(groups) - skip:
             if group in self.__signalCache:
-                for signal, func in self.__signalCache.pop(group):
-                    self.signalConnect(signal, func, group=group)
+                for signal, func, type in self.__signalCache.pop(group):
+                    self.signalConnect(signal, func, type, group=group)
 
     def signalPaused(self, group):
         """Determine if a signal group is paused."""
