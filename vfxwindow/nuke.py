@@ -31,14 +31,14 @@ class RuntimeDraggingError(RuntimeError):
 
 
 def getMainWindow():
-    """Returns Nukes main window
+    """Returns the Nuke main window.
+    If nothing can be found, None will be returned.
     Source: https://github.com/fredrikaverpil/pyvfx-boilerplate/blob/master/boilerplate.py
     """
 
     for obj in QtWidgets.QApplication.topLevelWidgets():
         if obj.inherits('QMainWindow') and obj.metaObject().className() == 'Foundry::UI::DockMainWindow':
             return obj
-    raise RuntimeError('Could not find DockMainWindow instance')
 
 
 def deleteQtWindow(windowId):
