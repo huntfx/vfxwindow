@@ -377,13 +377,13 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def about(self, text=None):
         """Make an "about" popup message.
-        If no text is provided, this will first attempt to read the doc
-        string of the current class, and if that fails, it will grab
-        the docstring of the module.
+        If no text is provided, this will first attempt to read the
+        docstring of the module, and if that fails, it will grab
+        the docstring of the current class.
         """
 
         if text is None:
-            docstring = self.__class__.__doc__ or inspect.getmodule(self).__doc__
+            docstring = inspect.getmodule(self).__doc__ or self.__class__.__doc__
             if docstring is None:
                 raise ValueError('unable to find docstring')
             text = inspect.cleandoc(docstring)
