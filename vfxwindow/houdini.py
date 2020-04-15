@@ -14,7 +14,6 @@ VERSION = hou.applicationVersion()[0]
 
 def getMainWindow():
     """Get an instance of the main window."""
-
     return hou.ui.mainQtWindow()
 
 
@@ -22,7 +21,6 @@ def getStyleSheet():
     """Get the Houdini stylesheet, possibly for use outside the program.
     For inside Houdini, use setProperty('houdiniStyle', True).
     """
-
     return hou.qt.styleSheet()
 
 
@@ -30,7 +28,6 @@ class HoudiniWindow(AbstractWindow):
     """Window to use for Houdini.
     This also performs some necessary CSS edits to fix colours.
     """
-
     def __init__(self, parent=None, **kwargs):
         if parent is None:
             parent = getMainWindow()
@@ -55,14 +52,12 @@ class HoudiniWindow(AbstractWindow):
 
     def closeEvent(self, event):
         """Save the window location on window close."""
-
         self.saveWindowPosition()
         self.clearWindowInstance(self.WindowID)
         return super(HoudiniWindow, self).closeEvent(event)
 
     def displayMessage(self, message):
         """Show a popup message."""
-
         hou.ui.displayMessage(message)
 
     def windowPalette(self):
@@ -73,7 +68,6 @@ class HoudiniWindow(AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-
         if 'houdini' not in self.windowSettings:
             self.windowSettings['houdini'] = {}
         settings = self.windowSettings['houdini']
@@ -91,7 +85,6 @@ class HoudiniWindow(AbstractWindow):
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
-
         key = self._getSettingsKey()
         try:
             x = self.windowSettings['houdini'][key]['x']
@@ -108,7 +101,6 @@ class HoudiniWindow(AbstractWindow):
     @classmethod
     def dialog(cls, parent=None, *args, **kwargs):
         """Create the window as a dialog."""
-
         if parent is None:
             parent = getMainWindow()
         return super(HoudiniWindow, cls).dialog(parent=parent, *args, **kwargs)
@@ -116,7 +108,6 @@ class HoudiniWindow(AbstractWindow):
     @classmethod
     def clearWindowInstance(self, windowID):
         """Close the last class instance."""
-
         previousInstance = super(HoudiniWindow, self).clearWindowInstance(windowID)
         if previousInstance is None:
             return
@@ -130,5 +121,4 @@ class HoudiniWindow(AbstractWindow):
 
     def deferred(self, func, *args, **kwargs):
         """Defer function until Houdini is ready."""
-
         hdefereval.executeDeferred(func, *args, **kwargs)

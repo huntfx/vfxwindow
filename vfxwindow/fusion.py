@@ -23,7 +23,6 @@ def getMainWindow():
     """Get a pointer to the Fusion window.
     However as of Fusion 9, this doesn't seem to return anything.
     """
-
     return fusion.GetMainWindow()
 
 
@@ -37,7 +36,6 @@ class FusionWindow(StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-
         if 'fusion' not in self.windowSettings:
             self.windowSettings['fusion'] = {}
         settings = self.windowSettings['fusion']
@@ -55,7 +53,6 @@ class FusionWindow(StandaloneWindow):
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
-
         key = self._getSettingsKey()
         try:
             width = self.windowSettings['fusion'][key]['width']
@@ -72,7 +69,6 @@ class FusionWindow(StandaloneWindow):
     @hybridmethod
     def show(cls, self, *args, **kwargs):
         """Show the Fusion window."""
-
         # Window is already initialised
         if self is not cls:
             return super(FusionWindow, self).show()
@@ -88,7 +84,6 @@ class FusionWindow(StandaloneWindow):
     @classmethod
     def dialog(cls, parent=None, *args, **kwargs):
         """Create the window as a dialog."""
-
         if parent is None:
             parent = getMainWindow()
         return super(FusionWindow, cls).dialog(parent=parent, *args, **kwargs)
