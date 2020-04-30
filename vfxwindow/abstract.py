@@ -5,6 +5,7 @@ from __future__ import absolute_import
 import inspect
 import json
 import os
+import sys
 import tempfile
 import uuid
 from collections import defaultdict
@@ -18,13 +19,11 @@ from .utils.palette import savePaletteData, setPalette
 
 def getWindowSettingsPath(windowID):
     """Get a path to the window settings."""
-
     return os.path.join(tempfile.gettempdir(), 'VFXWindow.{}.json'.format(windowID))
 
 
 def getWindowSettings(windowID, path=None):
     """Load the window settings, or return empty dict if they don't exist."""
-
     if path is None:
         path = getWindowSettingsPath(windowID)
     try:
@@ -36,7 +35,6 @@ def getWindowSettings(windowID, path=None):
 
 def saveWindowSettings(windowID, data, path=None):
     """Save the window settings."""
-
     if path is None:
         path = getWindowSettingsPath(windowID)
     try:
@@ -137,24 +135,22 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Wrapper over the inbult processEvents method.
         This forces the GUI to update in the middle of calculations.
         """
-
         QtWidgets.QApplication.processEvents()
 
     def signalExists(self, group):
         """How many signals exist for the given group."""
-
         return len(self.signal(group) or [])
 
-    def signalConnect(self, signal, func, group=None):
+    def signalConnect(self, signal, func, type=QtCore.Qt.AutoConnection, group=None):
         """Add a new signal for the current group.
 
-        >>> self.signalConnect(widget.currentIndexChanged, self.widgetChanged, 'widget_changed')
+        Example:
+            >>> self.signalConnect(widget.currentIndexChanged, self.widgetChanged, group='widget_changed')
         """
-
         if self.signalPaused(group):
-            self.__signalCache[group].append((signal, func))
+            self.__signalCache[group].append((signal, func, type))
         else:
-            self._signals[group].append((signal, func))
+            self._signals[group].append((signal, func, type))
             signal.connect(func)
         return func
 
@@ -162,12 +158,12 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Disconnect and return all functions for a current group.
         If none exist, and empty list will be returned.
 
-        >>> self.signalDisconnect('widget_changed')
-        [self.widgetChanged]
-        >>> self.signalDisconnect('widget_changed')
-        []
+        Example:
+            >>> self.signalDisconnect('widget_changed')
+            [self.widgetChanged]
+            >>> self.signalDisconnect('widget_changed')
+            []
         """
-
         signals = []
 
         # If paused, then just remove the signals from cache
@@ -175,13 +171,13 @@ class AbstractWindow(QtWidgets.QMainWindow):
             signals += self.__signalCache.pop(group)
 
         # Disconnect the signals
-        for (signal, func) in self._signals.pop(group, ()):
+        for (signal, func, type) in self._signals.pop(group, ()):
             try:
                 signal.disconnect(func)
             except RuntimeError:
                 pass
             else:
-                signals.append((signal, func))
+                signals.append((signal, func, type))
         return signals
 
     @contextmanager
@@ -189,7 +185,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Pause a certain set of signals during execution.
         This will remove the signals, and re-apply them after.
         """
-
         skip = set()
         if not groups:
             groups = self._signals
@@ -204,23 +199,23 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         for group in set(groups) - skip:
             if group in self.__signalCache:
-                for signal, func in self.__signalCache.pop(group):
-                    self.signalConnect(signal, func, group=group)
+                for signal, func, type in self.__signalCache.pop(group):
+                    self.signalConnect(signal, func, type, group=group)
 
     def signalPaused(self, group):
         """Determine if a signal group is paused."""
-
         return group in self.__signalCache
 
     def _getSettingsKey(self):
         """Get the key to use when saving settings."""
-
         if self.batch:
             return 'batch'
         if self.dockable():
             return 'dock'
-        elif self.dialog():
+        elif self.isDialog():
             return 'dialog'
+        elif self.isInstance():
+            return 'instance'
         else:
             return 'main'
 
@@ -232,8 +227,11 @@ class AbstractWindow(QtWidgets.QMainWindow):
                 otherwise get the current setting, which may require
                 a reload to apply if it's been changed.
         """
-
-        if not raw and self.__wasDocked is not None:
+        if raw:
+            return self.__dockable
+        if self.isInstance():
+            return False
+        if self.__wasDocked is not None:
             return self.__wasDocked
         return self.__dockable
 
@@ -244,7 +242,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
             override (bool): If the dockable raw value should be set.
                 Should only be used if the dock state has changed.
         """
-
         if override:
             self.__wasDocked = self.__dockable = dockable
         else:
@@ -254,25 +251,24 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def docked(self):
         """Return if the window is currently docked."""
-
         if not self.dockable():
             return False
         return NotImplementedError('override needed')
 
     def setDocked(self, docked):
         """Force the window to dock or undock."""
-
         pass
 
-    def dialog(self):
+    def isDialog(self):
         """Return if the window is a dialog."""
-
-        return getattr(self, 'ForceDialog', False)
+        return isinstance(self.parent(), QtWidgets.QDialog)
 
     def loadWindowPosition(self):
         """Load the previous position or centre the window.
         The loading must be done in an override.
         """
+        if self.isInstance():
+            return
 
         if self.__initialPosOverride is not None:
             x, y = self.__initialPosOverride
@@ -283,11 +279,12 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def enableSaveWindowPosition(self, enable):
         """Enable or disable saving the window position."""
-
         self._enableSave = enable
 
     def saveWindowPosition(self, path=None):
         """Save the window settings into a file."""
+        if self.isInstance():
+            return
 
         if self.__forceDisableSaving or not self._enableSave:
             return False
@@ -297,7 +294,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def setWindowIcon(self, icon):
         """Convert a string to a QIcon if needed."""
-
         if not isinstance(icon, QtGui.QIcon):
             icon = QtGui.QIcon(icon)
         super(AbstractWindow, self).setWindowIcon(icon)
@@ -324,7 +320,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
             else:
                 buttonClicked (str)
         """
-
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle(title)
         msg.setText(message)
@@ -365,13 +360,12 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def about(self, text=None):
         """Make an "about" popup message.
-        If no text is provided, this will first attempt to read the doc
-        string of the current class, and if that fails, it will grab
-        the docstring of the module.
+        If no text is provided, this will first attempt to read the
+        docstring of the module, and if that fails, it will grab
+        the docstring of the current class.
         """
-
         if text is None:
-            docstring = self.__class__.__doc__ or inspect.getmodule(self).__doc__
+            docstring = inspect.getmodule(self).__doc__ or self.__class__.__doc__
             if docstring is None:
                 raise ValueError('unable to find docstring')
             text = inspect.cleandoc(docstring)
@@ -384,7 +378,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
     @hybridmethod
     def show(cls, self, *args, **kwargs):
         """Show the window and load its position."""
-
         # The window has already been initialised
         if self is not cls:
             return super(AbstractWindow, self).show()
@@ -400,13 +393,62 @@ class AbstractWindow(QtWidgets.QMainWindow):
         new.deferred(new.windowReady.emit)
         return new
 
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog.
+        Methods of .dialogAccept and .dialogReject will be added.
+        Any variables given to these will be returned.
+
+        Output: (accepted[bool], data[list])
+        """
+        # Create application if it doesn't exist
+        inst = app = QtWidgets.QApplication.instance()
+        if app is None:
+            app = QtWidgets.QApplication(sys.argv)
+
+        dialog = QtWidgets.QDialog(parent=parent)
+        dialog.setWindowTitle(getattr(cls, 'WindowName', 'New Window'))
+        if inst is None:
+            app.setActiveWindow(dialog)
+
+        # Inheirt the class to set attributes
+        class windowClass(cls):
+            WindowDockable = False
+            _DialogData = []
+
+            # Method of getting data returned from dialog
+            def dialogAccept(self, *args):
+                self._DialogData += args
+                return dialog.accept()
+
+            def dialogReject(self, *args):
+                self._DialogData += args
+                return dialog.reject()
+
+        # Setup layout
+        layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        #layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        windowInstance = windowClass(*args, **kwargs)
+        layout.addWidget(windowInstance)
+        dialog.setLayout(layout)
+
+        # Finish setting up window
+        windowInstance.loadWindowPosition()
+        windowInstance.windowReady.emit()
+
+        try:
+            return (dialog.exec_(), windowInstance._DialogData)
+        finally:
+            windowInstance.saveWindowPosition()
+            windowClass.clearWindowInstance(windowClass.WindowID)
+
     def setVisible(self, visible):
         """Override setVisible to make sure it behaves like show/hide.
         This can cause recursion errors, so make sure the window has
         been loaded and not closed.
         """
-
-        if not self.isLoaded() or self.isInstance():
+        if not self.isLoaded() or self.isInstance() or self.isDialog():
             return super(AbstractWindow, self).setVisible(visible)
         if visible:
             return self.show()
@@ -425,7 +467,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
             layout.addWidget(OtherWindow.instance(self).centralWidget())
             # The above line will link the close callbacks and things
         """
-
         # Store the ID of an existing window
         tempID = None
         if cls.WindowID in cls._WINDOW_INSTANCES:
@@ -452,40 +493,33 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def isInstance(self):
         """Get if the window is a child of another window."""
-
         return self.__childWindow
 
     def _setChildWindow(self, value):
         """Mark if the window is a child of another window.
         This should not be manually called.
         """
-
         self.__childWindow = value
 
     def setDefaultSize(self, width, height):
         """Set a default size upon widget load."""
-
         self.resize(width, height)
 
     def setDefaultWidth(self, width):
         """Set a default width upon widget load."""
-
         self.resize(width, self.height())
 
     def setDefaultHeight(self, height):
         """Set a default height upon widget load."""
-
         self.resize(self.width(), height)
 
     def setDefaultPosition(self, x, y):
         """Set a default position upon widget load."""
-
         self.__initialPosOverride = (x, y)
 
     @hybridmethod
     def windowInstance(cls, self, windowID=None, delete=False):
         """Get the instance of the current window or one with an ID."""
-
         if windowID is None:
             if self is cls:
                 return
@@ -504,9 +538,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         A signal will be emitted as it will be attached to any child windows too.
         In the case of a dialog, it will be deleted by now, so ignore.
         """
-
         inst = cls._WINDOW_INSTANCES.pop(windowID, None)
-        if inst is not None and not getattr(inst['window'], 'ForceDialog', False):
+        if inst is not None and not inst['window'].isDialog():
             try:
                 inst['window'].clearedInstance.emit()
             except RuntimeError:
@@ -516,37 +549,31 @@ class AbstractWindow(QtWidgets.QMainWindow):
     @classmethod
     def clearWindowInstances(cls):
         """Close down every loaded window."""
-
         for windowID in tuple(cls._WINDOW_INSTANCES):
             cls.clearWindowInstance(windowID)
 
     def closeEvent(self, event):
         """Close the window and mark it as closed."""
-
         self._windowClosed = True
         self.clearWindowInstance(self.WindowID)
         return super(AbstractWindow, self).closeEvent(event)
 
     def isClosed(self):
         """Return if the window has been closed."""
-
         return self._windowClosed
 
     def isLoaded(self):
         """Return if the window is currently loaded."""
-
         return self._windowLoaded and not self.isClosed()
 
     def saveWindowPalette(self, program, version):
         """Save the palette as a file.
         This is mainly to be used if the window palette is auto generated.
         """
-
         return savePaletteData(program, version, self.palette())
 
     def setWindowPalette(self, program, version=None, style=True, **kwargs):
         """Set the palette of the window."""
-
         setPalette(program, version, style=style)
         self._windowPalette = program
         if version is not None:
@@ -554,89 +581,98 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def windowPalette(self):
         """Find the current palette of the window."""
-
         if hasattr(self, '_windowPalette'):
             return self._windowPalette
         return None
 
     def _parentOverride(self):
         """Make sure this function is inherited."""
-
         return super(AbstractWindow, self)
 
     def floating(self):
         """Return if the window is floating.
         As this is a base window only, it will always be floating.
         """
-
-        return True
+        return not self.isInstance()
 
     def move(self, x, y=None):
+        if self.isInstance():
+            return
         if isinstance(x, QtCore.QPoint):
             y = x.y()
             x = x.x()
         if self.dockable():
             return self._parentOverride().move(x, y)
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().move(x, y)
         return super(AbstractWindow, self).move(x, y)
 
     def geometry(self):
-        if self.dockable():
-            return self._parentOverride().geometry()
-        elif self.dialog():
-            return self.parent().geometry()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().geometry()
+            elif self.isDialog():
+                return self.parent().geometry()
         return super(AbstractWindow, self).geometry()
 
     def frameGeometry(self):
-        if self.dockable():
-            return self._parentOverride().frameGeometry()
-        elif self.dialog():
-            return self.parent().frameGeometry()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().frameGeometry()
+            elif self.isDialog():
+                return self.parent().frameGeometry()
         return super(AbstractWindow, self).frameGeometry()
 
     def rect(self):
-        if self.dockable():
-            return self._parentOverride().rect()
-        elif self.dialog():
-            return self.parent().rect()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().rect()
+            elif self.isDialog():
+                return self.parent().rect()
         return super(AbstractWindow, self).rect()
 
     def width(self):
-        if self.dockable():
-            return self._parentOverride().width()
-        elif self.dialog():
-            return self.parent().width()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().width()
+            elif self.isDialog():
+                return self.parent().width()
         return super(AbstractWindow, self).width()
 
     def height(self):
-        if self.dockable():
-            return self._parentOverride().height()
-        elif self.dialog():
-            return self.parent().height()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().height()
+            elif self.isDialog():
+                return self.parent().height()
         return super(AbstractWindow, self).height()
 
     def x(self):
-        if self.dockable():
-            return self._parentOverride().x()
-        elif self.dialog():
-            return self.parent().x()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().x()
+            elif self.isDialog():
+                return self.parent().x()
         return super(AbstractWindow, self).x()
 
     def y(self):
-        if self.dockable():
-            return self._parentOverride().y()
-        elif self.dialog():
-            return self.parent().y()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().y()
+            elif self.isDialog():
+                return self.parent().y()
         return super(AbstractWindow, self).y()
 
     def resize(self, width, height=None):
+        if self.isInstance():
+            return
+
         if isinstance(width, QtCore.QSize):
             height = width.height()
             width = width.width()
         if self.dockable():
             return self._parentOverride().resize(width, height)
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().resize(width, height)
         return super(AbstractWindow, self).resize(width, height)
 
@@ -644,9 +680,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Centre the current window to its parent.
         In the case of overrides, the parent or child geometry may be provided.
         """
-
         if parentGeometry is None or childGeometry is None:
-            if self.dialog():
+            if self.isDialog():
                 base = self.parent()
             else:
                 base = self
@@ -667,14 +702,12 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def deferred(self, func, *args, **kwargs):
         """Placeholder for program specific deferred functions."""
-
         func()
 
     def exists(self):
         """Return if the window currently exists.
         For most cases the value will only ever be True.
         """
-
         return True
 
     @hybridmethod

@@ -22,7 +22,6 @@ class _MultiAppLaunch(Process):
 
     def run(self):
         """Launch the app once the process has started."""
-
         try:
             app = QtWidgets.QApplication(sys.argv)
         except RuntimeError:
@@ -46,7 +45,6 @@ class StandaloneWindow(AbstractWindow):
         Multiprocessing can be used to launch a separate application instead of an instance.
         The disadvantage of an instance is the palette and other bits are all linked.
         """
-
         # Window is already initialised
         if self is not cls:
             return super(StandaloneWindow, self).show()
@@ -88,7 +86,6 @@ class StandaloneWindow(AbstractWindow):
     @classmethod
     def clearWindowInstance(cls, windowID):
         """Close the last class instance."""
-
         previousInstance = super(StandaloneWindow, cls).clearWindowInstance(windowID)
         if previousInstance is None:
             return
@@ -102,14 +99,12 @@ class StandaloneWindow(AbstractWindow):
 
     def closeEvent(self, event):
         """Save the window location on window close."""
-
         self.saveWindowPosition()
         self.clearWindowInstance(self.WindowID)
         return super(StandaloneWindow, self).closeEvent(event)
 
     def saveWindowPosition(self):
         """Save the window location."""
-
         if 'standalone' not in self.windowSettings:
             self.windowSettings['standalone'] = {}
         settings = self.windowSettings['standalone']
@@ -127,7 +122,6 @@ class StandaloneWindow(AbstractWindow):
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
-
         key = self._getSettingsKey()
         try:
             x = self.windowSettings['standalone'][key]['x']

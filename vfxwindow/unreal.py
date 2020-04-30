@@ -15,6 +15,8 @@ VERSION = sys.executable.split(os.path.sep)[-5][3:]
 
 
 class UnrealWindow(StandaloneWindow):
+    """Window to use for Unreal."""
+
     def __init__(self, parent=None, **kwargs):
         super(UnrealWindow, self).__init__(parent, **kwargs)
         self.unreal = True
@@ -28,7 +30,6 @@ class UnrealWindow(StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-
         if 'unreal' not in self.windowSettings:
             self.windowSettings['unreal'] = {}
         settings = self.windowSettings['unreal']
@@ -46,7 +47,6 @@ class UnrealWindow(StandaloneWindow):
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
-
         key = self._getSettingsKey()
         try:
             width = self.windowSettings['unreal'][key]['width']
