@@ -7,6 +7,9 @@ The intended usage is to make your window class inherit `VFXWindow` - which is a
 
 This is perfectly stable, but there is still plenty that needs improvement. Maya, Nuke, 3DS Max, Houdini, Blender, Substance Designer, Unreal and Fusion are currently supported, though any help to extend those would be appreciated, as well as support for any other applications.
 
+### Installation
+    pip install vfxwindow
+
 ### Basic Example:
 ```python
 class MyWindow(VFXWindow):
