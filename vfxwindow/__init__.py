@@ -17,7 +17,7 @@ TODO:
 from __future__ import absolute_import
 
 __all__ = ['VFXWindow']
-__version__ = '1.6.0'
+__version__ = '1.6.1'
 
 import os
 import sys
@@ -53,6 +53,10 @@ def importable(program):
         return None
 
 
+class NotImplementedApplicationError(ImportError, NotImplementedError):
+    """Basically acts as a NotImplementedError, but "except ImportError" will catch it."""
+
+
 if importable('maya') and 'mayapy.exe' in sys.executable:
     _setup_qapp()
     from .maya import MayaBatchWindow as VFXWindow
@@ -61,8 +65,8 @@ elif importable('maya') and 'maya.exe' in sys.executable:
     from .maya import MayaWindow as VFXWindow
 
 elif importable('nuke') and 'Nuke' in sys.executable:
-    if type(sys.stdout) == file:
-        raise NotImplementedError('unable to use qt when nuke is in batch mode')
+    if False and type(sys.stdout) == file:  # This check doesn't seem to work for Nuke 12
+        raise NotImplementedApplicationError('unable to use qt when nuke is in batch mode')
         from .nuke import NukeBatchWindow as VFXWindow
     else:
         from .nuke import NukeWindow as VFXWindow
