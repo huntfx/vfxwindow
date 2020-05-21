@@ -559,6 +559,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Close the window and mark it as closed."""
         self._windowClosed = True
         self.clearWindowInstance(self.WindowID)
+        if self.isDialog():
+            return self.parent().close()
         return super(AbstractWindow, self).closeEvent(event)
 
     def isClosed(self):
