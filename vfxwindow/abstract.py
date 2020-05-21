@@ -260,7 +260,10 @@ class AbstractWindow(QtWidgets.QMainWindow):
         pass
 
     def isDialog(self):
-        """Return if the window is a dialog."""
+        """Return if the window is a dialog.
+        Note that this will not work in __init__().
+        If it is needed, attach it to the windowReady signal instead.
+        """
         return isinstance(self.parent(), QtWidgets.QDialog)
 
     def loadWindowPosition(self):
@@ -675,6 +678,51 @@ class AbstractWindow(QtWidgets.QMainWindow):
         elif self.isDialog():
             return self.parent().resize(width, height)
         return super(AbstractWindow, self).resize(width, height)
+
+    def setMinimumWidth(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setMinimumWidth(*args, **kwargs)
+        return super(AbstractWindow, self).setMinimumWidth(*args, **kwargs)
+
+    def setFixedWidth(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setFixedWidth(*args, **kwargs)
+        return super(AbstractWindow, self).setFixedWidth(*args, **kwargs)
+
+    def setMaximumWidth(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setMaximumWidth(*args, **kwargs)
+        return super(AbstractWindow, self).setMaximumWidth(*args, **kwargs)
+
+    def setMinimumHeight(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setMinimumHeight(*args, **kwargs)
+        return super(AbstractWindow, self).setMinimumHeight(*args, **kwargs)
+
+    def setFixedHeight(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setFixedHeight(*args, **kwargs)
+        return super(AbstractWindow, self).setFixedHeight(*args, **kwargs)
+
+    def setMaximumHeight(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setMaximumHeight(*args, **kwargs)
+        return super(AbstractWindow, self).setMaximumHeight(*args, **kwargs)
+
+    def setMinimumSize(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setMinimumSize(*args, **kwargs)
+        return super(AbstractWindow, self).setMinimumSize(*args, **kwargs)
+
+    def setFixedSize(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setFixedSize(*args, **kwargs)
+        return super(AbstractWindow, self).setFixedSize(*args, **kwargs)
+
+    def setMaximumSize(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setMaximumSize(*args, **kwargs)
+        return super(AbstractWindow, self).setMaximumSize(*args, **kwargs)
 
     def centreWindow(self, parentGeometry=None, childGeometry=None):
         """Centre the current window to its parent.
