@@ -373,10 +373,16 @@ class AbstractWindow(QtWidgets.QMainWindow):
                 raise ValueError('unable to find docstring')
             text = inspect.cleandoc(docstring)
 
-        self.displayMessage(
-            title='About {}'.format(self.WindowName),
-            message=text,
-        )
+        try:
+            self.displayMessage(
+                title='About {}'.format(self.WindowName),
+                message=text,
+            )
+        except AttributeError:
+            self.displayMessage(
+                title='About',
+                message=text,
+            )
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
