@@ -165,7 +165,7 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
     return windowInstance
 
 
-def dockControlWrap(windowClass, dock=True, resetFloating=True, *args, **kwargs):
+def dockControlWrap(windowClass, dock=True, *args, **kwargs):
 
     def attachToDockControl(windowInstance, dock=True, area='right'):
         """This needs to be deferred as it can run before the previous dockControl has closed."""
@@ -924,8 +924,8 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 except KeyError:
                     dock = True
             if self._Pre2017:
-                return dockControlWrap(cls, dock, resetFloating=True, *args, **kwargs)
-            return workspaceControlWrap(cls, dock, resetFloating=True, *args, **kwargs)
+                return dockControlWrap(cls, dock,  *args, **kwargs)
+            return workspaceControlWrap(cls, dock, True, *args, **kwargs)
 
         win = super(MayaWindow, cls).show(*args, **kwargs)
         if batchOverride:
