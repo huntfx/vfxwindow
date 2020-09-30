@@ -54,7 +54,7 @@ def searchGlobals(cls, globalsDict=None, visited=None):
         visited = set(filter(bool, map(sys.modules.get, sys.builtin_module_names)))
 
     for k, v in globalsDict.items():
-        if v == cls:
+        if v is cls:
             return k
 
         elif isinstance(v, ModuleType) and v not in visited:
