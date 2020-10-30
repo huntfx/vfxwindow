@@ -264,7 +264,10 @@ class AbstractWindow(QtWidgets.QMainWindow):
         Note that this will not work in __init__().
         If it is needed, attach it to the windowReady signal instead.
         """
-        return isinstance(self.parent(), QtWidgets.QDialog)
+        try:
+            return isinstance(self.parent(), QtWidgets.QDialog)
+        except RuntimeError:
+            return False
 
     def loadWindowPosition(self):
         """Load the previous position or centre the window.
