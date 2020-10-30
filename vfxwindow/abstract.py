@@ -370,7 +370,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         docstring of the module, and if that fails, it will grab
         the docstring of the current class.
         """
-        if text is None:
+        if text is None or isinstance(text, bool):
             docstring = inspect.getmodule(self).__doc__ or self.__class__.__doc__
             if docstring is None:
                 raise ValueError('unable to find docstring')
