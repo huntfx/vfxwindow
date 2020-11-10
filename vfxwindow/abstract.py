@@ -195,12 +195,14 @@ class AbstractWindow(QtWidgets.QMainWindow):
                 skip.add(group)
             self.__signalCache[group] += self.signalDisconnect(group, _pause=True)
 
-        yield
+        try:
+            yield
 
-        for group in set(groups) - skip:
-            if group in self.__signalCache:
-                for signal, func, type in self.__signalCache.pop(group):
-                    self.signalConnect(signal, func, type, group=group)
+        finally:
+            for group in set(groups) - skip:
+                if group in self.__signalCache:
+                    for signal, func, type in self.__signalCache.pop(group):
+                        self.signalConnect(signal, func, type, group=group)
 
     def signalPaused(self, group):
         """Determine if a signal group is paused."""
