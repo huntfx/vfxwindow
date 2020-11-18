@@ -83,6 +83,17 @@ class StandaloneWindow(AbstractWindow):
                 return 'Qt.5'
         return currentPalette
 
+    def setWindowPalette(self, program, version=None, style=True, force=False):
+        """Set the palette of the window.
+        If this window is parented to another VFXWindow, then skip as
+        to not override its colour scheme.
+        """
+        if not force:
+            for widget in QtWidgets.QApplication.topLevelWidgets():
+                if widget != self and not isinstance(widget, AbstractWindow):
+                    return
+        super(StandaloneWindow, self).setWindowPalette(program, version, style)
+
     @classmethod
     def clearWindowInstance(cls, windowID):
         """Close the last class instance."""
