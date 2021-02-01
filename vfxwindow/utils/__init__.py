@@ -15,7 +15,13 @@ else:
         return (x, y)
 
 
-SITE_PACKAGES = site.getsitepackages()
+try:
+    SITE_PACKAGES = site.getsitepackages()
+
+# For some reason, PyInstaller may have issues getting site packages
+# This isn't an issue though as it's only needed within Nuke
+except AttributeError:
+    SITE_PACKAGES = []
 
 
 class hybridmethod(object):
