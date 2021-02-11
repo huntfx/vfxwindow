@@ -29,12 +29,12 @@ setup(
     long_description_content_type='text/markdown',
     author = 'Peter Hunt',
     author_email='peter@huntfx.uk',
-    url = 'https://github.com/Peter92/vfxwindow',
-    download_url = 'https://github.com/Peter92/vfxwindow/archive/{}.tar.gz'.format(version),
+    url = 'https://github.com/huntfx/vfxwindow',
+    download_url = 'https://github.com/huntfx/vfxwindow/archive/{}.tar.gz'.format(version),
     project_urls={
-        'Documentation': 'https://github.com/Peter92/vfxwindow/wiki',
-        'Source': 'https://github.com/Peter92/vfxwindow',
-        'Issues': 'https://github.com/Peter92/vfxwindow/issues',
+        'Documentation': 'https://github.com/huntfx/vfxwindow/wiki',
+        'Source': 'https://github.com/huntfx/vfxwindow',
+        'Issues': 'https://github.com/huntfx/vfxwindow/issues',
     },
     keywords = [
         'qt', 'pyside', 'pyside2', 'pyqt', 'pyqt4', 'pyqt5', 'gui', 'window',
