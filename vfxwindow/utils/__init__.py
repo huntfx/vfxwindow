@@ -15,13 +15,7 @@ else:
         return (x, y)
 
 
-try:
-    SITE_PACKAGES = site.getsitepackages()
-
-# For some reason, PyInstaller may have issues getting site packages
-# This isn't an issue though as it's only needed within Nuke
-except AttributeError:
-    SITE_PACKAGES = []
+SITE_PACKAGES = site.getsitepackages()
 
 
 class hybridmethod(object):
@@ -59,6 +53,7 @@ def searchGlobals(cls, globalsDict=None, visited=None):
     if visited is None:
         visited = set(filter(bool, map(sys.modules.get, sys.builtin_module_names)))
 
+    recursiveSearch = {}
     for k, v in globalsDict.items():
         if v is cls:
             return k
@@ -76,10 +71,13 @@ def searchGlobals(cls, globalsDict=None, visited=None):
             if modulePath is None or any(modulePath.startswith(i) for i in SITE_PACKAGES):
                 continue
 
-            # Recursively search the next module
-            result = searchGlobals(cls, v.__dict__, visited=visited)
-            if result:
-                return k + '.' + result
+            recursiveSearch[k] = v.__dict__
+
+    # Recursively search submodules
+    for k, v in recursiveSearch.items():
+        result = searchGlobals(cls, v, visited=visited)
+        if result:
+            return k + '.' + result
 
 
 def forceMenuBar(win):
