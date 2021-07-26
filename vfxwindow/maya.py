@@ -215,7 +215,10 @@ def toMObject(node):
     if isinstance(node, om.MObject):
         return node
     selected = om.MSelectionList()
-    selected.add(str(node))
+    try:
+        selected.add(str(node))
+    except RuntimeError:
+        return None
     return selected.getDependNode(0)
 
 
@@ -658,8 +661,10 @@ class MayaWindow(MayaCommon, AbstractWindow):
         See Also:
             https://help.autodesk.com/view/MAYAUL/2016/ENU/?guid=__py_ref_class_open_maya_1_1_m_node_message_html
         """
-        self._addMayaCallbackGroup(group)
-        self.windowInstance()['callback'][group]['node'].append(callback(toMObject(node), func, clientData))
+        mobj = toMObject(node)
+        if mobj is not None:
+            self._addMayaCallbackGroup(group)
+            self.windowInstance()['callback'][group]['node'].append(callback(mobj, func, clientData))
 
     def addCallbackAttributeChange(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when an attribute changes.
