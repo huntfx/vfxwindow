@@ -762,6 +762,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             if panelObject is not None:
                 widget = panelObject.widget
                 _removeMargins(widget)
+                widget.deferred(widget.windowReady.emit)
                 return widget
 
         kwargs['dockable'] = False
