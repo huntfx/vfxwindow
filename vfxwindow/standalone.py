@@ -90,7 +90,7 @@ class StandaloneWindow(AbstractWindow):
         """
         if not force:
             for widget in QtWidgets.QApplication.topLevelWidgets():
-                if widget != self and isinstance(widget, AbstractWindow):
+                if widget != self and isinstance(widget, AbstractWindow) and not widget.isInstance():
                     return
         super(StandaloneWindow, self).setWindowPalette(program, version, style)
 
