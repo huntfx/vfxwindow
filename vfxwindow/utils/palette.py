@@ -7,6 +7,7 @@ from __future__ import absolute_import
 
 import json
 import os
+from glob import glob
 from string import ascii_letters, digits
 from Qt import QtGui, QtWidgets
 
@@ -89,13 +90,26 @@ def setStyle(style=None):
     QtWidgets.QApplication.setStyle(style)
 
 
+def _getVersionFromPaletteName(paletteName):
+    """Safely get the version from a palette name.
+    Returns None if unable to.
+    """
+    try:
+        return int(paletteName.split('.')[1])
+    except (ValueError, IndexError):
+        return None
+
+
 def setPalette(program, version=None, style=True):
     """Apply a palette to the current window."""
-
+    # Find the latest version
     if version is None:
-        paletteName = '{}.{}'.format(program, FILE_EXT)
-    else:
-        paletteName = '{}.{}.{}'.format(program, version, FILE_EXT)
+        palettePaths = glob(os.path.join(DIR, '{}.*.{}'.format(program, FILE_EXT)))
+        paletteNames = map(os.path.basename, palettePaths)
+        versions = map(_getVersionFromPaletteName, paletteNames)
+        version = max(filter(bool, versions))
+
+    paletteName = '{}.{}.{}'.format(program, version, FILE_EXT)
     paletteFile = os.path.join(DIR, paletteName)
     paletteData = readPalette(paletteFile)
 
