@@ -74,7 +74,7 @@ elif importable('nuke') and 'Nuke' in sys.executable:
 elif importable('hou') and 'houdini' in sys.executable:
     from .houdini import HoudiniWindow as VFXWindow
 
-elif importable('bpy') and 'blender.exe' in sys.executable:
+elif importable('bpy') and 'Blender Foundation' in sys.executable:
     from .blender import BlenderWindow as VFXWindow
 
 elif importable('unreal') and 'UE4Editor.exe' in sys.executable:

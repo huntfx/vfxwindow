@@ -42,7 +42,7 @@ if __name__ == '__main__':
  - Substance Designer (tested on 2019.3) - standard, docked (unable to save/load position)
  - 3D Studio Max (2018+, tested on 2020) - standard
  - Houdini (tested on 16) - standard
- - Blender (tested on 2.80) - standard, callbacks
+ - Blender (tested on 2.8 - 3.1) - standard, callbacks
  - Unreal (4.19+, tested on 4.23) - standard
  - Fusion (tested on 9) - standard
  - Standalone (Qt4, Qt5, tested on 2.7, 3.4+) - standard
