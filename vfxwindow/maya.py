@@ -7,19 +7,19 @@ from functools import partial
 from Qt import QtWidgets, QtCompat, QtCore
 
 import maya.mel as mel
+import maya.cmds as mc
 import maya.api.OpenMaya as om
 import maya.OpenMayaUI as omUI
 import pymel.core as pm
-from pymel import versions
 
 from .abstract import AbstractWindow, getWindowSettings
 from .standalone import StandaloneWindow
 from .utils import forceMenuBar, hybridmethod, setCoordinatesToScreen
 
 
-VERSION = versions.flavor()
+VERSION = mc.about(version=True)
 
-BATCH = pm.about(batch=True)
+BATCH = mc.about(batch=True)
 
 # Map each function required for each callback
 SCENE_CALLBACKS = {
@@ -240,7 +240,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
     were already implemented when I found it, and is also missing a few parts I would have liked.
     """
 
-    _Pre2017 = int(VERSION) < 2017  # workspaceControl was added in 2017
+    _Pre2017 = float(VERSION) < 2017  # workspaceControl was added in 2017
 
     def __init__(self, parent=None, dockable=False, **kwargs):
         if parent is None:
@@ -485,7 +485,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             # Save extra docked settings
             if self.dockable():
                 settings[key]['floating'] = self.floating()
-                if VERSION < 2017:
+                if self._Pre2017:
                     settings[key]['area'] = self.area()
                 else:
                     settings[key]['control'] = self.control()
@@ -838,7 +838,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         # because it will also delete the window location
         # It's better to handle it elsewhere if possible
         if deleteWindow and previousInstance['window'].dockable():
-            if VERSION < 2017:
+            if cls._Pre2017:
                 deleteDockControl(previousInstance['window'].WindowID)
             else:
                 deleteWorkspaceControl(previousInstance['window'].WindowID)
@@ -853,7 +853,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def hide(self):
         """Hide the window."""
         if self.dockable():
-            if VERSION < 2017:
+            if self._Pre2017:
                 return pm.dockControl(self.WindowID, edit=True, visible=False)
             self.parent().setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
             return pm.workspaceControl(self.WindowID, edit=True, visible=False)
@@ -867,7 +867,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         if self is not cls:
             # Case where window is already initialised
             if self.dockable():
-                if VERSION < 2017:
+                if self._Pre2017:
                     return pm.dockControl(self.WindowID, edit=True, visible=True)
                 result = pm.workspaceControl(self.WindowID, edit=True, visible=True)
                 self.parent().setAttribute(QtCore.Qt.WA_DeleteOnClose)
