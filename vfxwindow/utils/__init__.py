@@ -90,10 +90,11 @@ def forceMenuBar(win):
     adding both widgets won't do anything.
     """
     menu = win.menuBar()
-    for child in menu.children():
-        if isinstance(child, QtWidgets.QMenu):
-            break
-    else:
-        return
+    if not menu.actions():
+        for child in menu.children():
+            if isinstance(child, QtWidgets.QMenu):
+                break
+        else:
+            return
     menu.setSizePolicy(menu.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Fixed)
     win.centralWidget().layout().insertWidget(0, menu)
