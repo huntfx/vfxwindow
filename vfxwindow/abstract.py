@@ -261,6 +261,10 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Force the window to dock or undock."""
         pass
 
+    def setFloating(self, floating):
+        """Force the window to dock or undock."""
+        self.setDocked(not floating)
+
     def isDialog(self):
         """Return if the window is a dialog.
         Note that this will not work in __init__().

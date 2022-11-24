@@ -24,7 +24,7 @@ from __future__ import absolute_import
 import os
 import sys
 import uuid
-from Qt import QtWidgets
+from Qt import QtCore, QtWidgets
 
 import sd
 
@@ -56,32 +56,60 @@ def dockWrap(windowClass, *args, **kwargs):
             def enableSaveWindowPosition(self, enable):
                 return super(WindowClass, self).enableSaveWindowPosition(False)
 
-    windowInstance = windowClass(parent=None, dockable=True, *args, **kwargs)
-
-    dock = MANAGER.newDockWidget(identifier=windowClass.WindowID, title=getattr(windowInstance, 'WindowName', 'New Window'))
+    # Create layout
     layout = QtWidgets.QVBoxLayout()
     layout.setContentsMargins(0, 0, 0, 0)
-    layout.addWidget(windowInstance)
-    dock.setLayout(layout)
 
+    # Create dock
+    dock = MANAGER.newDockWidget(identifier=WindowClass.WindowID, title=getattr(WindowClass, 'WindowName', 'New Window'))
+    dock.setLayout(layout)
+    dockWidget = dock.parent()
+    dockWidget.show()
+
+    @QtCore.Slot()
+    def moveToScreen():
+        """Ensure the window doesn't start off screen."""
+        if not windowInstance.floating():
+            return
+        x, y = setCoordinatesToScreen(windowInstance.x(), windowInstance.y(), windowInstance.width(),
+                                      windowInstance.height(), padding=5)
+        windowInstance.move(x, y)
+
+    # Create window
+    windowInstance = WindowClass(parent=dock, dockable=True, *args, **kwargs)
+    layout.addWidget(windowInstance.centralWidget())
+
+    windowInstance.windowReady.connect(moveToScreen)
     windowInstance.deferred(windowInstance.windowReady.emit)
     return windowInstance
 
 
-class SubstanceWindow(AbstractWindow):
+class SubstanceDesignerWindow(AbstractWindow):
     def __init__(self, parent=None, dockable=False, **kwargs):
         if parent is None:
             parent = getMainWindow()
-        super(SubstanceWindow, self).__init__(parent, **kwargs)
+        super(SubstanceDesignerWindow, self).__init__(parent, **kwargs)
+
         self.substance = True
         self.setDockable(dockable, override=True)
 
     def y(self):
         """Apply y offset for dialogs."""
-        y = super(SubstanceWindow, self).y()
+        y = super(SubstanceDesignerWindow, self).y()
         if self.isDialog():
             return y - 30
         return y
+
+    def move(self, x, y=None):
+        if self.docked() and not self.floating():
+            return
+        return super(SubstanceDesignerWindow, self).move(x, y)
+
+    def resize(self, width, height=None):
+        """Resize the window."""
+        if self.docked() and not self.floating():
+            return
+        return super(SubstanceDesignerWindow, self).resize(width, height)
 
     def floating(self):
         """Determine if the window is floating."""
@@ -100,7 +128,7 @@ class SubstanceWindow(AbstractWindow):
         The force parameter can be set to override this behaviour.
         """
         if force:
-            super(SubstanceWindow, self).setWindowPalette(program, version, style)
+            super(SubstanceDesignerWindow, self).setWindowPalette(program, version, style)
 
     def saveWindowPosition(self):
         """Save the window location."""
@@ -125,7 +153,7 @@ class SubstanceWindow(AbstractWindow):
             settings[key]['x'] = self.x()
             settings[key]['y'] = self.y()
 
-        super(SubstanceWindow, self).saveWindowPosition()
+        super(SubstanceDesignerWindow, self).saveWindowPosition()
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
@@ -139,7 +167,7 @@ class SubstanceWindow(AbstractWindow):
             x = self.windowSettings['substance'][key]['x']
             y = self.windowSettings['substance'][key]['y']
         except KeyError:
-            super(SubstanceWindow, self).loadWindowPosition()
+            super(SubstanceDesignerWindow, self).loadWindowPosition()
         else:
             x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
             self.resize(width, height)
@@ -148,7 +176,7 @@ class SubstanceWindow(AbstractWindow):
     def centreWindow(self, *args, **kwargs):
         """The dialog is already centered so skip."""
         if not self.isDialog():
-            return super(SubstanceWindow, self).centreWindow(*args, **kwargs)
+            return super(SubstanceDesignerWindow, self).centreWindow(*args, **kwargs)
 
     def closeEvent(self, event):
         """Catch close events.
@@ -156,13 +184,13 @@ class SubstanceWindow(AbstractWindow):
         """
         if not self.dockable():
             self.saveWindowPosition()
-        return super(SubstanceWindow, self).closeEvent(event)
+        return super(SubstanceDesignerWindow, self).closeEvent(event)
 
     @classmethod
     def clearWindowInstance(cls, windowID):
         """Close the last class instance."""
         try:
-            previousInstance = super(SubstanceWindow, cls).clearWindowInstance(windowID)
+            previousInstance = super(SubstanceDesignerWindow, cls).clearWindowInstance(windowID)
         except TypeError:
             return
         if previousInstance is None:
@@ -175,20 +203,10 @@ class SubstanceWindow(AbstractWindow):
             except (RuntimeError, ReferenceError):
                 pass
 
-    '''
-    def closeEvent(self, event):
-        """If the window is dockable, delete the dock widget.
-        Currently disabled as it needs to be unregistered too.
-        """
-        if self.dockable():
-            return self.parent().parent().deleteLater()
-        return super(SubstanceWindow, self).closeEvent(event)
-    '''
-
     def _parentOverride(self):
         if self.dockable():
             return self.parent().parent()
-        return super(SubstanceWindow, self)._parentOverride()
+        return super(SubstanceDesignerWindow, self)._parentOverride()
 
     def isVisible(self):
         """Return if the window is visible."""
@@ -197,7 +215,7 @@ class SubstanceWindow(AbstractWindow):
     def setVisible(self, visible):
         """Set if the window is visible."""
         if self.isInstance():
-            return super(SubstanceWindow, self).setVisible(visible)
+            return super(SubstanceDesignerWindow, self).setVisible(visible)
         return self._parentOverride().setVisible(visible)
 
     def hide(self):
@@ -239,11 +257,11 @@ class SubstanceWindow(AbstractWindow):
         if docked:
             return dockWrap(cls, *args, **kwargs)
 
-        return super(SubstanceWindow, cls).show(*args, **kwargs)
+        return super(SubstanceDesignerWindow, cls).show(*args, **kwargs)
 
     @classmethod
     def dialog(cls, parent=None, *args, **kwargs):
         """Create the window as a dialog."""
         if parent is None:
             parent = getMainWindow()
-        return super(SubstanceWindow, cls).dialog(parent=parent, *args, **kwargs)
+        return super(SubstanceDesignerWindow, cls).dialog(parent=parent, *args, **kwargs)
