@@ -17,7 +17,7 @@ TODO:
 from __future__ import absolute_import
 
 __all__ = ['VFXWindow']
-__version__ = '1.6.5'
+__version__ = '1.7.0'
 
 import os
 import sys
@@ -83,8 +83,11 @@ elif importable('unreal') and 'UE4Editor.exe' in sys.executable:
 elif importable('MaxPlus') and '3dsmax.exe' in sys.executable:
     from .max import MaxWindow as VFXWindow
 
-elif importable('sd') and ('Substance Designer.exe' in sys.executable or 'Adobe Substance 3D Designer.exe' in sys.executable):
+elif importable('sd') and 'Designer.exe' in sys.executable:
     from .substance_designer import SubstanceDesignerWindow as VFXWindow
+
+elif importable('substance_painter') and 'Painter.exe' in sys.executable:
+    from .substance_painter import SubstancePainterWindow as VFXWindow
 
 elif importable('fusionscript') or importable('PeyeonScript') and 'Fusion.exe' in sys.executable:
     from .fusion import FusionWindow as VFXWindow
