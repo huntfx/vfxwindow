@@ -51,7 +51,7 @@ def dockWrap(windowClass, *args, **kwargs):
     """
     class WindowClass(windowClass):
         # Set window ID if needed but disable saving
-        if not hasattr(windowClass, 'WindowID'):
+        if not getattr(windowClass, 'WindowID', None):
             windowClass.WindowID = uuid.uuid4().hex
             def enableSaveWindowPosition(self, enable):
                 return super(WindowClass, self).enableSaveWindowPosition(False)
@@ -77,8 +77,7 @@ def dockWrap(windowClass, *args, **kwargs):
 
     # Create window
     windowInstance = WindowClass(parent=dock, dockable=True, *args, **kwargs)
-    layout.addWidget(windowInstance.centralWidget())
-
+    layout.addWidget(windowInstance)
     windowInstance.windowReady.connect(moveToScreen)
     windowInstance.deferred(windowInstance.windowReady.emit)
     return windowInstance
@@ -86,7 +85,9 @@ def dockWrap(windowClass, *args, **kwargs):
 
 class SubstanceDesignerWindow(AbstractWindow):
     def __init__(self, parent=None, dockable=False, **kwargs):
-        if parent is None:
+        if dockable:
+            self._sdParent, parent = parent, None
+        elif parent is None:
             parent = getMainWindow()
         super(SubstanceDesignerWindow, self).__init__(parent, **kwargs)
 
@@ -114,13 +115,13 @@ class SubstanceDesignerWindow(AbstractWindow):
     def floating(self):
         """Determine if the window is floating."""
         if self.dockable():
-            return self.parent().parent().isFloating()
+            return self._parentOverride().isFloating()
         return True
 
     def setDocked(self, docked):
         """Change the dock state."""
         if self.dockable():
-            self.parent().parent().setFloating(not docked)
+            self._parentOverride().setFloating(not docked)
 
     def setWindowPalette(self, program, version=None, style=True, force=False):
         """Set the palette of the window.
@@ -205,7 +206,7 @@ class SubstanceDesignerWindow(AbstractWindow):
 
     def _parentOverride(self):
         if self.dockable():
-            return self.parent().parent()
+            return self._sdParent.parent()
         return super(SubstanceDesignerWindow, self)._parentOverride()
 
     def isVisible(self):
@@ -214,13 +215,19 @@ class SubstanceDesignerWindow(AbstractWindow):
 
     def setVisible(self, visible):
         """Set if the window is visible."""
-        if self.isInstance():
+        if self.isInstance() or not self.isLoaded():
             return super(SubstanceDesignerWindow, self).setVisible(visible)
         return self._parentOverride().setVisible(visible)
 
     def hide(self):
         """Hide the window."""
         return self._parentOverride().hide()
+
+    def deferred(self, func, *args, **kwargs):
+        """Defer a function execution by 1 second.
+        Substance has no better alternative currently.
+        """
+        QtCore.QTimer.singleShot(1000, func)
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
