@@ -63,6 +63,12 @@ class SubstancePainterWindow(AbstractWindow):
         self.substance = True
         self.setDockable(dockable, override=True)
 
+    def deferred(self, func, *args, **kwargs):
+        """Defer a function execution by 1 second.
+        Substance has no better alternative currently.
+        """
+        QtCore.QTimer.singleShot(1000, func)
+
     def move(self, x, y=None):
         if self.docked() and not self.floating():
             return
