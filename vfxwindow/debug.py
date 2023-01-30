@@ -104,13 +104,17 @@ class TestWindow(VFXWindow):
         self.setVisible(checkState == QtCore.Qt.Checked)
 
     @classmethod
-    def clearWindowInstance(cls, windowID):
+    def clearWindowInstance(cls, *args, **kwargs):
         print('clearWindowInstance')
-        return super(TestWindow, cls).clearWindowInstance(windowID)
+        return super(TestWindow, cls).clearWindowInstance(*args, **kwargs)
 
-    def closeEvent(self, event):
+    def closeEvent(self, *args, **kwargs):
         print('closeEvent')
-        return super(TestWindow, self).closeEvent(event)
+        return super(TestWindow, self).closeEvent(*args, **kwargs)
+
+    def eventFilter(self, obj, event):
+        print('eventFilter on {}: {}'.format(obj, event.type()))
+        return super(TestWindow, self).eventFilter(obj, event)
 
 
 def main():
