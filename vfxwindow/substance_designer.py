@@ -76,7 +76,7 @@ def dockWrap(windowClass, *args, **kwargs):
         windowInstance.move(x, y)
 
     # Create window
-    windowInstance = WindowClass(parent=dock, dockable=True, *args, **kwargs)
+    windowInstance = WindowClass(parent=dockWidget, dockable=True, *args, **kwargs)
     layout.addWidget(windowInstance)
     windowInstance.windowReady.connect(moveToScreen)
     windowInstance.deferred(windowInstance.windowReady.emit)
@@ -206,7 +206,7 @@ class SubstanceDesignerWindow(AbstractWindow):
 
     def _parentOverride(self):
         if self.dockable():
-            return self._sdParent.parent()
+            return self._sdParent
         return super(SubstanceDesignerWindow, self)._parentOverride()
 
     def isVisible(self):
