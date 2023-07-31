@@ -521,7 +521,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
         # Select all groups if specific one not provided
         if group is None:
-            groups = windowInstance['callback'].keys()
+            groups = list(windowInstance['callback'].keys())
         else:
             if group not in windowInstance['callback']:
                 groups = []
