@@ -482,7 +482,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """Remove an individual callback."""
         windowInstance = self.windowInstance()
         if group is None:
-            groups = windowInstance['callback'].keys()
+            groups = list(windowInstance['callback'].keys())
         else:
             if group not in windowInstance['callback']:
                 groups = []
