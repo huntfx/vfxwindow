@@ -17,7 +17,7 @@ TODO:
 from __future__ import absolute_import
 
 __all__ = ['VFXWindow']
-__version__ = '1.7.0'
+__version__ = '1.7.1'
 
 import os
 import sys
@@ -65,11 +65,14 @@ elif importable('maya') and 'maya.exe' in sys.executable:
     from .maya import MayaWindow as VFXWindow
 
 elif importable('nuke') and 'Nuke' in sys.executable:
-    if False and type(sys.stdout) == file:  # This check doesn't seem to work for Nuke 12
-        raise NotImplementedApplicationError('unable to use qt when nuke is in batch mode')
-        from .nuke import NukeBatchWindow as VFXWindow
+    from .nuke import getMainWindow, NukeWindow, NukeBatchWindow
+    mainWindow = getMainWindow()
+    if mainWindow is None:
+        raise NotImplementedError('gui not supported in terminal mode, launch nuke with the --tg flag instead')
+    elif mainWindow.isVisible():
+        VFXWindow = NukeWindow
     else:
-        from .nuke import NukeWindow as VFXWindow
+        VFXWindow = NukeBatchWindow
 
 elif importable('hou') and 'houdini' in sys.executable:
     from .houdini import HoudiniWindow as VFXWindow
