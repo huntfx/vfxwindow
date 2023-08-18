@@ -40,6 +40,34 @@ def getMainWindow():
             return obj
 
 
+def runningInTerminal(startup=False):
+    """Determine if Nuke has been launched in terminal mode.
+
+    Returns:
+        True: If the terminal with a QApplication is loaded (`--tg` flag)
+        False: If the GUI is loaded
+        None: If no QApplication is available (`-`t` flag or python.exe)
+    """
+    mainWindow = getMainWindow()
+
+    # Special case when starting up as the main window is not yet visible
+    if startup:
+        for obj in QtWidgets.QApplication.topLevelWidgets():
+            # There doesn't appear to be any Menu objects in terminal mode
+            if obj.metaObject().className() == 'Foundry::UI::Menu':
+                return False
+
+    # If no main window, then there is no QApplication
+    if mainWindow is None:
+        return None
+
+    # If running on startup, then the other two options are ruled out
+    elif startup:
+        return True
+
+    return not mainWindow.isVisible()
+
+
 def deleteQtWindow(windowId):
     """Delete a window.
     Source: https://github.com/fredrikaverpil/pyvfx-boilerplate/blob/master/boilerplate.py
@@ -781,13 +809,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
 
 class NukeBatchWindow(NukeCommon, StandaloneWindow):
-    """Variant of the Standalone window for Nuke in batch mode.
-
-    Warning: This does not yet work properly. It is able to launch a
-    process to run the GUI in (since batch mode uses a QCoreApplication
-    which does not allow windows), but that process is not able to
-    correctly import the "_nuke" library.
-    """
+    """Variant of the Standalone window for Nuke in batch mode."""
     def __init__(self, parent=None, **kwargs):
         super(NukeBatchWindow, self).__init__(parent, **kwargs)
         self.nuke = False

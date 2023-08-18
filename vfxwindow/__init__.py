@@ -65,14 +65,16 @@ elif importable('maya') and 'maya.exe' in sys.executable:
     from .maya import MayaWindow as VFXWindow
 
 elif importable('nuke') and 'Nuke' in sys.executable:
-    from .nuke import getMainWindow, NukeWindow, NukeBatchWindow
-    mainWindow = getMainWindow()
-    if mainWindow is None:
+    from .nuke import runningInTerminal
+
+    inTerminal = runningInTerminal(startup=True)
+    if inTerminal is None:
         raise NotImplementedError('gui not supported in terminal mode, launch nuke with the --tg flag instead')
-    elif mainWindow.isVisible():
-        VFXWindow = NukeWindow
+
+    if inTerminal:
+        from .nuke import NukeBatchWindow as VFXWindow
     else:
-        VFXWindow = NukeBatchWindow
+        from .nuke import NukeWindow as VFXWindow
 
 elif importable('hou') and 'houdini' in sys.executable:
     from .houdini import HoudiniWindow as VFXWindow
