@@ -807,6 +807,16 @@ class NukeWindow(NukeCommon, AbstractWindow):
             parent = getMainWindow()
         return super(NukeWindow, cls).dialog(parent=parent, *args, **kwargs)
 
+    def updateValue(self):
+        """Placeholder method to prevent exceptions when loading docked windows in Nuke 14+.
+
+        This is only an approximate traceback as nothing is actually shown:
+            vfxwindow.nuke.NukeWindow.show: panel.addToPane(pane)
+            nukescripts.panels.PythonPanel.addToPane: create()
+            nukescripts.panels.PythonPanel.create: self.__widget = self.__node.createWidget( self )
+            nuke.PanelNode.createWidget: <no source code available>
+        """
+
 
 class NukeBatchWindow(NukeCommon, StandaloneWindow):
     """Variant of the Standalone window for Nuke in batch mode."""
