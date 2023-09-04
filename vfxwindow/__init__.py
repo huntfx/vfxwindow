@@ -69,7 +69,7 @@ elif importable('nuke') and 'Nuke' in sys.executable:
 
     inTerminal = runningInTerminal(startup=True)
     if inTerminal is None:
-        raise NotImplementedError('gui not supported in terminal mode, launch nuke with the --tg flag instead')
+        raise NotImplementedApplicationError('gui not supported in terminal mode, launch nuke with the --tg flag instead')
 
     if inTerminal:
         from .nuke import NukeBatchWindow as VFXWindow
