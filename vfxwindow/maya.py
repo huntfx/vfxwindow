@@ -262,8 +262,6 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
             if self.floating():
                 self._parentOverride().setWindowIcon(self.windowIcon())
-            else:
-                self._parentOverride().setWindowIcon(getMainWindow().windowIcon())
 
     def closeEvent(self, event):
         """Handle the class being deleted."""
