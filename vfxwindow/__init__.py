@@ -38,14 +38,14 @@ def _setup_qapp():
         pass
 
 
-if software.isMayaBatch():
+if vfxSoftware.isMayaBatch():
     _setup_qapp()
     from .maya import MayaBatchWindow as VFXWindow
 
-elif software.isMaya():
+elif vfxSoftware.isMaya():
     from .maya import MayaWindow as VFXWindow
 
-elif software.isNuke():
+elif vfxSoftware.isNuke():
     from .nuke import runningInTerminal
 
     inTerminal = runningInTerminal(startup=True)
@@ -57,27 +57,25 @@ elif software.isNuke():
     else:
         from .nuke import NukeWindow as VFXWindow
 
-elif software.isHoudini():
+elif vfxSoftware.isHoudini():
     from .houdini import HoudiniWindow as VFXWindow
 
-elif software.isBlender():
+elif vfxSoftware.isBlender():
     from .blender import BlenderWindow as VFXWindow
 
-elif software.isUnrealEngine():
+elif vfxSoftware.isUnrealEngine():
     from .unreal import UnrealWindow as VFXWindow
 
-elif software.is3dsMax():
+elif vfxSoftware.is3dsMax():
     from .max import MaxWindow as VFXWindow
 
-elif software.isSubstanceDesigner():
+elif vfxSoftware.isSubstanceDesigner():
     from .substance_designer import SubstanceDesignerWindow as VFXWindow
 
-elif software.isSubstancePainter():
-    from imp import reload
-    from . import substance_painter; reload(substance_painter)
+elif vfxSoftware.isSubstancePainter():
     VFXWindow = substance_painter.SubstancePainterWindow
 
-elif software.isFusion360():
+elif vfxSoftware.isFusion360():
     from .fusion import FusionWindow as VFXWindow
 
 else:
