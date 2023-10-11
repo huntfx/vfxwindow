@@ -104,7 +104,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self.fusion = False
         self.blender = False
         self.unreal = False
-        self.substance = False
+        self.substancePainter = False
+        self.substanceDesigner = False
         self.standalone = False
 
         # Read settings

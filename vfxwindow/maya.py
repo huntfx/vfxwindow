@@ -254,6 +254,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         #self.setProperty("saveWindowPref", True)
 
         self.__parentTemp = None
+        self.__originalIcon = None
 
     def visibleChangeEvent(self, *args, **kwargs):
         """This probably means the window has just been closed."""
@@ -270,6 +271,10 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 self.saveWindowPosition()
             except TypeError:
                 pass
+
+        if self.__originalIcon:
+            self.parent().setWindowIcon(self.__originalIcon)
+
         self.clearWindowInstance(self.WindowID, deleteWindow=True)
 
         # If dockControl is being used, then Maya will crash if close is called
@@ -301,6 +306,15 @@ class MayaWindow(MayaCommon, AbstractWindow):
             except RuntimeError:
                 pass
         return super(MayaWindow, self).setWindowTitle(title)
+
+    def setWindowIcon(self, icon):
+        if self.__originalIcon is None:
+            self.__originalIcon = self.parent().windowIcon()
+
+        if self.dockable():
+            getMainWindow(self.WindowID).window().setWindowIcon(icon)
+        
+        return super(MayaWindow, self).setWindowIcon(icon)
 
     def isVisible(self):
         if self.dockable():

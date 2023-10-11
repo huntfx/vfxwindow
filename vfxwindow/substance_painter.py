@@ -9,17 +9,22 @@ Issues:
 from __future__ import absolute_import
 
 import uuid
-from Qt import QtCore
+from Qt import QtCore, QtWidgets
 
 import substance_painter
 
 from .abstract import AbstractWindow, getWindowSettings
 from .utils import setCoordinatesToScreen, hybridmethod
 
-
 def getMainWindow():
     """Get the main application window."""
     return substance_painter.ui.get_main_window()
+
+
+# class _DummyParent(QtWidgets.QDockWidget):
+
+#     def __init__(self):
+#         super(_DummyParent, self).__init__(parent=getMainWindow())
 
 
 def dockWrap(windowClass, *args, **kwargs):
@@ -35,7 +40,9 @@ def dockWrap(windowClass, *args, **kwargs):
                 return super(WindowClass, self).enableSaveWindowPosition(False)
 
     # Create window
-    windowInstance = WindowClass(dockable=True, *args, **kwargs)
+    #WATCHME: Giving the window class a dummy dock widget prevent issues during on init resizing or any method
+    # accessing `self.parent()` as it's not a QDockWidget yet (Will be done with the substance `add_dock_widget` function).
+    windowInstance = WindowClass(parent=QtWidgets.QDockWidget(getMainWindow()), dockable=True, *args, **kwargs)
     dockWidget = substance_painter.ui.add_dock_widget(windowInstance)
     dockWidget.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
@@ -44,8 +51,13 @@ def dockWrap(windowClass, *args, **kwargs):
         """Ensure the window doesn't start off screen."""
         if not windowInstance.floating():
             return
-        x, y = setCoordinatesToScreen(windowInstance.x(), windowInstance.y(), windowInstance.width(),
-                                      windowInstance.height(), padding=5)
+        x, y = setCoordinatesToScreen(
+            windowInstance.x(), 
+            windowInstance.y(), 
+            windowInstance.width(),
+            windowInstance.height(), 
+            padding=5
+        )
         windowInstance.move(x, y)
 
     windowInstance.show()
@@ -60,7 +72,7 @@ class SubstancePainterWindow(AbstractWindow):
             parent = getMainWindow()
         super(SubstancePainterWindow, self).__init__(parent, **kwargs)
 
-        self.substance = True
+        self.substancePainter = True
         self.setDockable(dockable, override=True)
 
     def deferred(self, func, *args, **kwargs):
@@ -146,14 +158,6 @@ class SubstancePainterWindow(AbstractWindow):
         """The dialog is already centered so skip."""
         if not self.isDialog():
             return super(SubstancePainterWindow, self).centreWindow(*args, **kwargs)
-
-    def closeEvent(self, event):
-        """Catch close events.
-        This only triggers with standalone windows.
-        """
-        if not self.dockable():
-            self.saveWindowPosition()
-        return super(SubstancePainterWindow, self).closeEvent(event)
 
     @classmethod
     def clearWindowInstance(cls, windowID):

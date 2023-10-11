@@ -19,12 +19,9 @@ from __future__ import absolute_import
 __all__ = ['VFXWindow']
 __version__ = '1.7.1'
 
-import os
 import sys
-try:
-    from importlib.util import find_spec as _importable
-except ImportError:
-    from pkgutil import find_loader as _importable
+from .utils import vfxSoftware
+from .utils import vfxExceptions
 
 
 def _setup_qapp():
@@ -41,60 +38,46 @@ def _setup_qapp():
         pass
 
 
-def importable(program):
-    """Find which imports can be performed.
-    In rare circumstances a TypeError can be raised, but it's safe to
-    ignore and assume it's not the correct program.
-    """
-
-    try:
-        return bool(_importable(program))
-    except TypeError:
-        return None
-
-
-class NotImplementedApplicationError(ImportError, NotImplementedError):
-    """Basically acts as a NotImplementedError, but "except ImportError" will catch it."""
-
-
-if importable('maya') and 'mayapy.exe' in sys.executable:
+if software.isMayaBatch():
     _setup_qapp()
     from .maya import MayaBatchWindow as VFXWindow
 
-elif importable('maya') and 'maya.exe' in sys.executable:
+elif software.isMaya():
     from .maya import MayaWindow as VFXWindow
 
-elif importable('nuke') and 'Nuke' in sys.executable:
+elif software.isNuke():
     from .nuke import runningInTerminal
 
     inTerminal = runningInTerminal(startup=True)
     if inTerminal is None:
-        raise NotImplementedApplicationError('gui not supported in terminal mode, launch nuke with the --tg flag instead')
+        raise vfxExceptions.NotImplementedApplicationError('Nuke GUI not supported in terminal mode, launch nuke with the --tg flag instead.')
 
     if inTerminal:
         from .nuke import NukeBatchWindow as VFXWindow
     else:
         from .nuke import NukeWindow as VFXWindow
 
-elif importable('hou') and 'houdini' in sys.executable:
+elif software.isHoudini():
     from .houdini import HoudiniWindow as VFXWindow
 
-elif importable('bpy') and 'Blender Foundation' in sys.executable:
+elif software.isBlender():
     from .blender import BlenderWindow as VFXWindow
 
-elif importable('unreal') and 'UE4Editor.exe' in sys.executable:
+elif software.isUnrealEngine():
     from .unreal import UnrealWindow as VFXWindow
 
-elif importable('MaxPlus') and '3dsmax.exe' in sys.executable:
+elif software.is3dsMax():
     from .max import MaxWindow as VFXWindow
 
-elif importable('sd') and 'Designer.exe' in sys.executable:
+elif software.isSubstanceDesigner():
     from .substance_designer import SubstanceDesignerWindow as VFXWindow
 
-elif importable('substance_painter') and 'Painter.exe' in sys.executable:
-    from .substance_painter import SubstancePainterWindow as VFXWindow
+elif software.isSubstancePainter():
+    from imp import reload
+    from . import substance_painter; reload(substance_painter)
+    VFXWindow = substance_painter.SubstancePainterWindow
 
-elif importable('fusionscript') or importable('PeyeonScript') and 'Fusion.exe' in sys.executable:
+elif software.isFusion360():
     from .fusion import FusionWindow as VFXWindow
 
 else:
