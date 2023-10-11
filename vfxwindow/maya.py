@@ -260,6 +260,11 @@ class MayaWindow(MayaCommon, AbstractWindow):
         if self.dockable():
             self.saveWindowPosition()
 
+            if self.floating():
+                self._parentOverride().setWindowIcon(self.windowIcon())
+            else:
+                self._parentOverride().setWindowIcon(getMainWindow().windowIcon())
+
     def closeEvent(self, event):
         """Handle the class being deleted."""
         dockable = self.dockable()
@@ -302,12 +307,6 @@ class MayaWindow(MayaCommon, AbstractWindow):
             except RuntimeError:
                 pass
         return super(MayaWindow, self).setWindowTitle(title)
-
-    def setWindowIcon(self, icon):
-        if self.dockable():
-            self._parentOverride().setWindowIcon(icon)
-
-        return super(MayaWindow, self).setWindowIcon(icon)
 
     def isVisible(self):
         if self.dockable():
