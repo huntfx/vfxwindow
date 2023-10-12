@@ -16,15 +16,10 @@ import substance_painter
 from .abstract import AbstractWindow, getWindowSettings
 from .utils import setCoordinatesToScreen, hybridmethod
 
+
 def getMainWindow():
     """Get the main application window."""
     return substance_painter.ui.get_main_window()
-
-
-# class _DummyParent(QtWidgets.QDockWidget):
-
-#     def __init__(self):
-#         super(_DummyParent, self).__init__(parent=getMainWindow())
 
 
 def dockWrap(windowClass, *args, **kwargs):
@@ -51,13 +46,7 @@ def dockWrap(windowClass, *args, **kwargs):
         """Ensure the window doesn't start off screen."""
         if not windowInstance.floating():
             return
-        x, y = setCoordinatesToScreen(
-            windowInstance.x(), 
-            windowInstance.y(), 
-            windowInstance.width(),
-            windowInstance.height(), 
-            padding=5
-        )
+        x, y = setCoordinatesToScreen(windowInstance.x(), windowInstance.y(), windowInstance.width(), windowInstance.height(), padding=5)
         windowInstance.move(x, y)
 
     windowInstance.show()

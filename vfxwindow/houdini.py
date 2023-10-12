@@ -52,6 +52,7 @@ class HoudiniWindow(AbstractWindow):
             }""")
         self.setProperty('houdiniStyle', True)
 
+        # As of today, that's the only solution that seems to make this window stay over houdini.
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.Dialog)
 
     def closeEvent(self, event):
