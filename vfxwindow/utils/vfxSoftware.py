@@ -6,12 +6,24 @@ from . import vfxExceptions
 
 
 def __importable(programImport):
-    """Find which imports can be performed.
-    In rare circumstances a TypeError can be raised, but it's safe to
-    ignore and assume it's not the correct program.
+    """Test if the given module import string can be imported.
+
+    If the import string of a DCC can be imported, it's likely that we're in the software
+    environment. This is not 100% accurate so it should be paired with another test to 
+    lower the risk of false positive.
+
+    ..notes:: 
+        Instead of testing if the string can be imported using `pkgutil.find_loader` or 
+        `importlib.util.find_spec` that import the module and then seems to remove it from
+        sys.modules, we go with the basic `__import__` function. 
+        Keeping the modules already imported shouldn't do anything than speed up future 
+        imports. Also, if the other hand, if it's already in sys.modules it can be imported.
     """
+    if programImport in sys.modules:
+        return True
+
     try:
-        return __import__(programImport)
+        return bool(__import__(programImport))
     except (ModuleNotFoundError, ImportError):
         return False
 
@@ -29,7 +41,7 @@ _MAYA_BATCH = \
 (
     r'^[A-Z]:\\Program\sFiles(?:|\s\(x86\))\\[aA]utodesk\\[mM]aya\d{4}\\(?:bin|bin2|bin\\\.\.\\bin2)\\[mM]ayapy[2]?\.exe$',  # Windows
     r'^/usr/[aA]utodesk/[mM]aya\d{4}/(?:bin|bin2|bin/\.\./bin2)/[pP]ython-bin$',  # Linux
-    r'[mM]ayapy\.(?:bin|exe)',  # Common
+    r'[mM]ayapy\.(?:bin|exe|app)',  # Common
 )
 
 _HOUDINI = \
