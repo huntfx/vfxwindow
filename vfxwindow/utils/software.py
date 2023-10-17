@@ -2,7 +2,7 @@ import sys
 import os
 import re
 
-from . import vfxExceptions
+from .. import exceptions
 
 
 def __importable(programImport):
@@ -61,33 +61,38 @@ _UNREAL_ENGINE = \
 
 _BLENDER = \
 (
-    r'[bB]lender\.(?:bin|exe)',
     r'[bB]lender[_\s][fF]oundation',
     r'[bB]lender[_\s]\d+(?:\.\d+){0,2}',
+    r'[bB]lender\.(?:bin|exe)',
 )
 
 _NUKE = \
 (
+    r'[nN]uke\d+(?:\.\d+){0,2}\.(?:bin|exe|app)',
     r'[nN]uke\.(?:bin|exe|app)',
 )
 
 _KATANA = \
 (
+    r'[kK]atana\d+(?:\.\d+){0,2}\.(?:bin|exe|app)',
     r'[kK]atana\.(?:bin|exe|app)',
 )
 
 _MARI = \
 (
+    r'[mM]ari\d+(?:\.\d+){0,2}\.(?:bin|exe|app)',
     r'[mM]ari\.(?:bin|exe|app)',
 )
 
 _MODO = \
 (
+    r'[mM]odo\d+(?:\.\d+){0,2}\.(?:bin|exe|app)',
     r'[mM]odo\.(?:bin|exe|app)',
 )
 
 _HIERO = \
 (
+    r'[hH]iero\d+(?:\.\d+){0,2}\.(?:bin|exe|app)',
     r'[hH]iero\.(?:bin|exe|app)',
 )
 

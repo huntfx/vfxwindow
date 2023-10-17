@@ -17,11 +17,11 @@ TODO:
 from __future__ import absolute_import
 
 __all__ = ['VFXWindow']
-__version__ = '1.7.1'
+__version__ = '1.8.0'
 
 import sys
-from .utils import vfxSoftware
-from .utils import vfxExceptions
+from .utils import software
+from . import exceptions
 
 
 def _setup_qapp():
@@ -38,14 +38,14 @@ def _setup_qapp():
         pass
 
 
-if vfxSoftware.isMayaBatch():
+if software.isMayaBatch():
     _setup_qapp()
     from .maya import MayaBatchWindow as VFXWindow
 
-elif vfxSoftware.isMaya():
+elif software.isMaya():
     from .maya import MayaWindow as VFXWindow
 
-elif vfxSoftware.isNuke():
+elif software.isNuke():
     from .nuke import runningInTerminal
 
     inTerminal = runningInTerminal(startup=True)
@@ -57,25 +57,25 @@ elif vfxSoftware.isNuke():
     else:
         from .nuke import NukeWindow as VFXWindow
 
-elif vfxSoftware.isHoudini():
+elif software.isHoudini():
     from .houdini import HoudiniWindow as VFXWindow
 
-elif vfxSoftware.isBlender():
+elif software.isBlender():
     from .blender import BlenderWindow as VFXWindow
 
-elif vfxSoftware.isUnrealEngine():
+elif software.isUnrealEngine():
     from .unreal import UnrealWindow as VFXWindow
 
-elif vfxSoftware.is3dsMax():
+elif software.is3dsMax():
     from .max import MaxWindow as VFXWindow
 
-elif vfxSoftware.isSubstanceDesigner():
+elif software.isSubstanceDesigner():
     from .substance_designer import SubstanceDesignerWindow as VFXWindow
 
-elif vfxSoftware.isSubstancePainter():
+elif software.isSubstancePainter():
     VFXWindow = substance_painter.SubstancePainterWindow
 
-elif vfxSoftware.isFusion360():
+elif software.isFusion360():
     from .fusion import FusionWindow as VFXWindow
 
 else:
