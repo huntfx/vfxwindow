@@ -24,7 +24,7 @@ def __importable(programImport):
 
     try:
         return bool(__import__(programImport))
-    except (ModuleNotFoundError, ImportError):
+    except ImportError:
         return False
 
 

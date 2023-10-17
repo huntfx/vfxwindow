@@ -50,7 +50,7 @@ elif software.isNuke():
 
     inTerminal = runningInTerminal(startup=True)
     if inTerminal is None:
-        raise vfxExceptions.NotImplementedApplicationError('Nuke GUI not supported in terminal mode, launch nuke with the --tg flag instead.')
+        raise exceptions.NotImplementedApplicationError('Nuke GUI not supported in terminal mode, launch nuke with the --tg flag instead.')
 
     if inTerminal:
         from .nuke import NukeBatchWindow as VFXWindow
@@ -73,7 +73,7 @@ elif software.isSubstanceDesigner():
     from .substance_designer import SubstanceDesignerWindow as VFXWindow
 
 elif software.isSubstancePainter():
-    VFXWindow = substance_painter.SubstancePainterWindow
+    from .substance_painter import SubstancePainterWindow as VFXWindow
 
 elif software.isFusion360():
     from .fusion import FusionWindow as VFXWindow
