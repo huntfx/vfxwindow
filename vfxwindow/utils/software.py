@@ -157,7 +157,7 @@ def isBlender():
 
 def isNuke():
     if any((re.search(pattern, sys.executable) for pattern in _NUKE)):
-        return __importable('bpy')
+        return __importable('nuke')
     return False
 
 
