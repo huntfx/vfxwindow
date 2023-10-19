@@ -91,7 +91,7 @@ class SubstanceDesignerWindow(AbstractWindow):
             parent = getMainWindow()
         super(SubstanceDesignerWindow, self).__init__(parent, **kwargs)
 
-        self.substance = True
+        self.substanceDesigner = True
         self.setDockable(dockable, override=True)
 
     def y(self):

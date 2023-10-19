@@ -36,16 +36,53 @@ if __name__ == '__main__':
 ```
 
 ### Compatibility
- - Maya (2011-2016, tested lightly on 2016) - standard, docked (`pymel.core.dockControl`), standalone, callbacks
- - Maya (2017+, tested on 2017-2019) - standard, docked (`pymel.core.workspaceControl`), standalone, callbacks
- - Nuke (tested on 9-12) - standard, docked (`nukescripts.panels`), callbacks
- - Substance Designer (tested on 2019.3) - standard, docked (unable to save/load position)
- - 3D Studio Max (2018+, tested on 2020) - standard
- - Houdini (tested on 16) - standard
- - Blender (tested on 2.8 - 3.1) - standard, callbacks
- - Unreal (4.19+, tested on 4.23) - standard
- - Fusion (tested on 9) - standard
- - Standalone (Qt4, Qt5, tested on 2.7, 3.4+) - standard
+✔️ Working  /  ❔ Untested  /  ❌ Not Working
+|                    | Linux | Windows | MacOs |
+| ------------------ | -------- | --------- | ------- |
+| Maya               | ✔️<sup>1</sup> | ✔️ | ❔ |
+| Maya Standalone    | ❔ | ✔️ | ❔ |
+| Houdini            | ✔️<sup>1</sup> | ✔️ | ❔ |
+| Unreal Engine      | ❌<sup>1</sup> | ✔️ | ❔ |
+| Blender            | ❔ | ✔️ | ❔ |
+| Nuke               | ❔ | ✔️ | ❔ |
+| Nuke Terminal      | ❔ | ✔️ | ❔ |
+| 3ds Max            | ❔ | ✔️<sup>2</sup> | ❔ |
+| Substance Painter  | ✔️<sup>1</sup> | ✔️ | ❔ |
+| Substance Designer | ✔️<sup>1</sup> | ✔️ | ❔ |
+| Blackmagic Fusion  | ❔ | ✔️<sup>2</sup> | ❔ |
+| Python             | ❔ | ✔️ | ❔ |
+
+<sup>1</sup> Tested in Linux Mint.<br/>
+<sup>2</sup> Tested previously but unable to confirm.<br/>
+
+ - Maya:
+    - 2011-2016, tested lightly on 2016, standard, docked (`pymel.core.dockControl`), standalone, callbacks
+    - 2017+, tested on 2017-2019-2022-2023 - standard, docked (`pymel.core.workspaceControl`), standalone, callbacks
+ - Nuke:
+    - 9.0-12.0
+    - standard, docked (`nukescripts.panels`), callbacks
+ - Substance Designer:
+    - tested on 2019.3 (Windows), 7.1 (Linux)
+    - standard, docked (unable to save/load position)
+ - 3D Studio Max:
+    - 2018+, 2020
+    - standard
+ - Houdini:
+    - 16.0, 19.5
+    - standard
+ - Blender:
+    - 2.8, 3.1
+    - standard, callbacks
+ - Unreal Engine:
+    - 4.19+, 4.23, 5.0, 5.3
+    - standard
+ - Fusion 360:
+    - tested on 9.0
+    - standard
+ - Standalone:
+    - Qt4, Qt5
+    - 2.7, 3.4+, 3.7, 3.9
+    - standard
 
 ### Generic Features
  - Automatically save/restore window position

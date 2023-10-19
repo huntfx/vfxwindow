@@ -260,6 +260,13 @@ class MayaWindow(MayaCommon, AbstractWindow):
         if self.dockable():
             self.saveWindowPosition()
 
+            # Maya dockControl and workspaceControl works by dynamically creating a QWidget and parent the
+            # window to it when it's detached. When attached, the window is docked and the widget destroyed.
+            # Maya set it's own window icon to this widget by default, this will just make sure that if the user
+            # used a custom icon for it's tool, it's set on the dynamically created floating widget.
+            if self.floating():
+                self._parentOverride().setWindowIcon(self.windowIcon())
+
     def closeEvent(self, event):
         """Handle the class being deleted."""
         dockable = self.dockable()
@@ -270,6 +277,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 self.saveWindowPosition()
             except TypeError:
                 pass
+
         self.clearWindowInstance(self.WindowID, deleteWindow=True)
 
         # If dockControl is being used, then Maya will crash if close is called

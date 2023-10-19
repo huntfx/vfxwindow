@@ -5,6 +5,8 @@ from __future__ import absolute_import
 import hou
 import hdefereval
 
+from Qt import QtCore
+
 from .abstract import AbstractWindow
 from .utils import setCoordinatesToScreen
 
@@ -49,6 +51,9 @@ class HoudiniWindow(AbstractWindow):
                 color: rgb(0, 0, 0);
             }""")
         self.setProperty('houdiniStyle', True)
+
+        # As of today, that's the only solution that seems to make this window stay over houdini.
+        self.setWindowFlags(self.windowFlags() | QtCore.Qt.Dialog)
 
     def closeEvent(self, event):
         """Save the window location on window close."""
