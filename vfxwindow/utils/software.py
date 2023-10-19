@@ -9,14 +9,14 @@ def __importable(programImport):
     """Test if the given module import string can be imported.
 
     If the import string of a DCC can be imported, it's likely that we're in the software
-    environment. This is not 100% accurate so it should be paired with another test to 
+    environment. This is not 100% accurate so it should be paired with another test to
     lower the risk of false positive.
 
-    ..notes:: 
-        Instead of testing if the string can be imported using `pkgutil.find_loader` or 
+    ..notes::
+        Instead of testing if the string can be imported using `pkgutil.find_loader` or
         `importlib.util.find_spec` that import the module and then seems to remove it from
-        sys.modules, we go with the basic `__import__` function. 
-        Keeping the modules already imported shouldn't do anything than speed up future 
+        sys.modules, we go with the basic `__import__` function.
+        Keeping the modules already imported shouldn't do anything than speed up future
         imports. Also, if the other hand, if it's already in sys.modules it can be imported.
     """
     if programImport in sys.modules:
@@ -163,28 +163,28 @@ def isNuke():
 
 def isKatana():
     if any((re.search(pattern, sys.executable) for pattern in _KATANA)):
-        raise vfxExceptions.NotImplementedApplicationError('No implementation found for Katana.')
+        raise exceptions.NotImplementedApplicationError('No implementation found for Katana.')
         return __importable('katana')
     return False
 
 
 def isMari():
     if any((re.search(pattern, sys.executable) for pattern in _MARI)):
-        raise vfxExceptions.NotImplementedApplicationError('No implementation found for Mari.')
+        raise exceptions.NotImplementedApplicationError('No implementation found for Mari.')
         return __importable('mari')
     return False
 
 
 def isModo():
     if any((re.search(pattern, sys.executable) for pattern in _MODO)):
-        raise vfxExceptions.NotImplementedApplicationError('No implementation found for Modo.')
+        raise exceptions.NotImplementedApplicationError('No implementation found for Modo.')
         return __importable('lx')
     return False
 
 
 def isHiero():
     if any((re.search(pattern, sys.executable) for pattern in _HIERO)):
-        raise vfxExceptions.NotImplementedApplicationError('No implementation found for Hiero.')
+        raise exceptions.NotImplementedApplicationError('No implementation found for Hiero.')
         return __importable('hiero')
     return False
 
@@ -197,7 +197,7 @@ def is3dsMax():
 
 def isMotionBuilder():
     if any((re.search(pattern, sys.executable) for pattern in _MOTION_BUILDER)):
-        raise vfxExceptions.NotImplementedApplicationError('No implementation found for Motion Builder.')
+        raise exceptions.NotImplementedApplicationError('No implementation found for Motion Builder.')
         return __importable('pyfbsdk') and __importable('pyfbsdk_additions')
     return False
 
