@@ -36,27 +36,24 @@ if __name__ == '__main__':
 ```
 
 ### Compatibility
-❔: Untestded  / ❌: Not Working  / ✔️: Working
-|                    |  Linux*  |  Windows  |  MacOs  |
+✔️ Working  /  ❔ Untested  /  ❌ Not Working
+|                    | Linux | Windows | MacOs |
 | ------------------ | -------- | --------- | ------- |
-| Maya               |    ✔️    |     ✔️    |    ❔   |
-| Maya Batch         |    ❔    |     ❔    |    ❔   |
-| Houdini            |    ✔️    |     ✔️    |    ❔   |
-| Unreal Engine      |    ❌    |     ❔    |    ❔   |
-| Blender            |    ❔    |     ✔️    |    ❔   |
-| Nuke               |    ❔    |     ✔️    |    ❔   |
-| Katana             |    ❔    |     ❔    |    ❔   |
-| Mari               |    ❔    |     ❔    |    ❔   |
-| Modo               |    ❔    |     ❔    |    ❔   |
-| Hiero              |    ❔    |     ❔    |    ❔   |
-| 3ds Max            |    ❔    |     ❔    |    ❔   |
-| Motion Builder     |    ❔    |     ❔    |    ❔   |
-| Substance Painter  |    ✔️    |     ❔    |    ❔   |
-| Substance Designer |    ✔️    |     ❔    |    ❔   |
-| Fusion 360         |    ❔    |     ❔    |    ❔   | 
-| Standalone         |    ❔    |     ❔    |    ❔   | 
+| Maya               | ✔️<sup>1</sup> | ✔️ | ❔ |
+| Maya Standalone    | ❔ | ✔️ | ❔ |
+| Houdini            | ✔️<sup>1</sup> | ✔️ | ❔ |
+| Unreal Engine      | ❌<sup>1</sup> | ✔️ | ❔ |
+| Blender            | ❔ | ✔️ | ❔ |
+| Nuke               | ❔ | ✔️ | ❔ |
+| Nuke Terminal      | ❔ | ✔️ | ❔ |
+| 3ds Max            | ❔ | ✔️<sup>2</sup> | ❔ |
+| Substance Painter  | ✔️<sup>1</sup> | ✔️ | ❔ |
+| Substance Designer | ✔️<sup>1</sup> | ✔️ | ❔ |
+| Blackmagic Fusion  | ❔ | ✔️<sup>2</sup> | ❔ |
+| Python             | ❔ | ✔️ | ❔ |
 
-\* Tested in Linux Mint.
+<sup>1</sup> Tested in Linux Mint.<br/>
+<sup>2</sup> Tested previously but unable to confirm.<br/>
 
  - Maya:
     - 2011-2016, tested lightly on 2016, standard, docked (`pymel.core.dockControl`), standalone, callbacks
