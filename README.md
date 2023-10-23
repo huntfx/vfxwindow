@@ -35,56 +35,24 @@ if __name__ == '__main__':
     MyWindow.show()
 ```
 
-### Compatibility
+### Support / Compatibility
 ✔️ Working  /  ❔ Untested  /  ❌ Not Working
-|                    | Linux | Windows | MacOs |
-| ------------------ | -------- | --------- | ------- |
-| Maya               | ✔️<sup>1</sup> | ✔️ | ❔ |
-| Maya Standalone    | ❔ | ✔️ | ❔ |
-| Houdini            | ✔️<sup>1</sup> | ✔️ | ❔ |
-| Unreal Engine      | ❌<sup>1</sup> | ✔️ | ❔ |
-| Blender            | ❔ | ✔️ | ❔ |
-| Nuke               | ❔ | ✔️ | ❔ |
-| Nuke Terminal      | ❔ | ✔️ | ❔ |
-| 3ds Max            | ❔ | ✔️<sup>2</sup> | ❔ |
-| Substance Painter  | ✔️<sup>1</sup> | ✔️ | ❔ |
-| Substance Designer | ✔️<sup>1</sup> | ✔️ | ❔ |
-| Blackmagic Fusion  | ❔ | ✔️<sup>2</sup> | ❔ |
-| Python             | ❔ | ✔️ | ❔ |
+|                    | Standard Window | Docked Window | Callbacks | Tested Versions | [Linux](# "Tested in Linux Mint.")  | Windows | MacOs |
+| ------------------ | -------- | -------- | -------- | -------- | -------- | --------- | ------- |
+| Maya               | ✔️ | [✔️](# "Uses `workspaceControl` or falls back to `dockControl` for pre Maya 2017, saves/restores location of window.") | ✔️ | [2011-2016](# "Docked windows use `dockControl`, tested lightly on 2016."), [2017+](# "Docked windows use `workspaceControl`.") | ✔️ | ✔️ | ❔ |
+| Maya (Standalone)  | ✔️ | | ✔️ | | ❔ | ✔️ | ❔ |
+| Nuke               | ✔️ | [✔️](# "Uses `registerWidgetAsPanel` to dock window in a panel, saves/restores location of panel only when docked (not floating).") | ✔️ | 9-12 | ❔ | ✔️ | ❔ |
+| Nuke (Terminal)    | ✔️ | | ✔️ | | ❔ | ✔️ | ❔ |
+| Houdini            | ✔️ | ❌ | ❌ | 16-19 | ✔️ | ✔️ | ❔ |
+| Unreal Engine      | ✔️ | ❌ | ❌ | 4.19-4.23, 5.0-5.3 | [❌](# "Tested on UE5.") | ✔️ | ❔ |
+| Blender            | ✔️ | ❌ | ✔️ | 2.8-3.4 | ❔ | ✔️ | ❔ |
+| 3ds Max            | ✔️ | ❌ | ❌ | 2018-2020 | ❔ | [✔️](# "Tested previously but unable to confirm.") | ❔ |
+| Substance Painter  | ✔️ | [✔️](# "Uses `substance_painter.ui.add_dock_widget`, does not save/restore location of window.") | ❌ | 8.3 | ✔️ | ✔️ | ❔ |
+| Substance Designer | ✔️ | [✔️](# "Uses `sd.getContext().getSDApplication().getQtForPythonUIMgr().newDockWidget`, does not save/restore location of window.") | ❌ | 2019.3, 7.1, 12.3 | ✔️ | ✔️ | ❔ |
+| Blackmagic Fusion  | ✔️ | ❌ | ❌ | 9 | ❔ | [✔️](# "Unable to read Fusion version, and causes recursion error if calling `show`/`hide`/`setVisible`.") | ❔ |
+| Standalone Python  | ✔️ | | | 2.7 (Qt4), 3.7-3.9 (Qt5) | ❔ | ✔️ | ❔ |
 
-<sup>1</sup> Tested in Linux Mint.<br/>
-<sup>2</sup> Unable to get version, and causes recursion error if calling `show`/`hide`/`setVisible`.<br/>
-
- - Maya:
-    - 2011-2016, tested lightly on 2016, standard, docked (`pymel.core.dockControl`), standalone, callbacks
-    - 2017+, tested on 2017-2019-2022-2023 - standard, docked (`pymel.core.workspaceControl`), standalone, callbacks
- - Nuke:
-    - 9.0-12.0
-    - standard window, docked (`nukescripts.panels`), callbacks
- - Substance Designer:
-    - tested on 2019.3 (Windows), 7.1 (Linux)
-    - standard window, docked (unable to save/load position)
- - 3D Studio Max:
-    - 2018+, 2020
-    - standard window
- - Houdini:
-    - 16.0, 19.5
-    - standard window
- - Blender:
-    - 2.8, 3.1
-    - standard window, callbacks
- - Unreal Engine:
-    - 4.19+, 4.23, 5.0, 5.3
-    - standard window
- - Fusion:
-    - tested on 9.0
-    - standard window
- - Standalone:
-    - Qt4, Qt5
-    - 2.7, 3.4+, 3.7, 3.9
-    - standard window
-
-### Generic Features
+### Features
  - Automatically save/restore window position
  - Move window to screen if out of bounds (windows only)
  - Keep track of callbacks to remove groups if required, and clean up on window close
@@ -95,23 +63,7 @@ if __name__ == '__main__':
  - Close down all windows at once
  - Create dialog windows automatically attached to the application (and return data)
 
-### Maya Features
- - Dock window using workspaceControl
- - Save/restore position of workspaceControl window (floating+docked)
- - Easy access to callbacks
-
-### Nuke Features
- - Dock window as a panel
- - Save/restore location of panel (docked only)
- - Easy access to callbacks
-
-### Blender Features
- - Easy access to callbacks
-
-### Substance Features
- - Dock window into panels
-
-### Non-Python Applications
+### Running with Non-Python Applications
 Certain Windows applications have dispatch based COM interface, which will allow a link between Python and the application. See [photoshop-scripting-python](https://github.com/lohriialo/photoshop-scripting-python) for an example on how to connect to an application.
 
 Currently there is no way of launching `VFXWindow` from inside these applications.
