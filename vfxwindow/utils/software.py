@@ -46,7 +46,7 @@ _MAYA_BATCH = \
 
 _HOUDINI = \
 (
-    r'[hH]oudini\.(?:bin|exe|app)',  # Windows, MacOS
+    r'[hH]oudini(?:core|fx|)\.(?:bin|exe|app)',  # Windows, MacOS
     r'hfs\d+\.\d+\.\d+',  # Linux
     r'hindie-bin',  # Indie
 )
