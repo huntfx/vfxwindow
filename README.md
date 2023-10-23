@@ -50,6 +50,7 @@ if __name__ == '__main__':
 | Substance Painter  | ✔️ | [✔️](# "Uses `substance_painter.ui.add_dock_widget`, does not save/restore location of window.") | ❌ | 8.3 | ✔️ | ✔️ | ❔ |
 | Substance Designer | ✔️ | [✔️](# "Uses `sd.getContext().getSDApplication().getQtForPythonUIMgr().newDockWidget`, does not save/restore location of window.") | ❌ | 2019.3, 7.1, 12.3 | ✔️ | ✔️ | ❔ |
 | Blackmagic Fusion  | ✔️ | ❌ | ❌ | 9 | ❔ | [✔️](# "Unable to read Fusion version, and causes recursion error if calling `show`/`hide`/`setVisible`.") | ❔ |
+| CryEngine Sandbox  | ✔️ | [❌](# "There's a `SandboxBridge.register_window` function, but I was not able to figure it out.") | ❌ | 5.7 | ❔ | [✔️](# "Causes recursion error if calling `show`/`hide`/`setVisible`.") | ❔ |
 | Standalone Python  | ✔️ | | | 2.7 (Qt4), 3.7-3.9 (Qt5) | ❔ | ✔️ | ❔ |
 
 ### Features

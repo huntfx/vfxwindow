@@ -125,6 +125,11 @@ _BLACKMAGIC_FUSION = \
     r'(?:[fF]usion|fuscript)\.(?:bin|exe|app)$',
 )
 
+_CRYENGINE = \
+(
+    r'[sS]andbox\.(?:bin|exe|app)$',
+)
+
 
 def isMaya():
     if any((re.search(pattern, sys.executable) for pattern in _MAYA)):
@@ -218,4 +223,10 @@ def isSubstanceDesigner():
 def isBlackmagicFusion():
     if any((re.search(pattern, sys.executable) for pattern in _BLACKMAGIC_FUSION)):
         return __importable('fusionscript') or __importable('PeyeonScript')
+    return False
+
+
+def isCryEngine():
+    if any((re.search(pattern, sys.executable) for pattern in _CRYENGINE)):
+        return __importable('SandboxBridge')
     return False

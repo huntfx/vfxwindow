@@ -78,7 +78,7 @@ elif software.isSubstancePainter():
 elif software.isBlackmagicFusion():
     from .fusion import FusionWindow as VFXWindow
 
-elif importable('SandboxBridge') and 'Sandbox.exe' in sys.executable:
+elif software.isCryEngine():
     from .cryengine import CryWindow as VFXWindow
 
 else:

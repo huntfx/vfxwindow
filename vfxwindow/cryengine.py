@@ -5,11 +5,12 @@ from __future__ import absolute_import
 import os
 import sys
 
+from Qt import QtWidgets
+
 import SandboxBridge
 
 from .abstract import getWindowSettings
 from .utils import setCoordinatesToScreen, hybridmethod
-from .utils.Qt import QtWidgets
 from .standalone import StandaloneWindow
 
 
@@ -103,15 +104,12 @@ class CryWindow(StandaloneWindow):
                 except (AttributeError, KeyError):
                     docked = True
 
-        if docked:
-            # Unable to test this yet
+        # Apparently this should add the window to the "Tools" menu,
+        # but I couldn't figure it out so it's disabled for now
+        if False and docked:
             return SandboxBridge.register_window(
                 window_type=cls,
                 name=getattr(cls, 'WindowName', 'New Window'),
-                category='Test',
-                needs_menu_item=True,
-                menu_path='VFXWindow',
-                unique=False,
             )
 
         kwargs['exec_'] = False
