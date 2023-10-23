@@ -75,7 +75,7 @@ elif software.isSubstanceDesigner():
 elif software.isSubstancePainter():
     from .substance_painter import SubstancePainterWindow as VFXWindow
 
-elif software.isFusion360():
+elif software.isBlackmagicFusion():
     from .fusion import FusionWindow as VFXWindow
 
 else:

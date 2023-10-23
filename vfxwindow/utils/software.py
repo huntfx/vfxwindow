@@ -119,9 +119,10 @@ _SUBSTANCE_DESIGNER = \
     r'[sS]ubstance(?:_|\s)3[dD](?:_|\s)[dD]esigner',
 )
 
-_FUSION_360 = \
+_BLACKMAGIC_FUSION = \
 (
-    r'[fF]usion\.(?:bin|exe|app)',
+    r'^(?:\\|/)Blackmagic Design(?:\\|/)(?:[fF]usion|fuscript)\.(?:bin|exe|app)$',
+    r'(?:[fF]usion|fuscript)\.(?:bin|exe|app)$',
 )
 
 
@@ -214,7 +215,7 @@ def isSubstanceDesigner():
     return False
 
 
-def isFusion360():
-    if any((re.search(pattern, sys.executable) for pattern in _FUSION_360)):
+def isBlackmagicFusion():
+    if any((re.search(pattern, sys.executable) for pattern in _BLACKMAGIC_FUSION)):
         return __importable('fusionscript') or __importable('PeyeonScript')
     return False

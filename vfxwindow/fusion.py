@@ -16,13 +16,18 @@ from .utils import setCoordinatesToScreen, hybridmethod
 from .standalone import StandaloneWindow
 
 
-VERSION = str(int(fusion.Version))
+if fusion is None:
+    VERSION = None
+else:
+    VERSION = str(int(fusion.Version))
 
 
 def getMainWindow():
     """Get a pointer to the Fusion window.
     However as of Fusion 9, this doesn't seem to return anything.
     """
+    if fusion is None:
+        return None
     return fusion.GetMainWindow()
 
 

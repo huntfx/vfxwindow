@@ -53,36 +53,36 @@ if __name__ == '__main__':
 | Python             | ❔ | ✔️ | ❔ |
 
 <sup>1</sup> Tested in Linux Mint.<br/>
-<sup>2</sup> Tested previously but unable to confirm.<br/>
+<sup>2</sup> Unable to get version, and causes recursion error if calling `show`/`hide`/`setVisible`.<br/>
 
  - Maya:
     - 2011-2016, tested lightly on 2016, standard, docked (`pymel.core.dockControl`), standalone, callbacks
     - 2017+, tested on 2017-2019-2022-2023 - standard, docked (`pymel.core.workspaceControl`), standalone, callbacks
  - Nuke:
     - 9.0-12.0
-    - standard, docked (`nukescripts.panels`), callbacks
+    - standard window, docked (`nukescripts.panels`), callbacks
  - Substance Designer:
     - tested on 2019.3 (Windows), 7.1 (Linux)
-    - standard, docked (unable to save/load position)
+    - standard window, docked (unable to save/load position)
  - 3D Studio Max:
     - 2018+, 2020
-    - standard
+    - standard window
  - Houdini:
     - 16.0, 19.5
-    - standard
+    - standard window
  - Blender:
     - 2.8, 3.1
-    - standard, callbacks
+    - standard window, callbacks
  - Unreal Engine:
     - 4.19+, 4.23, 5.0, 5.3
-    - standard
- - Fusion 360:
+    - standard window
+ - Fusion:
     - tested on 9.0
-    - standard
+    - standard window
  - Standalone:
     - Qt4, Qt5
     - 2.7, 3.4+, 3.7, 3.9
-    - standard
+    - standard window
 
 ### Generic Features
  - Automatically save/restore window position
