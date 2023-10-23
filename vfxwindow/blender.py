@@ -3,11 +3,12 @@
 from __future__ import absolute_import
 
 import sys
+from collections import defaultdict
+from Qt import QtWidgets
 
 import bpy
 
 from .utils import setCoordinatesToScreen, hybridmethod
-from .utils.Qt import QtWidgets
 from .standalone import StandaloneWindow
 
 
@@ -16,6 +17,7 @@ VERSION = bpy.app.version_string
 
 class BlenderWindow(StandaloneWindow):
     """Window to use for Blender."""
+
     def __init__(self, parent=None, **kwargs):
         super(BlenderWindow, self).__init__(parent, **kwargs)
         self.blender = True
@@ -23,28 +25,29 @@ class BlenderWindow(StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        try:
-            blenderSettings = self.windowSettings['blender']
-        except KeyError:
-            blenderSettings = self.windowSettings['blender'] = {}
-        try:
-            mainWindowSettings = blenderSettings['main']
-        except KeyError:
-            mainWindowSettings = blenderSettings['main'] = {}
+        if 'blender' not in self.windowSettings:
+            self.windowSettings['blender'] = {}
+        settings = self.windowSettings['blender']
 
-        mainWindowSettings['width'] = self.width()
-        mainWindowSettings['height'] = self.height()
-        mainWindowSettings['x'] = self.x()
-        mainWindowSettings['y'] = self.y()
+        key = self._getSettingsKey()
+        if key not in settings:
+            settings[key] = {}
+
+        settings[key]['width'] = self.width()
+        settings[key]['height'] = self.height()
+        settings[key]['x'] = self.x()
+        settings[key]['y'] = self.y()
+
         super(BlenderWindow, self).saveWindowPosition()
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
+        key = self._getSettingsKey()
         try:
-            x = self.windowSettings['blender']['main']['x']
-            y = self.windowSettings['blender']['main']['y']
-            width = self.windowSettings['blender']['main']['width']
-            height = self.windowSettings['blender']['main']['height']
+            x = self.windowSettings['blender'][key]['x']
+            y = self.windowSettings['blender'][key]['y']
+            width = self.windowSettings['blender'][key]['width']
+            height = self.windowSettings['blender'][key]['height']
         except KeyError:
             super(BlenderWindow, self).loadWindowPosition()
         else:
@@ -54,6 +57,7 @@ class BlenderWindow(StandaloneWindow):
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
+        """Show the Blender window."""
         # Window is already initialised
         if self is not cls:
             return super(BlenderWindow, self).show()
@@ -86,7 +90,7 @@ class BlenderWindow(StandaloneWindow):
 
         # Select all groups if specific one not provided
         if group is None:
-            groups = windowInstance['callback'].keys()
+            groups = list(windowInstance['callback'].keys())
         else:
             if group not in windowInstance['callback']:
                 return 0
@@ -102,7 +106,8 @@ class BlenderWindow(StandaloneWindow):
             del windowInstance['callback'][group]
         return numEvents
 
-    def __addBlenderCallbackGroup(self, group):
+    def _addBlenderCallbackGroup(self, group):
+        """Add a callback group."""
         windowInstance = self.windowInstance()
         if group in windowInstance['callback']:
             return
@@ -111,7 +116,8 @@ class BlenderWindow(StandaloneWindow):
     def _addApplicationHandler(self, handler, func, persistent=True, group=None):
         """Add an application handler.
 
-        Reference: https://docs.blender.org/api/2.79/bpy.app.handlers.html
+        See Also:
+            https://docs.blender.org/api/2.79/bpy.app.handlers.html
         """
         self._addBlenderCallbackGroup(group)
 
@@ -231,4 +237,3 @@ class BlenderWindow(StandaloneWindow):
     def addCallbackRedoBefore(self, func, persistent=True, group=None):
         """Before loading a redo step."""
         self._addApplicationHandler('redo_pre', func, persistent=persistent, group=group)
-

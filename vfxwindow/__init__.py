@@ -10,7 +10,6 @@ TODO:
     Remove docked in favour of floating
     Remove *_VERSION constants
     Changed dialog to isDialog
-    Add dialog classmethod to replace cls.ForceDialog = True
     Remove processEvents
     Remove signalExists
 """
@@ -18,14 +17,11 @@ TODO:
 from __future__ import absolute_import
 
 __all__ = ['VFXWindow']
-__version__ = '1.5.1'
+__version__ = '1.8.0'
 
-import os
 import sys
-try:
-    from importlib.util import find_spec as _importable
-except ImportError:
-    from pkgutil import find_loader as _importable
+from .utils import software
+from . import exceptions
 
 
 def _setup_qapp():
@@ -34,54 +30,52 @@ def _setup_qapp():
     This must happen before any libraries are imported, as it's usually
     at that point when the QApplication is initialised.
     """
-    from .utils.Qt import QtWidgets
+
+    from Qt import QtWidgets
     try:
         app = QtWidgets.QApplication(sys.argv)
     except RuntimeError:
         pass
 
 
-def importable(program):
-    """Find which imports can be performed.
-    In rare circumstances a TypeError can be raised, but it's safe to
-    ignore and assume it's not the correct program.
-    """
-    try:
-        return bool(_importable(program))
-    except TypeError:
-        return None
-
-
-if importable('maya') and 'mayapy.exe' in sys.executable:
+if software.isMayaBatch():
     _setup_qapp()
     from .maya import MayaBatchWindow as VFXWindow
 
-elif importable('maya') and 'maya.exe' in sys.executable:
+elif software.isMaya():
     from .maya import MayaWindow as VFXWindow
 
-elif importable('nuke') and 'Nuke' in sys.executable:
-    if type(sys.stdout) == file:
-        raise NotImplementedError('unable to use qt when nuke is in batch mode')
+elif software.isNuke():
+    from .nuke import runningInTerminal
+
+    inTerminal = runningInTerminal(startup=True)
+    if inTerminal is None:
+        raise exceptions.NotImplementedApplicationError('Nuke GUI not supported in terminal mode, launch nuke with the --tg flag instead.')
+
+    if inTerminal:
         from .nuke import NukeBatchWindow as VFXWindow
     else:
         from .nuke import NukeWindow as VFXWindow
 
-elif importable('hou') and 'houdini' in sys.executable:
+elif software.isHoudini():
     from .houdini import HoudiniWindow as VFXWindow
 
-elif importable('bpy') and 'blender.exe' in sys.executable:
+elif software.isBlender():
     from .blender import BlenderWindow as VFXWindow
 
-elif importable('unreal') and 'UE4Editor.exe' in sys.executable:
+elif software.isUnrealEngine():
     from .unreal import UnrealWindow as VFXWindow
 
-elif importable('MaxPlus') and '3dsmax.exe' in sys.executable:
+elif software.is3dsMax():
     from .max import MaxWindow as VFXWindow
 
-elif importable('sd') and 'Substance Designer.exe' in sys.executable:
-    from .substance import SubstanceWindow as VFXWindow
+elif software.isSubstanceDesigner():
+    from .substance_designer import SubstanceDesignerWindow as VFXWindow
 
-elif importable('fusionscript') or importable('PeyeonScript') and 'Fusion.exe' in sys.executable:
+elif software.isSubstancePainter():
+    from .substance_painter import SubstancePainterWindow as VFXWindow
+
+elif software.isBlackmagicFusion():
     from .fusion import FusionWindow as VFXWindow
 
 elif importable('SandboxBridge') and 'Sandbox.exe' in sys.executable:

@@ -5,12 +5,12 @@ from __future__ import absolute_import, print_function
 
 import os
 import sys
+from Qt import QtWidgets, QtCompat, QtCore
 
 import MaxPlus
 
 from .abstract import AbstractWindow, getWindowSettings
 from .utils import hybridmethod, setCoordinatesToScreen
-from .utils.Qt import QtWidgets, QtCompat, QtCore
 from .standalone import StandaloneWindow
 
 
@@ -39,28 +39,29 @@ class MaxWindow(AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        try:
-            maxSettings = self.windowSettings['max']
-        except KeyError:
-            maxSettings = self.windowSettings['max'] = {}
-        try:
-            mainWindowSettings = maxSettings['main']
-        except KeyError:
-            mainWindowSettings = maxSettings['main'] = {}
-        mainWindowSettings['width'] = self.width()
-        mainWindowSettings['height'] = self.height()
-        mainWindowSettings['x'] = self.x()
-        mainWindowSettings['y'] = self.y()
+        if 'max' not in self.windowSettings:
+            self.windowSettings['max'] = {}
+        settings = self.windowSettings['max']
+
+        key = self._getSettingsKey()
+        if key not in settings:
+            settings[key] = {}
+
+        settings[key]['width'] = self.width()
+        settings[key]['height'] = self.height()
+        settings[key]['x'] = self.x()
+        settings[key]['y'] = self.y()
 
         super(MaxWindow, self).saveWindowPosition()
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
+        key = self._getSettingsKey()
         try:
-            width = self.windowSettings['max']['main']['width']
-            height = self.windowSettings['max']['main']['height']
-            x = self.windowSettings['max']['main']['x']
-            y = self.windowSettings['max']['main']['y']
+            width = self.windowSettings['max'][key]['width']
+            height = self.windowSettings['max'][key]['height']
+            x = self.windowSettings['max'][key]['x']
+            y = self.windowSettings['max'][key]['y']
         except KeyError:
             super(MaxWindow, self).loadWindowPosition()
         else:
@@ -77,6 +78,7 @@ class MaxWindow(AbstractWindow):
             super(MaxWindow, self).setWindowPalette(program, version, style)
 
     def windowPalette(self):
+        """Get the current window palette."""
         currentPalette = super(MaxWindow, self).windowPalette()
         if currentPalette is None:
             return 'Max.{}'.format(VERSION)
@@ -84,6 +86,7 @@ class MaxWindow(AbstractWindow):
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
+        """Show the 3DS Max window."""
         # Window is already initialised
         if self is not cls:
             return super(MaxWindow, self).show()
@@ -95,6 +98,14 @@ class MaxWindow(AbstractWindow):
             pass
         return super(MaxWindow, cls).show(*args, **kwargs)
 
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog."""
+        if parent is None:
+            parent = getMainWindow()
+        return super(MaxWindow, cls).dialog(parent=parent, *args, **kwargs)
+
     def closeEvent(self, event):
+        """Save the position before closing."""
         self.saveWindowPosition()
         return super(MaxWindow, self).closeEvent(event)

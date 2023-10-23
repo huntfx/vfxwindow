@@ -16,13 +16,18 @@ from .utils import setCoordinatesToScreen, hybridmethod
 from .standalone import StandaloneWindow
 
 
-VERSION = str(int(fusion.Version))
+if fusion is None:
+    VERSION = None
+else:
+    VERSION = str(int(fusion.Version))
 
 
 def getMainWindow():
     """Get a pointer to the Fusion window.
     However as of Fusion 9, this doesn't seem to return anything.
     """
+    if fusion is None:
+        return None
     return fusion.GetMainWindow()
 
 
@@ -36,28 +41,29 @@ class FusionWindow(StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        try:
-            fusionSettings = self.windowSettings['fusion']
-        except KeyError:
-            fusionSettings = self.windowSettings['fusion'] = {}
-        try:
-            mainWindowSettings = fusionSettings['main']
-        except KeyError:
-            mainWindowSettings = fusionSettings['main'] = {}
-        mainWindowSettings['width'] = self.width()
-        mainWindowSettings['height'] = self.height()
-        mainWindowSettings['x'] = self.x()
-        mainWindowSettings['y'] = self.y()
+        if 'fusion' not in self.windowSettings:
+            self.windowSettings['fusion'] = {}
+        settings = self.windowSettings['fusion']
+
+        key = self._getSettingsKey()
+        if key not in settings:
+            settings[key] = {}
+
+        settings[key]['width'] = self.width()
+        settings[key]['height'] = self.height()
+        settings[key]['x'] = self.x()
+        settings[key]['y'] = self.y()
 
         super(FusionWindow, self).saveWindowPosition()
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
+        key = self._getSettingsKey()
         try:
-            width = self.windowSettings['fusion']['main']['width']
-            height = self.windowSettings['fusion']['main']['height']
-            x = self.windowSettings['fusion']['main']['x']
-            y = self.windowSettings['fusion']['main']['y']
+            width = self.windowSettings['fusion'][key]['width']
+            height = self.windowSettings['fusion'][key]['height']
+            x = self.windowSettings['fusion'][key]['x']
+            y = self.windowSettings['fusion'][key]['y']
         except KeyError:
             super(FusionWindow, self).loadWindowPosition()
         else:
@@ -67,6 +73,7 @@ class FusionWindow(StandaloneWindow):
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
+        """Show the Fusion window."""
         # Window is already initialised
         if self is not cls:
             return super(FusionWindow, self).show()
@@ -78,3 +85,10 @@ class FusionWindow(StandaloneWindow):
             pass
         kwargs['exec_'] = True
         return super(FusionWindow, cls).show(*args, **kwargs)
+
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog."""
+        if parent is None:
+            parent = getMainWindow()
+        return super(FusionWindow, cls).dialog(parent=parent, *args, **kwargs)

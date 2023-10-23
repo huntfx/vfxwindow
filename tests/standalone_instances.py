@@ -4,10 +4,10 @@ By default, there can only be one QApplication, so this is an example of launchi
 
 import sys
 import os
-sys.path.append(os.path.abspath(__file__).rsplit(os.path.sep, 2)[0])
+from Qt import QtWidgets
 
+sys.path.append(os.path.abspath(__file__).rsplit(os.path.sep, 2)[0])
 from vfxwindow import VFXWindow
-from vfxwindow.utils.Qt import QtWidgets
 
 
 class Window1(VFXWindow):

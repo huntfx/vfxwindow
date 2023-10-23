@@ -5,15 +5,16 @@ from __future__ import absolute_import
 import inspect
 import json
 import os
+import sys
 import tempfile
 import uuid
 from collections import defaultdict
 from contextlib import contextmanager
 from functools import partial
+from Qt import QtCore, QtGui, QtWidgets
 
-from .palette import savePaletteData, setPalette
 from .utils import hybridmethod, setCoordinatesToScreen
-from .utils.Qt import QtCore, QtGui, QtWidgets
+from .utils.palette import savePaletteData, setPalette
 
 
 def getWindowSettingsPath(windowID):
@@ -77,6 +78,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         setDefaultPosition(x, y)            # Set position if settings can't be read
         setWindowPalette(palette)           # Set a palette
     """
+
     clearedInstance = QtCore.Signal()
     windowReady = QtCore.Signal()
 
@@ -102,7 +104,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self.fusion = False
         self.blender = False
         self.unreal = False
-        self.substance = False
+        self.substancePainter = False
+        self.substanceDesigner = False
         self.standalone = False
 
         # Read settings
@@ -117,6 +120,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self.__dockable = getattr(self, 'WindowDockable', False)
         self.__wasDocked = None
         self.__initialPosOverride = None
+        self.__signalCache = defaultdict(list)
 
         # Store the window data so it can be closed later
         # In some cases such as Maya's layoutDialog, the window will
@@ -138,58 +142,83 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """How many signals exist for the given group."""
         return len(self.signal(group) or [])
 
-    def signalDisconnect(self, group):
+    def signalConnect(self, signal, func, type=QtCore.Qt.AutoConnection, group=None):
+        """Add a new signal for the current group.
+
+        Example:
+            >>> self.signalConnect(widget.currentIndexChanged, self.widgetChanged, group='widget_changed')
+        """
+        if self.signalPaused(group):
+            self.__signalCache[group].append((signal, func, type))
+        else:
+            self._signals[group].append((signal, func, type))
+            signal.connect(func)
+        return func
+
+    def signalDisconnect(self, group, _pause=False):
         """Disconnect and return all functions for a current group.
         If none exist, and empty list will be returned.
 
-        >>> self.signalDisconnect('widget_changed')
-        [self.widgetChanged]
-        >>> self.signalDisconnect('widget_changed')
-        []
+        Example:
+            >>> self.signalDisconnect('widget_changed')
+            [self.widgetChanged]
+            >>> self.signalDisconnect('widget_changed')
+            []
         """
         signals = []
-        for (signal, func) in self._signals.pop(group, []):
+
+        # If paused, then just remove the signals from cache
+        if not _pause and self.signalPaused(group):
+            signals += self.__signalCache.pop(group)
+
+        # Disconnect the signals
+        for (signal, func, type) in self._signals.pop(group, ()):
             try:
                 signal.disconnect(func)
             except RuntimeError:
                 pass
             else:
-                signals.append((signal, func))
+                signals.append((signal, func, type))
         return signals
-
-    def signalConnect(self, signal, func, group=None):
-        """Add a new signal for the current group.
-
-        >>> self.signalConnect(widget.currentIndexChanged, self.widgetChanged, 'widget_changed')
-        """
-        self._signals[group].append((signal, func))
-        signal.connect(func)
-        return func
 
     @contextmanager
     def signalPause(self, *groups):
         """Pause a certain set of signals during execution.
         This will remove the signals, and re-apply them after.
         """
+        skip = set()
         if not groups:
             groups = self._signals
-
-        signalCache = {}
-        for group in groups:
-            signalCache[group] = self.signalDisconnect(group)
-
-        yield
+        groups = set(groups)
 
         for group in groups:
-            for signal, func in signalCache[group]:
-                self.signalConnect(signal, func, group=group)
+            if self.signalPaused(group):
+                skip.add(group)
+            self.__signalCache[group] += self.signalDisconnect(group, _pause=True)
+
+        try:
+            yield
+
+        finally:
+            for group in set(groups) - skip:
+                if group in self.__signalCache:
+                    for signal, func, type in self.__signalCache.pop(group):
+                        self.signalConnect(signal, func, type, group=group)
+
+    def signalPaused(self, group):
+        """Determine if a signal group is paused."""
+        return group in self.__signalCache
 
     def _getSettingsKey(self):
         """Get the key to use when saving settings."""
+        if self.batch:
+            return 'batch'
         if self.dockable():
             return 'dock'
-        elif self.dialog():
+        elif self.isDialog():
             return 'dialog'
+        elif self.isInstance():
+            return 'instance'
         else:
             return 'main'
 
@@ -201,7 +230,11 @@ class AbstractWindow(QtWidgets.QMainWindow):
                 otherwise get the current setting, which may require
                 a reload to apply if it's been changed.
         """
-        if not raw and self.__wasDocked is not None:
+        if raw:
+            return self.__dockable
+        if self.isInstance():
+            return False
+        if self.__wasDocked is not None:
             return self.__wasDocked
         return self.__dockable
 
@@ -229,14 +262,27 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Force the window to dock or undock."""
         pass
 
-    def dialog(self):
-        """Return if the window is a dialog."""
-        return getattr(self, 'ForceDialog', False)
+    def setFloating(self, floating):
+        """Force the window to dock or undock."""
+        self.setDocked(not floating)
+
+    def isDialog(self):
+        """Return if the window is a dialog.
+        Note that this will not work in __init__().
+        If it is needed, attach it to the windowReady signal instead.
+        """
+        try:
+            return isinstance(self.parent(), QtWidgets.QDialog)
+        except RuntimeError:
+            return False
 
     def loadWindowPosition(self):
         """Load the previous position or centre the window.
         The loading must be done in an override.
         """
+        if self.isInstance():
+            return
+
         if self.__initialPosOverride is not None:
             x, y = self.__initialPosOverride
             x, y = setCoordinatesToScreen(x, y, self.width(), self.height(), padding=5)
@@ -250,6 +296,9 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def saveWindowPosition(self, path=None):
         """Save the window settings into a file."""
+        if self.isInstance():
+            return
+
         if self.__forceDisableSaving or not self._enableSave:
             return False
         if path is None:
@@ -324,20 +373,26 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def about(self, text=None):
         """Make an "about" popup message.
-        If no text is provided, this will first attempt to read the doc
-        string of the current class, and if that fails, it will grab
-        the docstring of the module.
+        If no text is provided, this will first attempt to read the
+        docstring of the module, and if that fails, it will grab
+        the docstring of the current class.
         """
-        if text is None:
-            docstring = self.__class__.__doc__ or inspect.getmodule(self).__doc__
+        if text is None or isinstance(text, bool):
+            docstring = inspect.getmodule(self).__doc__ or self.__class__.__doc__
             if docstring is None:
                 raise ValueError('unable to find docstring')
             text = inspect.cleandoc(docstring)
 
-        self.displayMessage(
-            title='About {}'.format(self.WindowName),
-            message=text,
-        )
+        try:
+            self.displayMessage(
+                title='About {}'.format(self.WindowName),
+                message=text,
+            )
+        except AttributeError:
+            self.displayMessage(
+                title='About',
+                message=text,
+            )
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
@@ -357,12 +412,62 @@ class AbstractWindow(QtWidgets.QMainWindow):
         new.deferred(new.windowReady.emit)
         return new
 
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog.
+        Methods of .dialogAccept and .dialogReject will be added.
+        Any variables given to these will be returned.
+
+        Output: (accepted[bool], data[list])
+        """
+        # Create application if it doesn't exist
+        inst = app = QtWidgets.QApplication.instance()
+        if app is None:
+            app = QtWidgets.QApplication(sys.argv)
+
+        dialog = QtWidgets.QDialog(parent=parent)
+        dialog.setWindowTitle(getattr(cls, 'WindowName', 'New Window'))
+        if inst is None:
+            app.setActiveWindow(dialog)
+
+        # Inheirt the class to set attributes
+        class windowClass(cls):
+            WindowDockable = False
+            _DialogData = []
+
+            # Method of getting data returned from dialog
+            def dialogAccept(self, *args):
+                self._DialogData += args
+                return dialog.accept()
+
+            def dialogReject(self, *args):
+                self._DialogData += args
+                return dialog.reject()
+
+        # Setup layout
+        layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        #layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        windowInstance = windowClass(*args, **kwargs)
+        layout.addWidget(windowInstance)
+        dialog.setLayout(layout)
+
+        # Finish setting up window
+        windowInstance.loadWindowPosition()
+        windowInstance.windowReady.emit()
+
+        try:
+            return (dialog.exec_(), windowInstance._DialogData)
+        finally:
+            windowInstance.saveWindowPosition()
+            windowClass.clearWindowInstance(windowClass.WindowID)
+
     def setVisible(self, visible):
         """Override setVisible to make sure it behaves like show/hide.
         This can cause recursion errors, so make sure the window has
         been loaded and not closed.
         """
-        if not self.isLoaded() or self.isInstance():
+        if not self.isLoaded() or self.isInstance() or self.isDialog():
             return super(AbstractWindow, self).setVisible(visible)
         if visible:
             return self.show()
@@ -453,7 +558,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         In the case of a dialog, it will be deleted by now, so ignore.
         """
         inst = cls._WINDOW_INSTANCES.pop(windowID, None)
-        if inst is not None and not getattr(inst['window'], 'ForceDialog', False):
+        if inst is not None and not inst['window'].isDialog():
             try:
                 inst['window'].clearedInstance.emit()
             except RuntimeError:
@@ -470,6 +575,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Close the window and mark it as closed."""
         self._windowClosed = True
         self.clearWindowInstance(self.WindowID)
+        if self.isDialog():
+            return self.parent().close()
         return super(AbstractWindow, self).closeEvent(event)
 
     def isClosed(self):
@@ -507,83 +614,140 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Return if the window is floating.
         As this is a base window only, it will always be floating.
         """
-        return True
+        return not self.isInstance()
 
     def move(self, x, y=None):
+        if self.isInstance():
+            return
         if isinstance(x, QtCore.QPoint):
             y = x.y()
             x = x.x()
         if self.dockable():
             return self._parentOverride().move(x, y)
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().move(x, y)
         return super(AbstractWindow, self).move(x, y)
 
     def geometry(self):
-        if self.dockable():
-            return self._parentOverride().geometry()
-        elif self.dialog():
-            return self.parent().geometry()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().geometry()
+            elif self.isDialog():
+                return self.parent().geometry()
         return super(AbstractWindow, self).geometry()
 
     def frameGeometry(self):
-        if self.dockable():
-            return self._parentOverride().frameGeometry()
-        elif self.dialog():
-            return self.parent().frameGeometry()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().frameGeometry()
+            elif self.isDialog():
+                return self.parent().frameGeometry()
         return super(AbstractWindow, self).frameGeometry()
 
     def rect(self):
-        if self.dockable():
-            return self._parentOverride().rect()
-        elif self.dialog():
-            return self.parent().rect()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().rect()
+            elif self.isDialog():
+                return self.parent().rect()
         return super(AbstractWindow, self).rect()
 
     def width(self):
-        if self.dockable():
-            return self._parentOverride().width()
-        elif self.dialog():
-            return self.parent().width()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().width()
+            elif self.isDialog():
+                return self.parent().width()
         return super(AbstractWindow, self).width()
 
     def height(self):
-        if self.dockable():
-            return self._parentOverride().height()
-        elif self.dialog():
-            return self.parent().height()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().height()
+            elif self.isDialog():
+                return self.parent().height()
         return super(AbstractWindow, self).height()
 
     def x(self):
-        if self.dockable():
-            return self._parentOverride().x()
-        elif self.dialog():
-            return self.parent().x()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().x()
+            elif self.isDialog():
+                return self.parent().x()
         return super(AbstractWindow, self).x()
 
     def y(self):
-        if self.dockable():
-            return self._parentOverride().y()
-        elif self.dialog():
-            return self.parent().y()
+        if not self.isInstance():
+            if self.dockable():
+                return self._parentOverride().y()
+            elif self.isDialog():
+                return self.parent().y()
         return super(AbstractWindow, self).y()
 
     def resize(self, width, height=None):
+        if self.isInstance():
+            return
+
         if isinstance(width, QtCore.QSize):
             height = width.height()
             width = width.width()
         if self.dockable():
             return self._parentOverride().resize(width, height)
-        elif self.dialog():
+        elif self.isDialog():
             return self.parent().resize(width, height)
         return super(AbstractWindow, self).resize(width, height)
+
+    def setMinimumWidth(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setMinimumWidth(*args, **kwargs)
+        return super(AbstractWindow, self).setMinimumWidth(*args, **kwargs)
+
+    def setFixedWidth(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setFixedWidth(*args, **kwargs)
+        return super(AbstractWindow, self).setFixedWidth(*args, **kwargs)
+
+    def setMaximumWidth(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setMaximumWidth(*args, **kwargs)
+        return super(AbstractWindow, self).setMaximumWidth(*args, **kwargs)
+
+    def setMinimumHeight(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setMinimumHeight(*args, **kwargs)
+        return super(AbstractWindow, self).setMinimumHeight(*args, **kwargs)
+
+    def setFixedHeight(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setFixedHeight(*args, **kwargs)
+        return super(AbstractWindow, self).setFixedHeight(*args, **kwargs)
+
+    def setMaximumHeight(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setMaximumHeight(*args, **kwargs)
+        return super(AbstractWindow, self).setMaximumHeight(*args, **kwargs)
+
+    def setMinimumSize(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setMinimumSize(*args, **kwargs)
+        return super(AbstractWindow, self).setMinimumSize(*args, **kwargs)
+
+    def setFixedSize(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setFixedSize(*args, **kwargs)
+        return super(AbstractWindow, self).setFixedSize(*args, **kwargs)
+
+    def setMaximumSize(self, *args, **kwargs):
+        if self.isDialog():
+            return self.parent().setMaximumSize(*args, **kwargs)
+        return super(AbstractWindow, self).setMaximumSize(*args, **kwargs)
 
     def centreWindow(self, parentGeometry=None, childGeometry=None):
         """Centre the current window to its parent.
         In the case of overrides, the parent or child geometry may be provided.
         """
         if parentGeometry is None or childGeometry is None:
-            if self.dialog():
+            if self.isDialog():
                 base = self.parent()
             else:
                 base = self

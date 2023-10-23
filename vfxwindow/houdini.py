@@ -5,6 +5,8 @@ from __future__ import absolute_import
 import hou
 import hdefereval
 
+from Qt import QtCore
+
 from .abstract import AbstractWindow
 from .utils import setCoordinatesToScreen
 
@@ -26,8 +28,7 @@ def getStyleSheet():
 
 class HoudiniWindow(AbstractWindow):
     """Window to use for Houdini.
-    It has support for automatically saving the position when closed,
-    and performs some necessary CSS edits to fix colours.
+    This also performs some necessary CSS edits to fix colours.
     """
     def __init__(self, parent=None, **kwargs):
         if parent is None:
@@ -51,6 +52,9 @@ class HoudiniWindow(AbstractWindow):
             }""")
         self.setProperty('houdiniStyle', True)
 
+        # As of today, that's the only solution that seems to make this window stay over houdini.
+        self.setWindowFlags(self.windowFlags() | QtCore.Qt.Dialog)
+
     def closeEvent(self, event):
         """Save the window location on window close."""
         self.saveWindowPosition()
@@ -69,34 +73,42 @@ class HoudiniWindow(AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        try:
-            houdiniSettings = self.windowSettings['houdini']
-        except KeyError:
-            houdiniSettings = self.windowSettings['houdini'] = {}
-        try:
-            mainWindowSettings = houdiniSettings['main']
-        except KeyError:
-            mainWindowSettings = houdiniSettings['main'] = {}
+        if 'houdini' not in self.windowSettings:
+            self.windowSettings['houdini'] = {}
+        settings = self.windowSettings['houdini']
 
-        mainWindowSettings['width'] = self.width()
-        mainWindowSettings['height'] = self.height()
-        mainWindowSettings['x'] = self.x()
-        mainWindowSettings['y'] = self.y()
+        key = self._getSettingsKey()
+        if key not in settings:
+            settings[key] = {}
+
+        settings[key]['width'] = self.width()
+        settings[key]['height'] = self.height()
+        settings[key]['x'] = self.x()
+        settings[key]['y'] = self.y()
+
         super(HoudiniWindow, self).saveWindowPosition()
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
+        key = self._getSettingsKey()
         try:
-            x = self.windowSettings['houdini']['main']['x']
-            y = self.windowSettings['houdini']['main']['y']
-            width = self.windowSettings['houdini']['main']['width']
-            height = self.windowSettings['houdini']['main']['height']
+            x = self.windowSettings['houdini'][key]['x']
+            y = self.windowSettings['houdini'][key]['y']
+            width = self.windowSettings['houdini'][key]['width']
+            height = self.windowSettings['houdini'][key]['height']
         except KeyError:
             super(HoudiniWindow, self).loadWindowPosition()
         else:
             x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
             self.resize(width, height)
             self.move(x, y)
+
+    @classmethod
+    def dialog(cls, parent=None, *args, **kwargs):
+        """Create the window as a dialog."""
+        if parent is None:
+            parent = getMainWindow()
+        return super(HoudiniWindow, cls).dialog(parent=parent, *args, **kwargs)
 
     @classmethod
     def clearWindowInstance(self, windowID):
@@ -113,4 +125,5 @@ class HoudiniWindow(AbstractWindow):
                 pass
 
     def deferred(self, func, *args, **kwargs):
+        """Defer function until Houdini is ready."""
         hdefereval.executeDeferred(func, *args, **kwargs)

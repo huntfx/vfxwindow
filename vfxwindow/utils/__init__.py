@@ -6,7 +6,7 @@ import site
 import sys
 from functools import wraps
 from types import ModuleType
-from .Qt import QtWidgets
+from Qt import QtWidgets
 
 if os.name == 'nt':
     from .windows import setCoordinatesToScreen
@@ -53,8 +53,9 @@ def searchGlobals(cls, globalsDict=None, visited=None):
     if visited is None:
         visited = set(filter(bool, map(sys.modules.get, sys.builtin_module_names)))
 
+    recursiveSearch = {}
     for k, v in globalsDict.items():
-        if v == cls:
+        if v is cls:
             return k
 
         elif isinstance(v, ModuleType) and v not in visited:
@@ -70,10 +71,13 @@ def searchGlobals(cls, globalsDict=None, visited=None):
             if modulePath is None or any(modulePath.startswith(i) for i in SITE_PACKAGES):
                 continue
 
-            # Recursively search the next module
-            result = searchGlobals(cls, v.__dict__, visited=visited)
-            if result:
-                return k + '.' + result
+            recursiveSearch[k] = v.__dict__
+
+    # Recursively search submodules
+    for k, v in recursiveSearch.items():
+        result = searchGlobals(cls, v, visited=visited)
+        if result:
+            return k + '.' + result
 
 
 def forceMenuBar(win):
@@ -86,10 +90,11 @@ def forceMenuBar(win):
     adding both widgets won't do anything.
     """
     menu = win.menuBar()
-    for child in menu.children():
-        if isinstance(child, QtWidgets.QMenu):
-            break
-    else:
-        return
+    if not menu.actions():
+        for child in menu.children():
+            if isinstance(child, QtWidgets.QMenu):
+                break
+        else:
+            return
     menu.setSizePolicy(menu.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Fixed)
     win.centralWidget().layout().insertWidget(0, menu)
