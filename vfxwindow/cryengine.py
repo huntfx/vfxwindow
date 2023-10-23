@@ -13,7 +13,10 @@ from .utils.Qt import QtWidgets
 from .standalone import StandaloneWindow
 
 
-VERSION = sys.executable.split(os.path.sep)[5].split('_')[1]
+try:
+    VERSION = float(sys.executable.split(os.path.sep)[-4].rsplit('.', 1)[0])
+except (TypeError, IndexError):
+    VERSION = None
 
 
 def getMainWindow():
@@ -41,10 +44,10 @@ class CryWindow(StandaloneWindow):
             settings = self.windowSettings['cryengine'] = {}
 
         settings['docked'] = self.dockable(raw=True)
-        
+
         if self.dockable():
             pass  # Not yet implemented
-        
+
         else:
             settings['main'] = dict(
                 width=self.width(),
@@ -99,7 +102,7 @@ class CryWindow(StandaloneWindow):
                     docked = cls.WindowDefaults['docked']
                 except (AttributeError, KeyError):
                     docked = True
-        
+
         if docked:
             # Unable to test this yet
             return SandboxBridge.register_window(
