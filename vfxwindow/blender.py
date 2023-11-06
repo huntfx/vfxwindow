@@ -20,14 +20,14 @@ class BlenderWindow(StandaloneWindow):
 
     def __init__(self, parent=None, **kwargs):
         super(BlenderWindow, self).__init__(parent, **kwargs)
-        self.blender = True
+        self.software = 'Blender'
         self.standalone = False
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if 'blender' not in self.windowSettings:
-            self.windowSettings['blender'] = {}
-        settings = self.windowSettings['blender']
+        if self.software not in self.windowSettings:
+            self.windowSettings[self.software] = {}
+        settings = self.windowSettings[self.software]
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -44,10 +44,10 @@ class BlenderWindow(StandaloneWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            x = self.windowSettings['blender'][key]['x']
-            y = self.windowSettings['blender'][key]['y']
-            width = self.windowSettings['blender'][key]['width']
-            height = self.windowSettings['blender'][key]['height']
+            x = self.windowSettings[self.software][key]['x']
+            y = self.windowSettings[self.software][key]['y']
+            width = self.windowSettings[self.software][key]['width']
+            height = self.windowSettings[self.software][key]['height']
         except KeyError:
             super(BlenderWindow, self).loadWindowPosition()
         else:

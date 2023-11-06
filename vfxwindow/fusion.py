@@ -9,8 +9,8 @@ try:
     import fusionscript
     fusion = fusionscript.scriptapp('Fusion')
 except ImportError:
-    import PeyeonScript as eyeon
-    fusion = eyeon.scriptapp('Fusion')
+    import PeyeonScript
+    fusion = PeyeonScript.scriptapp('Fusion')
 
 from .utils import setCoordinatesToScreen, hybridmethod
 from .standalone import StandaloneWindow
@@ -36,14 +36,14 @@ class FusionWindow(StandaloneWindow):
         if parent is None:
             parent = getMainWindow()
         super(FusionWindow, self).__init__(parent, **kwargs)
-        self.fusion = True
+        self.software = 'Fusion'
         self.standalone = False
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if 'fusion' not in self.windowSettings:
-            self.windowSettings['fusion'] = {}
-        settings = self.windowSettings['fusion']
+        if self.software not in self.windowSettings:
+            self.windowSettings[self.software] = {}
+        settings = self.windowSettings[self.software]
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -60,10 +60,10 @@ class FusionWindow(StandaloneWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            width = self.windowSettings['fusion'][key]['width']
-            height = self.windowSettings['fusion'][key]['height']
-            x = self.windowSettings['fusion'][key]['x']
-            y = self.windowSettings['fusion'][key]['y']
+            width = self.windowSettings[self.software][key]['width']
+            height = self.windowSettings[self.software][key]['height']
+            x = self.windowSettings[self.software][key]['x']
+            y = self.windowSettings[self.software][key]['y']
         except KeyError:
             super(FusionWindow, self).loadWindowPosition()
         else:

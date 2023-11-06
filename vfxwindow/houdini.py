@@ -34,7 +34,7 @@ class HoudiniWindow(AbstractWindow):
         if parent is None:
             parent = getMainWindow()
         super(HoudiniWindow, self).__init__(parent, **kwargs)
-        self.houdini = True
+        self.software = 'Houdini'
 
         # Fix some issues with widgets not taking the correct style
         self.setStyleSheet("""
@@ -73,9 +73,9 @@ class HoudiniWindow(AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if 'houdini' not in self.windowSettings:
-            self.windowSettings['houdini'] = {}
-        settings = self.windowSettings['houdini']
+        if self.software not in self.windowSettings:
+            self.windowSettings[self.software] = {}
+        settings = self.windowSettings[self.software]
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -92,10 +92,10 @@ class HoudiniWindow(AbstractWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            x = self.windowSettings['houdini'][key]['x']
-            y = self.windowSettings['houdini'][key]['y']
-            width = self.windowSettings['houdini'][key]['width']
-            height = self.windowSettings['houdini'][key]['height']
+            x = self.windowSettings[self.software][key]['x']
+            y = self.windowSettings[self.software][key]['y']
+            width = self.windowSettings[self.software][key]['width']
+            height = self.windowSettings[self.software][key]['height']
         except KeyError:
             super(HoudiniWindow, self).loadWindowPosition()
         else:

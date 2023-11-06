@@ -19,7 +19,7 @@ class UnrealWindow(StandaloneWindow):
 
     def __init__(self, parent=None, **kwargs):
         super(UnrealWindow, self).__init__(parent, **kwargs)
-        self.unreal = True
+        self.software = 'Unreal Engine'
         self.standalone = False
 
         # Parenting external windows was only added in 4.20
@@ -30,9 +30,9 @@ class UnrealWindow(StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if 'unreal' not in self.windowSettings:
-            self.windowSettings['unreal'] = {}
-        settings = self.windowSettings['unreal']
+        if self.software not in self.windowSettings:
+            self.windowSettings[self.software] = {}
+        settings = self.windowSettings[self.software]
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -49,10 +49,10 @@ class UnrealWindow(StandaloneWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            width = self.windowSettings['unreal'][key]['width']
-            height = self.windowSettings['unreal'][key]['height']
-            x = self.windowSettings['unreal'][key]['x']
-            y = self.windowSettings['unreal'][key]['y']
+            width = self.windowSettings[self.software][key]['width']
+            height = self.windowSettings[self.software][key]['height']
+            x = self.windowSettings[self.software][key]['x']
+            y = self.windowSettings[self.software][key]['y']
         except KeyError:
             super(UnrealWindow, self).loadWindowPosition()
         else:

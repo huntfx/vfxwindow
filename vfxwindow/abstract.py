@@ -79,6 +79,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         setWindowPalette(palette)           # Set a palette
     """
 
+    SOFTWARE = 'Standalone'
+
     clearedInstance = QtCore.Signal()
     windowReady = QtCore.Signal()
 
@@ -94,19 +96,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
             self.WindowID = uuid.uuid4()
         self.setWindowTitle(getattr(self, 'WindowName', 'New Window'))
         self._setChildWindow(False)
-
-        # Track settings that to be read by any inherited windows
-        self.batch = False
-        self.maya = False
-        self.nuke = False
-        self.houdini = False
-        self.max = False
-        self.fusion = False
-        self.blender = False
-        self.unreal = False
-        self.substancePainter = False
-        self.substanceDesigner = False
-        self.standalone = False
 
         # Read settings
         self._windowDataPath = getWindowSettingsPath(self.WindowID)

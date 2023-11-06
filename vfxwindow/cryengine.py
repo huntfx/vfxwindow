@@ -35,14 +35,14 @@ class CryWindow(StandaloneWindow):
         if parent is None:
             parent = getMainWindow()
         super(CryWindow, self).__init__(parent, **kwargs)
-        self.cryengine = True
+        self.software = 'CryEngine'
         self.standalone = False
 
     def saveWindowPosition(self):
         """Save the window location."""
 
-        if 'cryengine' not in self.windowSettings:
-            settings = self.windowSettings['cryengine'] = {}
+        if self.software not in self.windowSettings:
+            settings = self.windowSettings[self.software] = {}
 
         settings['docked'] = self.dockable(raw=True)
 
@@ -66,7 +66,7 @@ class CryWindow(StandaloneWindow):
             return  # Not yet implemented
 
         try:
-            settings = self.windowSettings['cryengine']['main']
+            settings = self.windowSettings[self.software]['main']
             width = settings['width']
             height = settings['height']
             x = settings['x']
@@ -97,7 +97,7 @@ class CryWindow(StandaloneWindow):
             docked = cls.WindowDockable
         else:
             try:
-                docked = settings['cryengine']['docked']
+                docked = settings[self.software]['docked']
             except KeyError:
                 try:
                     docked = cls.WindowDefaults['docked']
