@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 
 # Get the README.md text
-with open(os.path.join(os.path.dirname(__file__), 'README.md'), 'r') as f:
+with open(os.path.join(os.path.dirname(__file__), 'README.md'), 'r', encoding='utf-8') as f:
     readme = f.read()
 
 # Parse vfxwindow/__init__.py for a version
