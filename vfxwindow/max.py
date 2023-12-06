@@ -38,7 +38,7 @@ class MaxWindow(AbstractWindow):
 
     @property
     def software(self):
-        return '3DsMax'
+        return '3dsMax'
 
     def saveWindowPosition(self):
         """Save the window location."""
