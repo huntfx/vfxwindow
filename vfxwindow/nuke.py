@@ -227,9 +227,13 @@ class Pane(object):
 
 
 class NukeCommon(object):
+
+    @property
+    def software(self):
+        return 'Nuke'
+
     def __init__(self, *args, **kwargs):
         super(NukeCommon, self).__init__(*args, **kwargs)
-        self.software = 'Nuke'
 
 
 class NukeWindow(NukeCommon, AbstractWindow):

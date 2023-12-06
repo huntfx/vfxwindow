@@ -35,8 +35,11 @@ class CryWindow(StandaloneWindow):
         if parent is None:
             parent = getMainWindow()
         super(CryWindow, self).__init__(parent, **kwargs)
-        self.software = 'CryEngine'
         self.standalone = False
+
+    @property
+    def software(self):
+        return 'CryEngine'
 
     def saveWindowPosition(self):
         """Save the window location."""

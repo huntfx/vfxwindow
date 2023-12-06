@@ -79,8 +79,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
         setWindowPalette(palette)           # Set a palette
     """
 
-    SOFTWARE = 'Standalone'
-
     clearedInstance = QtCore.Signal()
     windowReady = QtCore.Signal()
 
@@ -120,6 +118,10 @@ class AbstractWindow(QtWidgets.QMainWindow):
         }
 
         self.windowReady.connect(lambda: setattr(self, '_windowLoaded', True))
+
+    @property
+    def software(self):
+        raise NotImplementedError('`{}.software` property not implemented for the current software.'.format(self.__class__.__name__))
 
     def processEvents(self):
         """Wrapper over the inbult processEvents method.

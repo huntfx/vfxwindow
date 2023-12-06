@@ -19,7 +19,6 @@ class UnrealWindow(StandaloneWindow):
 
     def __init__(self, parent=None, **kwargs):
         super(UnrealWindow, self).__init__(parent, **kwargs)
-        self.software = 'Unreal Engine'
         self.standalone = False
 
         # Parenting external windows was only added in 4.20
@@ -27,6 +26,10 @@ class UnrealWindow(StandaloneWindow):
             unreal.parent_external_window_to_slate(self.winId())
         except AttributeError:
             pass
+
+    @property
+    def software(self):
+        return 'Unreal Engine'
 
     def saveWindowPosition(self):
         """Save the window location."""

@@ -39,6 +39,10 @@ class StandaloneWindow(AbstractWindow):
         super(StandaloneWindow, self).__init__(parent)
         self.standalone = True
 
+    @property
+    def software(self):
+        return 'Standalone'
+
     @hybridmethod
     def show(cls, self, *args, **kwargs):
         """Start a standalone QApplication and launch the window.
@@ -116,9 +120,9 @@ class StandaloneWindow(AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if 'standalone' not in self.windowSettings:
-            self.windowSettings['standalone'] = {}
-        settings = self.windowSettings['standalone']
+        if self.software not in self.windowSettings:
+            self.windowSettings[self.software] = {}
+        settings = self.windowSettings[self.software]
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -135,10 +139,10 @@ class StandaloneWindow(AbstractWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            x = self.windowSettings['standalone'][key]['x']
-            y = self.windowSettings['standalone'][key]['y']
-            width = self.windowSettings['standalone'][key]['width']
-            height = self.windowSettings['standalone'][key]['height']
+            x = self.windowSettings[self.software][key]['x']
+            y = self.windowSettings[self.software][key]['y']
+            width = self.windowSettings[self.software][key]['width']
+            height = self.windowSettings[self.software][key]['height']
         except KeyError:
             super(StandaloneWindow, self).loadWindowPosition()
         else:

@@ -35,7 +35,10 @@ class MaxWindow(AbstractWindow):
         if parent is None:
             parent = getMainWindow()
         super(MaxWindow, self).__init__(parent, **kwargs)
-        self.software = '3DsMax'
+
+    @property
+    def software(self):
+        return '3DsMax'
 
     def saveWindowPosition(self):
         """Save the window location."""

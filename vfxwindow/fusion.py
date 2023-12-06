@@ -36,8 +36,11 @@ class FusionWindow(StandaloneWindow):
         if parent is None:
             parent = getMainWindow()
         super(FusionWindow, self).__init__(parent, **kwargs)
-        self.software = 'Fusion'
         self.standalone = False
+
+    @property
+    def software(self):
+        return 'Fusion'
 
     def saveWindowPosition(self):
         """Save the window location."""

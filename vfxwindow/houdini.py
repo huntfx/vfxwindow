@@ -34,7 +34,6 @@ class HoudiniWindow(AbstractWindow):
         if parent is None:
             parent = getMainWindow()
         super(HoudiniWindow, self).__init__(parent, **kwargs)
-        self.software = 'Houdini'
 
         # Fix some issues with widgets not taking the correct style
         self.setStyleSheet("""
@@ -54,6 +53,10 @@ class HoudiniWindow(AbstractWindow):
 
         # As of today, that's the only solution that seems to make this window stay over houdini.
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.Dialog)
+
+    @property
+    def software(self):
+        return 'Houdini'
 
     def closeEvent(self, event):
         """Save the window location on window close."""

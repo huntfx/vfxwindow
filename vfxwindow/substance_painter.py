@@ -61,8 +61,11 @@ class SubstancePainterWindow(AbstractWindow):
             parent = getMainWindow()
         super(SubstancePainterWindow, self).__init__(parent, **kwargs)
 
-        self.software = 'Substance Painter'
         self.setDockable(dockable, override=True)
+
+    @property
+    def software(self):
+        return 'Substance Painter'
 
     def deferred(self, func, *args, **kwargs):
         """Defer a function execution by 1 second.

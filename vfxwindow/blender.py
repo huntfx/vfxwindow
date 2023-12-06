@@ -20,8 +20,11 @@ class BlenderWindow(StandaloneWindow):
 
     def __init__(self, parent=None, **kwargs):
         super(BlenderWindow, self).__init__(parent, **kwargs)
-        self.software = 'Blender'
         self.standalone = False
+
+    @property
+    def software(self):
+        return 'Blender'
 
     def saveWindowPosition(self):
         """Save the window location."""

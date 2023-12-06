@@ -91,8 +91,11 @@ class SubstanceDesignerWindow(AbstractWindow):
             parent = getMainWindow()
         super(SubstanceDesignerWindow, self).__init__(parent, **kwargs)
 
-        self.software = "Substance Designer"
         self.setDockable(dockable, override=True)
+
+    @property
+    def software(self):
+        return 'Substance Designer'
 
     def y(self):
         """Apply y offset for dialogs."""

@@ -217,7 +217,9 @@ def toMObject(node):
 
 class MayaCommon(object):
 
-    SOFTWARE = 'Maya'
+    @property
+    def software(self):
+        return 'Maya'
 
     def deferred(self, func, *args, **kwargs):
         """Execute a deferred command.
@@ -480,9 +482,9 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.SOFTWARE not in self.windowSettings:
-            self.windowSettings[self.SOFTWARE] = {}
-        settings = self.windowSettings[self.SOFTWARE]
+        if self.software not in self.windowSettings:
+            self.windowSettings[self.software] = {}
+        settings = self.windowSettings[self.software]
         settings['docked'] = self.dockable(raw=True)
 
         key = self._getSettingsKey()
@@ -519,10 +521,10 @@ class MayaWindow(MayaCommon, AbstractWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            x = self.windowSettings[self.SOFTWARE][key]['x']
-            y = self.windowSettings[self.SOFTWARE][key]['y']
-            width = self.windowSettings[self.SOFTWARE][key]['width']
-            height = self.windowSettings[self.SOFTWARE][key]['height']
+            x = self.windowSettings[self.software][key]['x']
+            y = self.windowSettings[self.software][key]['y']
+            width = self.windowSettings[self.software][key]['width']
+            height = self.windowSettings[self.software][key]['height']
         except KeyError:
             super(MayaWindow, self).loadWindowPosition()
         else:
@@ -898,15 +900,15 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
         # Load settings
         try:
-            mayaSettings = settings[self.SOFTWARE]
+            mayaSettings = settings[self.software]
         except KeyError:
-            mayaSettings = settings[self.SOFTWARE] = {}
+            mayaSettings = settings[self.software] = {}
 
         if hasattr(cls, 'WindowDockable'):
             docked = cls.WindowDockable
         else:
             try:
-                docked = settings[self.SOFTWARE]['docked']
+                docked = settings[self.software]['docked']
             except KeyError:
                 try:
                     docked = cls.WindowDefaults['docked']
@@ -925,7 +927,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 floating = not cls.WindowDocked
             else:
                 try:
-                    floating = settings[self.SOFTWARE]['dock']['floating']
+                    floating = settings[self.software]['dock']['floating']
                 except KeyError:
                     try:
                         floating = cls.WindowDefaults['floating']
@@ -936,9 +938,9 @@ class MayaWindow(MayaCommon, AbstractWindow):
             else:
                 try:
                     if self._Pre2017:
-                        dock = settings[self.SOFTWARE]['dock'].get('area', True)
+                        dock = settings[self.software]['dock'].get('area', True)
                     else:
-                        dock = settings[self.SOFTWARE]['dock'].get('control', True)
+                        dock = settings[self.software]['dock'].get('control', True)
                 except KeyError:
                     dock = True
             if self._Pre2017:
@@ -1003,9 +1005,9 @@ class MayaBatchWindow(MayaCommon, StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.SOFTWARE not in self.windowSettings:
-            self.windowSettings[self.SOFTWARE] = {}
-        settings = self.windowSettings[self.SOFTWARE]
+        if self.software not in self.windowSettings:
+            self.windowSettings[self.software] = {}
+        settings = self.windowSettings[self.software]
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -1022,10 +1024,10 @@ class MayaBatchWindow(MayaCommon, StandaloneWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            width = self.windowSettings[self.SOFTWARE][key]['width']
-            height = self.windowSettings[self.SOFTWARE][key]['height']
-            x = self.windowSettings[self.SOFTWARE][key]['x']
-            y = self.windowSettings[self.SOFTWARE][key]['y']
+            width = self.windowSettings[self.software][key]['width']
+            height = self.windowSettings[self.software][key]['height']
+            x = self.windowSettings[self.software][key]['x']
+            y = self.windowSettings[self.software][key]['y']
         except KeyError:
             super(MayaBatchWindow, self).loadWindowPosition()
         else:
