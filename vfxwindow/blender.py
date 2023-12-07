@@ -20,7 +20,9 @@ class BlenderWindow(StandaloneWindow):
 
     def __init__(self, parent=None, **kwargs):
         super(BlenderWindow, self).__init__(parent, **kwargs)
-        self.standalone = False
+        
+        self.blender = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.standalone = False  #: .. deprecated:: 1.9.0 Won't be needed anymore when using :property:`~AbstractWindow.software`.
 
     @property
     def software(self):

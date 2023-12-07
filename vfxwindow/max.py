@@ -36,6 +36,8 @@ class MaxWindow(AbstractWindow):
             parent = getMainWindow()
         super(MaxWindow, self).__init__(parent, **kwargs)
 
+        self.max = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+
     @property
     def software(self):
         return '3dsMax'

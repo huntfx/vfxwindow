@@ -95,6 +95,20 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(getattr(self, 'WindowName', 'New Window'))
         self._setChildWindow(False)
 
+        self.batch = False
+
+        self.maya = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.nuke = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.houdini = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.max = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.fusion = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.blender = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.unreal = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.substancePainter = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.substanceDesigner = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.cryengine = True  #: .. deprecated:: 1.9.0 Use :property:`~BlenderWindow.software` instead.
+        self.standalone = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+
         # Read settings
         self._windowDataPath = getWindowSettingsPath(self.WindowID)
         tempFolder = os.path.dirname(self._windowDataPath)

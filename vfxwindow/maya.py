@@ -244,6 +244,9 @@ class MayaWindow(MayaCommon, AbstractWindow):
         if parent is None:
             parent = getMainWindow()
         super(MayaWindow, self).__init__(parent, **kwargs)
+
+        self.maya = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+
         self.batch = BATCH
         self.setDockable(dockable, override=True)
 
@@ -1000,8 +1003,11 @@ class MayaBatchWindow(MayaCommon, StandaloneWindow):
 
     def __init__(self, parent=None, **kwargs):
         super(MayaBatchWindow, self).__init__(parent, **kwargs)
+
+        self.maya = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.standalone = False  #: .. deprecated:: 1.9.0 Won't be needed anymore when using :property:`~AbstractWindow.software`.
+
         self.batch = True
-        self.standalone = False
 
     def saveWindowPosition(self):
         """Save the window location."""

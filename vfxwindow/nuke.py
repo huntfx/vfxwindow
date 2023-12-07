@@ -278,6 +278,8 @@ class NukeWindow(NukeCommon, AbstractWindow):
             parent = getMainWindow()
         super(NukeWindow, self).__init__(parent, **kwargs)
 
+        self.nuke = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.    
+
         self.__windowHidden = False
         self.setDockable(dockable, override=True)
 
@@ -827,8 +829,11 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
     """Variant of the Standalone window for Nuke in batch mode."""
     def __init__(self, parent=None, **kwargs):
         super(NukeBatchWindow, self).__init__(parent, **kwargs)
+
+        self.nuke = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.standalone = False  #: .. deprecated:: 1.9.0 Won't be needed anymore when using :property:`~AbstractWindow.software`.
+
         self.batch = True
-        self.standalone = False
 
     def setWindowPalette(self, program, version=None, style=True, force=False):
         if force:

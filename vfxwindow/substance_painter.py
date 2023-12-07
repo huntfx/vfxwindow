@@ -61,6 +61,8 @@ class SubstancePainterWindow(AbstractWindow):
             parent = getMainWindow()
         super(SubstancePainterWindow, self).__init__(parent, **kwargs)
 
+        self.substancePainter = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+
         self.setDockable(dockable, override=True)
 
     @property

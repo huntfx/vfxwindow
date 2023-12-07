@@ -19,7 +19,9 @@ class UnrealWindow(StandaloneWindow):
 
     def __init__(self, parent=None, **kwargs):
         super(UnrealWindow, self).__init__(parent, **kwargs)
-        self.standalone = False
+        
+        self.unreal = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.standalone = False  #: .. deprecated:: 1.9.0 Won't be needed anymore when using :property:`~AbstractWindow.software`.
 
         # Parenting external windows was only added in 4.20
         try:

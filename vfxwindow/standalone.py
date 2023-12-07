@@ -37,7 +37,8 @@ class StandaloneWindow(AbstractWindow):
 
     def __init__(self, parent=None):
         super(StandaloneWindow, self).__init__(parent)
-        self.standalone = True
+        
+        self.standalone = True  #: .. deprecated:: 1.9.0 Won't be needed anymore when using :property:`~AbstractWindow.software`.
 
     @property
     def software(self):

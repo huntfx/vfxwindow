@@ -35,6 +35,8 @@ class HoudiniWindow(AbstractWindow):
             parent = getMainWindow()
         super(HoudiniWindow, self).__init__(parent, **kwargs)
 
+        self.houdini = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+
         # Fix some issues with widgets not taking the correct style
         self.setStyleSheet("""
             QScrollArea{

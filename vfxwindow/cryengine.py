@@ -35,7 +35,9 @@ class CryWindow(StandaloneWindow):
         if parent is None:
             parent = getMainWindow()
         super(CryWindow, self).__init__(parent, **kwargs)
-        self.standalone = False
+        
+        self.cryengine = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.standalone = False  #: .. deprecated:: 1.9.0 Won't be needed anymore when using :property:`~AbstractWindow.software`.
 
     @property
     def software(self):
