@@ -1,11 +1,14 @@
 from __future__ import absolute_import
 
+from Qt import QtWidgets
+
 try:
     import nuke
 except ImportError:
     nuke = None
 
 from .abstract import AbstractApplication, AbstractVersion
+from ..exceptions import NotImplementedApplicationError
 
 
 class NukeApplication(AbstractApplication):
@@ -14,9 +17,17 @@ class NukeApplication(AbstractApplication):
     def __init__(self):
         super(NukeApplication, self).__init__('Nuke', NukeVersion() if self.loaded else None)
 
+        if self.loaded and not QtWidgets.QApplication.topLevelWidgets():
+            raise NotImplementedApplicationError('Nuke GUI not supported in terminal mode, launch nuke with the --tg flag instead.')
+
     @property
     def loaded(self):
         return nuke is not None
+
+    @property
+    def gui(self):
+        """Determine if Nuke is in GUI mode."""
+        return nuke.GUI
 
 
 class NukeVersion(AbstractVersion):
@@ -28,11 +39,6 @@ class NukeVersion(AbstractVersion):
         self.versionPatch = nuke.NUKE_VERSION_RELEASE
         version = nuke.NUKE_VERSION_STRING
         super(NukeVersion, self).__init__(version)
-
-    @property
-    def loaded(self):
-        """Determine if Nuke is loaded."""
-        return nuke is not None
 
     @property
     def major(self):

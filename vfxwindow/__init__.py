@@ -21,7 +21,7 @@ __version__ = '1.8.0'
 
 import sys
 from .utils import software
-from . import exceptions
+from . import application
 
 
 def _setup_qapp():
@@ -30,7 +30,6 @@ def _setup_qapp():
     This must happen before any libraries are imported, as it's usually
     at that point when the QApplication is initialised.
     """
-
     from Qt import QtWidgets
     try:
         app = QtWidgets.QApplication(sys.argv)
@@ -38,21 +37,15 @@ def _setup_qapp():
         pass
 
 
-if software.isMayaBatch():
-    _setup_qapp()
-    from .maya import MayaBatchWindow as VFXWindow
+if application.Maya:
+    if application.Maya.batch:
+        _setup_qapp()
+        from .maya import MayaBatchWindow as VFXWindow
+    else:
+        from .maya import MayaWindow as VFXWindow
 
-elif software.isMaya():
-    from .maya import MayaWindow as VFXWindow
-
-elif software.isNuke():
-    from .nuke import runningInTerminal
-
-    inTerminal = runningInTerminal(startup=True)
-    if inTerminal is None:
-        raise exceptions.NotImplementedApplicationError('Nuke GUI not supported in terminal mode, launch nuke with the --tg flag instead.')
-
-    if inTerminal:
+elif application.Nuke:
+    if application.Nuke.batch:
         from .nuke import NukeBatchWindow as VFXWindow
     else:
         from .nuke import NukeWindow as VFXWindow

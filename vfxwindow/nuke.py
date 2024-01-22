@@ -16,6 +16,7 @@ import nuke
 from nukescripts import panels, utils
 
 from .abstract import AbstractWindow, getWindowSettings
+from .application import Nuke as App
 from .standalone import StandaloneWindow
 from .utils import hybridmethod, setCoordinatesToScreen, searchGlobals
 
@@ -38,34 +39,6 @@ def getMainWindow():
     for obj in QtWidgets.QApplication.topLevelWidgets():
         if obj.inherits('QMainWindow') and obj.metaObject().className() == 'Foundry::UI::DockMainWindow':
             return obj
-
-
-def runningInTerminal(startup=False):
-    """Determine if Nuke has been launched in terminal mode.
-
-    Returns:
-        True: If the terminal with a QApplication is loaded (`--tg` flag)
-        False: If the GUI is loaded
-        None: If no QApplication is available (`-`t` flag or python.exe)
-    """
-    mainWindow = getMainWindow()
-
-    # Special case when starting up as the main window is not yet visible
-    if startup:
-        for obj in QtWidgets.QApplication.topLevelWidgets():
-            # There doesn't appear to be any Menu objects in terminal mode
-            if obj.metaObject().className() == 'Foundry::UI::Menu':
-                return False
-
-    # If no main window, then there is no QApplication
-    if mainWindow is None:
-        return None
-
-    # If running on startup, then the other two options are ruled out
-    elif startup:
-        return True
-
-    return not mainWindow.isVisible()
 
 
 def deleteQtWindow(windowId):
@@ -284,6 +257,11 @@ class NukeWindow(NukeCommon, AbstractWindow):
         # This line seemed to be recommended, but I'm not sure why
         #if not self.dockable():
         #    self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+
+    @property
+    def application(self):
+        """Get the current application."""
+        return App
 
     def closeEvent(self, event):
         """Special case for closing docked windows."""

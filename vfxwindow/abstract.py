@@ -132,6 +132,11 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         self.windowReady.connect(lambda: setattr(self, '_windowLoaded', True))
 
+    @property
+    def application(self):
+        """Get the current application."""
+        raise NotImplementedError
+
     def processEvents(self):
         """Wrapper over the inbult processEvents method.
         This forces the GUI to update in the middle of calculations.
