@@ -13,7 +13,7 @@ class SubstanceDesignerVersion(AbstractVersion):
 
     def __init__(self):
         app = sd.getContext().getSDApplication()
-        super(SubstanceDesignerVersion, self).__init__(app.getVersion())  # 12.3.1
+        super(SubstanceDesignerVersion, self).__init__(app.getVersion())  # '12.3.1'
 
 
 class SubstanceDesignerApplication(AbstractApplication):

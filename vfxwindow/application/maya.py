@@ -12,26 +12,9 @@ class MayaVersion(AbstractVersion):
     """Maya version data for comparisons."""
 
     def __init__(self):
-        self.versionMajor = mc.about(majorVersion=True)  # '2020'
-        self.versionMinor = mc.about(minorVersion=True)  # '4'
-        self.versionPatch = mc.about(patchVersion=True)  # '0'
-        version = '{}.{}.{}'.format(self.versionMajor, self.versionMinor, self.versionPatch)
-        super(MayaVersion, self).__init__(version)
-
-    @property
-    def major(self):
-        """Get the major version number for Maya."""
-        return str(self.versionMajor)
-
-    @property
-    def minor(self):
-        """Get the minor version number for Maya."""
-        return str(self.versionMinor)
-
-    @property
-    def patch(self):
-        """Get the patch version number for Maya."""
-        return str(self.versionPatch)
+        super(MayaVersion, self).__init__(major=mc.about(majorVersion=True),  # '2020'
+                                          minor=mc.about(minorVersion=True),  # '4'
+                                          patch=mc.about(patchVersion=True))  # '0'
 
 
 class MayaApplication(AbstractApplication):

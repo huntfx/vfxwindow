@@ -97,8 +97,48 @@ class AbstractApplication(object):
 class AbstractVersion(object):
     """Application version data for comparisons."""
 
-    def __init__(self, version=''):
+    def __init__(self, version=None, major=None, minor=None, patch=None):
+        parts = (major, minor, patch)
+
+        # Build the version string
+        if not version:
+            validParts = []
+            for num in parts:
+                if num is None:
+                    break
+                validParts.append(num)
+            version = '.'.join(validParts)
         self.version = str(version)
+
+        # Split to major/minor/patch
+        if major is not None:
+            major = str(major)
+        if minor is not None:
+            minor = str(minor)
+        if patch is not None:
+            patch = str(patch)
+
+        self.major = major
+        self.minor = minor
+        self.patch = patch
+
+        if None in parts:
+            split = version.split('.')
+            if self.major is None:
+                try:
+                    self.major = split[0]
+                except IndexError:
+                    self.major = '0'
+            if self.minor is None:
+                try:
+                    self.minor = split[1]
+                except IndexError:
+                    self.minor = '0'
+            if self.patch is None:
+                try:
+                    self.patch = split[2]
+                except IndexError:
+                    self.patch = '0'
 
     def __repr__(self):
         return repr(self.version)
@@ -111,13 +151,13 @@ class AbstractVersion(object):
         """Get the major version number."""
         if not self.version:
             return 0
-        return int(self.version.split('.')[0])
+        return int(self.major)
 
     def __float__(self):
         """Get the major and minor version number."""
         if not self.version:
             return 0.0
-        return float('.'.join(self.version.split('.')[:2]))
+        return float(self.major + '.' + self.minor)
 
     def __eq__(self, other):
         """Determine if two versions are equal."""
@@ -149,42 +189,10 @@ class AbstractVersion(object):
         a, b = standardiseVersions(self.version, other)
         return a <= b
 
-    def __iter__(self):
-        """Iterate over the major/minor/patch numbers."""
-        return iter(self.split())
-
     def __getitem__(self, item):
         """Get the major/minor/patch number from an index."""
-        return self.split()[item]
+        return (self.major, self.minor, self.patch)[item]
 
-    @property
-    def major(self):
-        """Get the major version number."""
-        try:
-            return self.split()[0]
-        except IndexError:
-            return 0
-
-    @property
-    def minor(self):
-        """Get the minor version number.
-        Returns `None` if not applicable.
-        """
-        try:
-            return self.split()[1]
-        except IndexError:
-            return 0
-
-    @property
-    def patch(self):
-        """Get the patch version number.
-        Returns `None` if not applicable.
-        """
-        try:
-            return self.split()[2]
-        except IndexError:
-            return 0
-
-    def split(self):
+    def split(self, sep='.'):
         """Get all the version parts."""
-        return self.version.split('.')
+        return self.version.split(sep)

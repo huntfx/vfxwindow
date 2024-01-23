@@ -12,23 +12,8 @@ class HoudiniVersion(AbstractVersion):
     """Houdini version data for comparisons."""
 
     def __init__(self):
-        self.versionMajor, self.versionMinor, self.versionPatch = hou.applicationVersion()
-        super(HoudiniVersion, self).__init__(hou.applicationVersionString())
-
-    @property
-    def major(self):
-        """Get the major version number for Houdini."""
-        return str(self.versionMajor)
-
-    @property
-    def minor(self):
-        """Get the minor version number for Houdini."""
-        return str(self.versionMinor)
-
-    @property
-    def patch(self):
-        """Get the patch version number for Houdini."""
-        return str(self.versionPatch)
+        super(HoudiniVersion, self).__init__(hou.applicationVersionString(),  # '18.5.488'
+                                             *hou.applicationVersion())  # (18, 5, 499)
 
 
 class HoudiniApplication(AbstractApplication):

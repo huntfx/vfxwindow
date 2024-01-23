@@ -12,23 +12,8 @@ class BlenderVersion(AbstractVersion):
     """Blender version data for comparisons."""
 
     def __init__(self):
-        self.versionMajor, self.versionMinor, self.versionPatch = bpy.app.version
-        super(BlenderVersion, self).__init__(bpy.app.version_string)
-
-    @property
-    def major(self):
-        """Get the major version number for Blender."""
-        return str(self.versionMajor)
-
-    @property
-    def minor(self):
-        """Get the minor version number for Blender."""
-        return str(self.versionMinor)
-
-    @property
-    def patch(self):
-        """Get the patch version number for Blender."""
-        return str(self.versionPatch)
+        super(BlenderVersion, self).__init__(bpy.app.version_string,  # '3.6.0'
+                                             *bpy.app.version)  # (3, 6, 0)
 
 
 class BlenderApplication(AbstractApplication):

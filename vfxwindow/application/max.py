@@ -10,23 +10,8 @@ class MaxVersion(AbstractVersion):
     """3ds Max version data for comparisons."""
 
     def __init__(self):
-        self.versionMajor = sys.executable.split(os.path.sep)[-2][8:]
-        super(MaxVersion, self).__init__(self.versionMajor)
-
-    @property
-    def major(self):
-        """Get the major version number for 3ds Max."""
-        return self.versionMajor
-
-    @property
-    def minor(self):
-        """Get the minor version number for 3ds Max."""
-        return '0'
-
-    @property
-    def patch(self):
-        """Get the patch version number for 3ds Max."""
-        return '0'
+        version = sys.executable.split(os.path.sep)[-2].split('_')[-1]
+        super(MaxVersion, self).__init__(version, major=version, minor='0', patch='0')
 
 
 class MaxApplication(AbstractApplication):
