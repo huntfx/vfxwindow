@@ -11,25 +11,6 @@ from .abstract import AbstractApplication, AbstractVersion
 from ..exceptions import NotImplementedApplicationError
 
 
-class NukeApplication(AbstractApplication):
-    """Nuke application data."""
-
-    def __init__(self):
-        super(NukeApplication, self).__init__('Nuke', NukeVersion() if self.loaded else None)
-
-        if self.loaded and not QtWidgets.QApplication.topLevelWidgets():
-            raise NotImplementedApplicationError('Nuke GUI not supported in terminal mode, launch nuke with the --tg flag instead.')
-
-    @property
-    def loaded(self):
-        return nuke is not None
-
-    @property
-    def gui(self):
-        """Determine if Nuke is in GUI mode."""
-        return nuke.GUI
-
-
 class NukeVersion(AbstractVersion):
     """Nuke version data for comparisons."""
 
@@ -54,3 +35,30 @@ class NukeVersion(AbstractVersion):
     def patch(self):
         """Get the patch version number for Nuke."""
         return str(self.versionPatch)
+
+
+class NukeApplication(AbstractApplication):
+    """Nuke application data."""
+
+    NAME = 'Nuke'
+
+    IMPORTS = ['nuke']
+
+    PATHS = [
+        r'[nN]uke\d+(?:\.\d+){0,2}\.(?:bin|exe|app)',
+        r'[nN]uke\.(?:bin|exe|app)',
+    ]
+
+    VERSION = NukeVersion
+
+    def __init__(self):
+        super(NukeApplication, self).__init__()
+
+        # Check Qt is supported
+        if self.loaded and not QtWidgets.QApplication.topLevelWidgets():
+            raise NotImplementedApplicationError('Nuke GUI not supported in terminal mode, launch nuke with the --tg flag instead.')
+
+    @property
+    def gui(self):
+        """Determine if Nuke is in GUI mode."""
+        return nuke.GUI

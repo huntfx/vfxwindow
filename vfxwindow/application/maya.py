@@ -8,28 +8,6 @@ except ImportError:
 from .abstract import AbstractApplication, AbstractVersion
 
 
-
-class MayaApplication(AbstractApplication):
-    """Maya application data."""
-
-    def __init__(self):
-        super(MayaApplication, self).__init__('Maya', MayaVersion() if self.loaded else None)
-
-    @property
-    def loaded(self):
-        return mc is not None
-
-    @property
-    def gui(self):
-        """If Maya is in GUI mode."""
-        return not mc.about(batch=True)
-
-    @property
-    def batch(self):
-        """If Maya is in batch mode."""
-        return mc.about(batch=True)
-
-
 class MayaVersion(AbstractVersion):
     """Maya version data for comparisons."""
 
@@ -40,7 +18,7 @@ class MayaVersion(AbstractVersion):
         version = '{}.{}.{}'.format(self.versionMajor, self.versionMinor, self.versionPatch)
         super(MayaVersion, self).__init__(version)
 
-    def __bool__(self):
+    def loaded(self):
         """Determine if Maya is loaded."""
         return mc is not None
 
@@ -58,3 +36,37 @@ class MayaVersion(AbstractVersion):
     def patch(self):
         """Get the patch version number for Maya."""
         return str(self.versionPatch)
+
+
+class MayaApplication(AbstractApplication):
+    """Maya application data."""
+
+    NAME = 'Maya'
+
+    IMPORTS = ['maya.cmds']
+
+    PATHS = [
+        # GUI
+        r'^[A-Z]:\\Program\sFiles(?:|\s\(x86\))\\[aA]utodesk\\[mM]aya\d{4}\\bin\\[mM]aya\.exe$',  # Windows
+        r'^/usr/[aA]utodesk/[mM]aya(?:\d{4})?/bin/[mM]aya\.bin$',  # Linux
+        r'^/Applications/[mM]aya\s\d{4}/[mM]aya\.app$',  # MacOs
+        r'^.*(?:\\|/)bin(?:\\|/)[mM]aya\.(?:bin|exe|app)$',  # Common
+        r'^.*(?:\\|/)[mM]aya\.(?:bin|exe|app)$',  # Common
+
+        # Batch
+        r'^[A-Z]:\\Program\sFiles(?:|\s\(x86\))\\[aA]utodesk\\[mM]aya\d{4}\\(?:bin|bin2|bin\\\.\.\\bin2)\\[mM]ayapy[2]?\.exe$',  # Windows
+        r'^/usr/[aA]utodesk/[mM]aya\d{4}/(?:bin|bin2|bin/\.\./bin2)/[pP]ython-bin$',  # Linux
+        r'[mM]ayapy\.(?:bin|exe|app)',  # Common
+    ]
+
+    VERSION = MayaVersion
+
+    @property
+    def gui(self):
+        """If Maya is in GUI mode."""
+        return not mc.about(batch=True)
+
+    @property
+    def batch(self):
+        """If Maya is in batch mode."""
+        return mc.about(batch=True)

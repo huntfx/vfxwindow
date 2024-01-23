@@ -1,12 +1,24 @@
+import re
+import sys
+
 from .utils import standardiseVersions
 
 
 class AbstractApplication(object):
     """Application data."""
 
-    def __init__(self, application, version):
-        self._name = application
-        self._version = version
+    NAME = ''  # Name of the application
+
+    IMPORTS = []  # List of program imports to test for
+
+    PATHS = []  # Valid paths of the executable
+
+    VERSION = None  # Subclass of `AbstractVersion`
+
+    def __init__(self):
+        self.name = self.NAME
+        self.loaded = self.isLoaded()
+        self.version = self.VERSION() if self.loaded and self.VERSION is not None else None
 
     def __str__(self):
         return self.name
@@ -39,25 +51,34 @@ class AbstractApplication(object):
         except AttributeError:
             return True
 
-    @property
-    def loaded(self):
-        """Determine if the application is currently loaded."""
+    def isLoaded(self):
+        """Determine if the application is currently loaded.
+
+        If the modules of a DCC can be imported, then it's likely but
+        not 100% confirmed that it is within the software environment
+        (an example of this is Maya being able to import `hou`).
+        This can be paired with checking for known executable paths.
+
+        Note that the imports are done with both `pkgutil.find_loader`
+        and `importlib.util.find_spec`, so a simple `__import__` is
+        much cleaner to use in this case.
+        """
+        if any((re.search(pattern, sys.executable) for pattern in self.PATHS)):
+            for imp in self.IMPORTS:
+                if imp in sys.modules:
+                    return True
+
+                try:
+                    if __import__(imp):
+                        return True
+                except ImportError:
+                    pass
         return False
-
-    @property
-    def name(self):
-        """Get the application name."""
-        return self._name
-
-    @property
-    def version(self):
-        """Get the application version."""
-        return self._version
 
     @property
     def gui(self):
         """If the application is in GUI mode."""
-        raise NotImplementedError
+        raise True
 
     @property
     def batch(self):
