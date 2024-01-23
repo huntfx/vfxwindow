@@ -1,5 +1,5 @@
 
-"""Window class for 3D Studio Max."""
+"""Window class for 3ds Max."""
 
 from __future__ import absolute_import, print_function
 

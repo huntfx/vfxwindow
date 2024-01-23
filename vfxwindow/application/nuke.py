@@ -15,11 +15,10 @@ class NukeVersion(AbstractVersion):
     """Nuke version data for comparisons."""
 
     def __init__(self):
-        self.versionMajor = nuke.NUKE_VERSION_MAJOR
-        self.versionMinor = nuke.NUKE_VERSION_MINOR
-        self.versionPatch = nuke.NUKE_VERSION_RELEASE
-        version = nuke.NUKE_VERSION_STRING
-        super(NukeVersion, self).__init__(version)
+        self.versionMajor = nuke.NUKE_VERSION_MAJOR  # 12
+        self.versionMinor = nuke.NUKE_VERSION_MINOR  # 1
+        self.versionPatch = nuke.NUKE_VERSION_RELEASE  # 3
+        super(NukeVersion, self).__init__(nuke.NUKE_VERSION_STRING)  # '12.1v3'
 
     @property
     def major(self):

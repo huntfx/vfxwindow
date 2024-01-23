@@ -50,28 +50,28 @@ elif application.Nuke:
     else:
         from .nuke import NukeWindow as VFXWindow
 
-elif software.isHoudini():
+elif application.Houdini:
     from .houdini import HoudiniWindow as VFXWindow
 
-elif software.isBlender():
+elif application.Blender:
     from .blender import BlenderWindow as VFXWindow
 
-elif software.isUnrealEngine():
+elif application.Unreal:
     from .unreal import UnrealWindow as VFXWindow
 
-elif software.is3dsMax():
+elif application.Max:
     from .max import MaxWindow as VFXWindow
 
-elif software.isSubstanceDesigner():
+elif application.SubstanceDesigner:
     from .substance_designer import SubstanceDesignerWindow as VFXWindow
 
-elif software.isSubstancePainter():
+elif application.SubstancePainter:
     from .substance_painter import SubstancePainterWindow as VFXWindow
 
-elif software.isBlackmagicFusion():
+elif application.Fusion:
     from .fusion import FusionWindow as VFXWindow
 
-elif software.isCryEngine():
+elif application.CryEngine:
     from .cryengine import CryWindow as VFXWindow
 
 else:

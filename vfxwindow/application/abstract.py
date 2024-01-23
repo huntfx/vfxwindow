@@ -97,7 +97,7 @@ class AbstractApplication(object):
 class AbstractVersion(object):
     """Application version data for comparisons."""
 
-    def __init__(self, version):
+    def __init__(self, version=''):
         self.version = str(version)
 
     def __repr__(self):
@@ -109,10 +109,14 @@ class AbstractVersion(object):
 
     def __int__(self):
         """Get the major version number."""
+        if not self.version:
+            return 0
         return int(self.version.split('.')[0])
 
     def __float__(self):
         """Get the major and minor version number."""
+        if not self.version:
+            return 0.0
         return float('.'.join(self.version.split('.')[:2]))
 
     def __eq__(self, other):
@@ -156,7 +160,10 @@ class AbstractVersion(object):
     @property
     def major(self):
         """Get the major version number."""
-        return self.split()[0]
+        try:
+            return self.split()[0]
+        except IndexError:
+            return 0
 
     @property
     def minor(self):
@@ -166,7 +173,7 @@ class AbstractVersion(object):
         try:
             return self.split()[1]
         except IndexError:
-            return None
+            return 0
 
     @property
     def patch(self):
@@ -176,7 +183,7 @@ class AbstractVersion(object):
         try:
             return self.split()[2]
         except IndexError:
-            return None
+            return 0
 
     def split(self):
         """Get all the version parts."""

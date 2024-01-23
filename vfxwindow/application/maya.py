@@ -12,15 +12,11 @@ class MayaVersion(AbstractVersion):
     """Maya version data for comparisons."""
 
     def __init__(self):
-        self.versionMajor = mc.about(majorVersion=True)
-        self.versionMinor = mc.about(minorVersion=True)
-        self.versionPatch = mc.about(patchVersion=True)
+        self.versionMajor = mc.about(majorVersion=True)  # '2020'
+        self.versionMinor = mc.about(minorVersion=True)  # '4'
+        self.versionPatch = mc.about(patchVersion=True)  # '0'
         version = '{}.{}.{}'.format(self.versionMajor, self.versionMinor, self.versionPatch)
         super(MayaVersion, self).__init__(version)
-
-    def loaded(self):
-        """Determine if Maya is loaded."""
-        return mc is not None
 
     @property
     def major(self):
