@@ -962,12 +962,13 @@ class MayaWindow(MayaCommon, AbstractWindow):
         For Maya versions after 2017, mc.layoutDialog is used.
         """
         # This is quite buggy and can lock up Maya, so disable for now
+        # The issue is likely related to what `setParent` returns.
         if False and not cls._Pre2017:
             # Note: Due to Python 2 limitations, *args and **kwargs can't be unpacked with the
             # title keyword present, so don't try to clean up the code by enabling unpacking again.
             def uiScript(cls, clsArgs=(), clsKwargs={}):
                 form = mc.setParent(query=True)
-                parent = mc.uitypes.toQtObject(form)
+                parent = getMainWindow(form)
                 parent.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
 
                 windowInstance = cls(parent, *clsArgs, **clsKwargs)
