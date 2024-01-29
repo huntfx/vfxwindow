@@ -51,7 +51,7 @@ def getMainWindow(windowID=None, wrapInstance=True):
             pointer = omUI.MQtUtil.findControl(windowID)
         else:
             pointer = omUI.MQtUtil.mainWindow()
-        
+
         if pointer is not None:
             return QtCompat.wrapInstance(int(pointer), QtWidgets.QWidget)
 
@@ -371,16 +371,16 @@ class MayaWindow(MayaCommon, AbstractWindow):
             base = self.parent()
 
         if base is None:
-            # If the window has no parent, it was probably forgotten by user so we can 
+            # If the window has no parent, it was probably forgotten by user so we can
             # assume it should be the maya main window.
-            self.__parentTemp = getMainWindow()
+            self.__parentTemp = super(MayaWindow, self)._parentOverride()
         else:
             #Get the correct parent level
             if self.floating():
                 self.__parentTemp = base.parent().parent().parent().parent()
             else:
                 self.__parentTemp = base.parent().parent()
-        
+
         return self.__parentTemp
 
     def floating(self):
