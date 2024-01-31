@@ -261,7 +261,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Return if the window is currently docked."""
         if not self.dockable():
             return False
-        return NotImplementedError('override needed')
+        return not self.floating()
 
     def setDocked(self, docked):
         """Force the window to dock or undock."""

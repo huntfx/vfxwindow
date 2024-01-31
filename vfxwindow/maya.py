@@ -256,16 +256,33 @@ class MayaWindow(MayaCommon, AbstractWindow):
         self.__parentTemp = None
 
     def visibleChangeEvent(self, *args, **kwargs):
-        """This probably means the window has just been closed."""
-        if self.dockable():
-            self.saveWindowPosition()
+        """The window may have been docked/undocked.
 
-            # Maya dockControl and workspaceControl works by dynamically creating a QWidget and parent the
-            # window to it when it's detached. When attached, the window is docked and the widget destroyed.
-            # Maya set it's own window icon to this widget by default, this will just make sure that if the user
-            # used a custom icon for it's tool, it's set on the dynamically created floating widget.
+        If floating, then first load the previous position, since there
+        is no hook for this elsewhere.
+        Both modes will then save the position, which will either store
+        the control name for docked windows, or the coordinates for
+        floating ones.
+
+        This is not super efficient and only works if the window hasn't
+        been closed, but it helps keep the correct location state.
+        """
+        if self.dockable():
             if self.floating():
+                # Load the correct location only if previously docked
+                # If this ran all the time, then the window will
+                # minimise and restore to a different location, and
+                # completely fail to maximise
+                if not self.windowSettings.get('maya', {}).get('dock', {}).get('floating', True):
+                    self.loadWindowPosition()
+
+                # Maya dockControl and workspaceControl works by dynamically creating a QWidget and parent the
+                # window to it when it's detached. When attached, the window is docked and the widget destroyed.
+                # Maya set it's own window icon to this widget by default, this will just make sure that if the user
+                # used a custom icon for it's tool, it's set on the dynamically created floating widget.
                 self.setWindowIcon(self.windowIcon())
+
+            self.saveWindowPosition()
 
     def setWindowIcon(self, icon):
         super(MayaWindow, self).setWindowIcon(icon)
@@ -339,8 +356,23 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 self.raise_()
                 mc.dockControl(self.WindowID, edit=True, floating=not dock)
                 self.raise_()
+
+            # Dock to the previous control if possible, otherwise the attribute editor
+            elif dock:
+                self.saveWindowPosition()  # It doesn't automatically save
+                try:
+                    control = self.windowSettings['maya']['dock']['control']
+                    if control is None:
+                        raise KeyError
+                except KeyError:
+                    control = mel.eval('getUIComponentDockControl("Attribute Editor", false)')
+                mc.workspaceControl(self.WindowID, edit=True, tabToControl=[control, -1])
+                self.raise_()
+
+            # Undock and make floating
             else:
-                mc.workspaceControl(self.WindowID, edit=True, floating=not dock)
+                mc.workspaceControl(self.WindowID, edit=True, floating=True)
+                self.loadWindowPosition()
 
     def setWindowPalette(self, program, version=None, style=True, force=False):
         """Set the palette of the window.
@@ -494,23 +526,26 @@ class MayaWindow(MayaCommon, AbstractWindow):
         if key not in settings:
             settings[key] = {}
 
+        dockable = self.dockable()
         try:
-            settings[key]['width'] = self.width()
-            settings[key]['height'] = self.height()
-            settings[key]['x'] = self.x()
-            settings[key]['y'] = self.y()
-
             # Save extra docked settings
-            if self.dockable():
+            if dockable:
                 settings[key]['floating'] = self.floating()
                 if self._Pre2017:
                     settings[key]['area'] = self.area()
-                else:
+                elif not settings[key]['floating'] or 'control' not in settings[key]:
                     settings[key]['control'] = self.control()
 
-        # Occasionally a RuntimeError will occur if a docked window is deleted
+            # Only save position if floating
+            if not dockable or settings[key]['floating']:
+                settings[key]['width'] = self.width()
+                settings[key]['height'] = self.height()
+                settings[key]['x'] = self.x()
+                settings[key]['y'] = self.y()
+
+        # A RuntimeError will occur if a dockable window is being deleted
         except RuntimeError:
-            if not self.dockable():
+            if not dockable:
                 raise
 
         # Need to check again, perhaps this can happen on startup
