@@ -10,6 +10,7 @@ class TestWindow(VFXWindow):
     def __init__(self, **kwargs):
         self._signalPause = False
         super(TestWindow, self).__init__(**kwargs)
+        self.setWindowIcon(self.style().standardIcon(QtWidgets.QStyle.SP_DirIcon))
 
         widget = QtWidgets.QWidget()
         self.setCentralWidget(widget)

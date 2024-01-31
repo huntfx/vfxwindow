@@ -17,10 +17,10 @@ TODO:
 from __future__ import absolute_import
 
 __all__ = ['VFXWindow']
-__version__ = '1.8.0'
+__version__ = '1.9.0'
 
 import sys
-from .utils import software
+from .utils import application
 from . import exceptions
 
 
@@ -38,14 +38,14 @@ def _setup_qapp():
         pass
 
 
-if software.isMayaBatch():
+if application.isMayaBatch():
     _setup_qapp()
     from .maya import MayaBatchWindow as VFXWindow
 
-elif software.isMaya():
+elif application.isMaya():
     from .maya import MayaWindow as VFXWindow
 
-elif software.isNuke():
+elif application.isNuke():
     from .nuke import runningInTerminal
 
     inTerminal = runningInTerminal(startup=True)
@@ -57,28 +57,28 @@ elif software.isNuke():
     else:
         from .nuke import NukeWindow as VFXWindow
 
-elif software.isHoudini():
+elif application.isHoudini():
     from .houdini import HoudiniWindow as VFXWindow
 
-elif software.isBlender():
+elif application.isBlender():
     from .blender import BlenderWindow as VFXWindow
 
-elif software.isUnrealEngine():
+elif application.isUnrealEngine():
     from .unreal import UnrealWindow as VFXWindow
 
-elif software.is3dsMax():
+elif application.is3dsMax():
     from .max import MaxWindow as VFXWindow
 
-elif software.isSubstanceDesigner():
+elif application.isSubstanceDesigner():
     from .substance_designer import SubstanceDesignerWindow as VFXWindow
 
-elif software.isSubstancePainter():
+elif application.isSubstancePainter():
     from .substance_painter import SubstancePainterWindow as VFXWindow
 
-elif software.isBlackmagicFusion():
+elif application.isBlackmagicFusion():
     from .fusion import FusionWindow as VFXWindow
 
-elif software.isCryEngine():
+elif application.isCryEngine():
     from .cryengine import CryWindow as VFXWindow
 
 else:

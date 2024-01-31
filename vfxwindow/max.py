@@ -35,13 +35,18 @@ class MaxWindow(AbstractWindow):
         if parent is None:
             parent = getMainWindow()
         super(MaxWindow, self).__init__(parent, **kwargs)
-        self.max = True
+
+        self.max = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+
+    @property
+    def application(self):
+        return '3dsMax'
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if 'max' not in self.windowSettings:
-            self.windowSettings['max'] = {}
-        settings = self.windowSettings['max']
+        if self.application not in self.windowSettings:
+            self.windowSettings[self.application] = {}
+        settings = self.windowSettings[self.application]
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -58,10 +63,10 @@ class MaxWindow(AbstractWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            width = self.windowSettings['max'][key]['width']
-            height = self.windowSettings['max'][key]['height']
-            x = self.windowSettings['max'][key]['x']
-            y = self.windowSettings['max'][key]['y']
+            width = self.windowSettings[self.application][key]['width']
+            height = self.windowSettings[self.application][key]['height']
+            x = self.windowSettings[self.application][key]['x']
+            y = self.windowSettings[self.application][key]['y']
         except KeyError:
             super(MaxWindow, self).loadWindowPosition()
         else:

@@ -8,7 +8,7 @@ from .. import exceptions
 def __importable(programImport):
     """Test if the given module import string can be imported.
 
-    If the import string of a DCC can be imported, it's likely that we're in the software
+    If the import string of a DCC can be imported, it's likely that we're in the application
     environment. This is not 100% accurate so it should be paired with another test to
     lower the risk of false positive.
 

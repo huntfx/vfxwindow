@@ -24,7 +24,6 @@ def getMainWindow():
     """Get a pointer to the CryEngine window.
     This doesn't appear to make any difference to a standalone window.
     """
-
     for widget in QtWidgets.QApplication.topLevelWidgets():
         if type(widget) == QtWidgets.QWidget and widget.parentWidget() is None and widget.objectName() == 'mainWindow':
             return widget
@@ -35,14 +34,18 @@ class CryWindow(StandaloneWindow):
         if parent is None:
             parent = getMainWindow()
         super(CryWindow, self).__init__(parent, **kwargs)
-        self.cryengine = True
-        self.standalone = False
+
+        self.cryengine = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.standalone = False  #: .. deprecated:: 1.9.0
+
+    @property
+    def application(self):
+        return 'CryEngine'
 
     def saveWindowPosition(self):
         """Save the window location."""
-
-        if 'cryengine' not in self.windowSettings:
-            settings = self.windowSettings['cryengine'] = {}
+        if self.application not in self.windowSettings:
+            settings = self.windowSettings[self.application] = {}
 
         settings['docked'] = self.dockable(raw=True)
 
@@ -61,12 +64,11 @@ class CryWindow(StandaloneWindow):
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
-
         if self.dockable():
             return  # Not yet implemented
 
         try:
-            settings = self.windowSettings['cryengine']['main']
+            settings = self.windowSettings[self.application]['main']
             width = settings['width']
             height = settings['height']
             x = settings['x']
@@ -97,7 +99,7 @@ class CryWindow(StandaloneWindow):
             docked = cls.WindowDockable
         else:
             try:
-                docked = settings['cryengine']['docked']
+                docked = settings[self.application]['docked']
             except KeyError:
                 try:
                     docked = cls.WindowDefaults['docked']
