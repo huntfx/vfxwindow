@@ -107,6 +107,14 @@ class AbstractApplication(object):
         """Get the uppercase application name."""
         return self.name.upper()
 
+    def camelCase(self):
+        """Convert the application name to camel case.
+
+        Source: https://stackoverflow.com/a/20744956
+        """
+        output = ''.join(x for x in self.name.title() if x.isalnum())
+        return output[0].lower() + output[1:]
+
 
 class AbstractVersion(object):
     """Application version data for comparisons."""

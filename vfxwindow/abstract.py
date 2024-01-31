@@ -13,6 +13,7 @@ from contextlib import contextmanager
 from functools import partial
 from Qt import QtCore, QtGui, QtWidgets
 
+from .application.abstract import AbstractApplication
 from .utils import hybridmethod, setCoordinatesToScreen
 from .utils.palette import savePaletteData, setPalette
 
@@ -39,10 +40,18 @@ def saveWindowSettings(windowID, data, path=None):
         path = getWindowSettingsPath(windowID)
     try:
         with open(path, 'w') as f:
-            f.write(json.dumps(data, indent=2))
+            f.write(json.dumps(data, indent=2, cls=ApplicationEncoder))
     except IOError:
         return False
     return True
+
+
+class ApplicationEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, AbstractApplication):
+            # Custom serialization for AbstractApplication
+            return str(obj)
+        return super().default(obj)
 
 
 class AbstractWindow(QtWidgets.QMainWindow):
@@ -82,6 +91,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
     clearedInstance = QtCore.Signal()
     windowReady = QtCore.Signal()
 
+    Application = object()  # Dirty way to check for overrides
+
     _WINDOW_INSTANCES = {}
 
     def __init__(self, parent=None, **kwargs):
@@ -94,20 +105,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
             self.WindowID = uuid.uuid4()
         self.setWindowTitle(getattr(self, 'WindowName', 'New Window'))
         self._setChildWindow(False)
-
-        self.batch = False
-
-        self.maya = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.nuke = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.houdini = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.max = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.fusion = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.blender = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.unreal = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.substancePainter = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.substanceDesigner = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.cryengine = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.standalone = False  #: .. deprecated:: 1.9.0
 
         # Read settings
         self._windowDataPath = getWindowSettingsPath(self.WindowID)
@@ -135,7 +132,139 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     @property
     def application(self):
-        raise NotImplementedError('`{}.application` property not implemented for the current application.'.format(self.__class__.__name__))
+        """Get the application class for the current window.
+
+        Raises:
+            NotImplementedError: If not set for the current application.
+
+        Returns:
+            Application class instance (treat as a string) or None.
+        """
+        if self.Application is AbstractWindow.Application:
+            raise NotImplementedError('`{}.application` not implemented.'.format(type(self).__name__))
+        return self.Application
+
+    @property
+    def batch(self):
+        """Determine if the application is in batch mode.
+        Deprecated and will be removed in 2.0.
+        """
+        try:
+            if self.application is None:
+                return False
+            return self.application.batch
+        except NotImplementedError:
+            return False
+
+    @property
+    def maya(self):
+        """Determine if the application is Maya.
+        Deprecated and will be removed in 2.0.
+        """
+        try:
+            return self.application == 'Maya'
+        except NotImplementedError:
+            return False
+
+    @property
+    def nuke(self):
+        """Determine if the application is Nuke.
+        Deprecated and will be removed in 2.0.
+        """
+        try:
+            return self.application == 'Nuke'
+        except NotImplementedError:
+            return False
+
+    @property
+    def houdini(self):
+        """Determine if the application is Houdini.
+        Deprecated and will be removed in 2.0.
+        """
+        try:
+            return self.application == 'Houdini'
+        except NotImplementedError:
+            return False
+
+    @property
+    def max(self):
+        """Determine if the application is 3ds Max.
+        Deprecated and will be removed in 2.0.
+        """
+        try:
+            return self.application == '3ds Max'
+        except NotImplementedError:
+            return False
+
+    @property
+    def fusion(self):
+        """Determine if the application is Blackmagic Fusion.
+        Deprecated and will be removed in 2.0.
+        """
+        try:
+            return self.application == 'Fusion'
+        except NotImplementedError:
+            return False
+
+    @property
+    def blender(self):
+        """Determine if the application is Blender.
+        Deprecated and will be removed in 2.0.
+        """
+        try:
+            return self.application == 'Blender'
+        except NotImplementedError:
+            return False
+
+    @property
+    def unreal(self):
+        """Determine if the application is Unreal Engine.
+        Deprecated and will be removed in 2.0.
+        """
+        try:
+            return self.application == 'Unreal Engine'
+        except NotImplementedError:
+            return False
+
+    @property
+    def substancePainter(self):
+        """Determine if the application is Substance Painter.
+        Deprecated and will be removed in 2.0.
+        """
+        try:
+            return self.application == 'Substance Painter'
+        except NotImplementedError:
+            return False
+
+    @property
+    def substanceDesigner(self):
+        """Determine if the application is Substance Designer.
+        Deprecated and will be removed in 2.0.
+        """
+        try:
+            return self.application == 'Substance Designer'
+        except NotImplementedError:
+            return False
+
+    @property
+    def cryengine(self):
+        """Determine if the application is CryEngine Sandbox.
+        Deprecated and will be removed in 2.0.
+        """
+        try:
+            return self.application == 'CryEngine Sandbox'
+        except NotImplementedError:
+            return False
+
+    @property
+    def standalone(self):
+        """Determine if the window is a standalone window.
+        Deprecated and will be removed in 2.0.
+        """
+        try:
+            return self.application is None
+        except NotImplementedError:
+            return False
 
     def processEvents(self):
         """Wrapper over the inbult processEvents method.

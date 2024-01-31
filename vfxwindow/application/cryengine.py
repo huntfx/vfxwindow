@@ -21,7 +21,7 @@ class CryEngineVersion(AbstractVersion):
 class CryEngineApplication(AbstractApplication):
     """CryEngine Sandbox application data."""
 
-    NAME = 'CryEngine'
+    NAME = 'CryEngine Sandbox'
 
     IMPORTS = ['SandboxBridge']
 

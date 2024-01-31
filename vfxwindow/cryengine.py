@@ -10,14 +10,9 @@ from Qt import QtWidgets
 import SandboxBridge
 
 from .abstract import getWindowSettings
+from .application import CryEngine as App
 from .utils import setCoordinatesToScreen, hybridmethod
 from .standalone import StandaloneWindow
-
-
-try:
-    VERSION = float(sys.executable.split(os.path.sep)[-4].rsplit('.', 1)[0])
-except (TypeError, IndexError):
-    VERSION = None
 
 
 def getMainWindow():
@@ -30,22 +25,21 @@ def getMainWindow():
 
 
 class CryWindow(StandaloneWindow):
+    """Window to use for CryEngine Sandbox."""
+
+    Application = App
+
     def __init__(self, parent=None, **kwargs):
         if parent is None:
             parent = getMainWindow()
         super(CryWindow, self).__init__(parent, **kwargs)
 
-        self.cryengine = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.standalone = False  #: .. deprecated:: 1.9.0
-
-    @property
-    def application(self):
-        return 'CryEngine'
-
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.application not in self.windowSettings:
-            settings = self.windowSettings[self.application] = {}
+        if self.application.camelCase() in self.windowSettings:
+            settings = self.windowSettings[self.application.camelCase()]
+        else:
+            settings = self.windowSettings[self.application.camelCase()] = {}
 
         settings['docked'] = self.dockable(raw=True)
 

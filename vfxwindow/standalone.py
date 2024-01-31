@@ -35,14 +35,7 @@ class _MultiAppLaunch(Process):
 class StandaloneWindow(AbstractWindow):
     """Window to use outside of specific programs."""
 
-    def __init__(self, parent=None):
-        super(StandaloneWindow, self).__init__(parent)
-
-        self.standalone = True  #: .. deprecated:: 1.9.0
-
-    @property
-    def application(self):
-        return 'Standalone'
+    Application = None
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
@@ -121,9 +114,10 @@ class StandaloneWindow(AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.application not in self.windowSettings:
-            self.windowSettings[self.application] = {}
-        settings = self.windowSettings[self.application]
+        if None in self.windowSettings:
+            settings = self.windowSettings['standalone']
+        else:
+            settings = self.windowSettings['standalone'] = {}
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -140,10 +134,11 @@ class StandaloneWindow(AbstractWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            x = self.windowSettings[self.application][key]['x']
-            y = self.windowSettings[self.application][key]['y']
-            width = self.windowSettings[self.application][key]['width']
-            height = self.windowSettings[self.application][key]['height']
+            settings = self.windowSettings['standalone'][self._getSettingsKey()]
+            x = settings['x']
+            y = settings['y']
+            width = settings['width']
+            height = settings['height']
         except KeyError:
             super(StandaloneWindow, self).loadWindowPosition()
         else:

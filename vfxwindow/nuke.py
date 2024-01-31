@@ -21,9 +21,6 @@ from .standalone import StandaloneWindow
 from .utils import hybridmethod, setCoordinatesToScreen, searchGlobals
 
 
-VERSION = float('{}.{}'.format(nuke.env['NukeVersionMajor'], nuke.env['NukeVersionMinor']))
-
-
 class RuntimeDraggingError(RuntimeError):
     """Custom error message for when a window is being dragged."""
 
@@ -200,13 +197,7 @@ class Pane(object):
 
 
 class NukeCommon(object):
-
-    @property
-    def application(self):
-        return 'Nuke'
-
-    def __init__(self, *args, **kwargs):
-        super(NukeCommon, self).__init__(*args, **kwargs)
+    Application = App
 
 
 class NukeWindow(NukeCommon, AbstractWindow):
@@ -251,8 +242,6 @@ class NukeWindow(NukeCommon, AbstractWindow):
             parent = getMainWindow()
         super(NukeWindow, self).__init__(parent, **kwargs)
 
-        self.nuke = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-
         self.__windowHidden = False
         self.setDockable(dockable, override=True)
 
@@ -264,11 +253,6 @@ class NukeWindow(NukeCommon, AbstractWindow):
         # This line seemed to be recommended, but I'm not sure why
         #if not self.dockable():
         #    self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-
-    @property
-    def application(self):
-        """Get the current application."""
-        return App
 
     def closeEvent(self, event):
         """Special case for closing docked windows."""
@@ -324,7 +308,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """Get the current window palette."""
         currentPalette = super(NukeWindow, self).windowPalette()
         if currentPalette is None:
-            return 'Nuke.{}'.format(VERSION)
+            return 'Nuke.{}'.format(int(self.application.version))
         return currentPalette
 
     def exists(self, alternative=False):
@@ -805,13 +789,6 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
 class NukeBatchWindow(NukeCommon, StandaloneWindow):
     """Variant of the Standalone window for Nuke in batch mode."""
-    def __init__(self, parent=None, **kwargs):
-        super(NukeBatchWindow, self).__init__(parent, **kwargs)
-
-        self.nuke = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.standalone = False  #: .. deprecated:: 1.9.0 Won't be needed anymore when using :property:`~AbstractWindow.application`.
-
-        self.batch = True
 
     def setWindowPalette(self, program, version=None, style=True, force=False):
         if force:
@@ -819,9 +796,10 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.application not in self.windowSettings:
-            self.windowSettings[self.application] = {}
-        settings = self.windowSettings[self.application]
+        if self.application.camelCase() in self.windowSettings:
+            settings = self.windowSettings[self.application.camelCase()]
+        else:
+            settings = self.windowSettings[self.application.camelCase()] = {}
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -840,12 +818,12 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
-        key = self._getSettingsKey()
         try:
-            width = self.windowSettings[self.application][key]['width']
-            height = self.windowSettings[self.application][key]['height']
-            x = self.windowSettings[self.application][key]['x']
-            y = self.windowSettings[self.application][key]['y']
+            settings = self.windowSettings[self.application.camelCase()][self._getSettingsKey()]
+            width = settings['width']
+            height = settings['height']
+            x = settings['x']
+            y = settings['y']
         except KeyError:
             super(NukeBatchWindow, self).loadWindowPosition()
         else:

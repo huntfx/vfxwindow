@@ -44,3 +44,21 @@ SubstanceDesigner = SubstanceDesignerApplication()
 SubstancePainter = SubstancePainterApplication()
 
 Unreal = UnrealApplication()
+
+
+# The following applications are not currently implemented:
+# Katana (katana):
+#     [kK]atana\d+(?:\.\d+){0,2}\.(?:bin|exe|app)
+#     [kK]atana\.(?:bin|exe|app)
+# Mari (mari):
+#     [mM]ari\d+(?:\.\d+){0,2}\.(?:bin|exe|app)
+#     [mM]ari\.(?:bin|exe|app)
+# Modo (lx):
+#     [mM]odo\d+(?:\.\d+){0,2}\.(?:bin|exe|app)
+#     [mM]odo\.(?:bin|exe|app)
+# Hiero (hiero):
+#     [hH]iero\d+(?:\.\d+){0,2}\.(?:bin|exe|app)
+#     [hH]iero\.(?:bin|exe|app)
+# Motion Builder (pyfbsdk + pyfbsdk_additions):
+#     ^.*(?:\\|/)[mM]otion[bB]uilder\d{4}(?:\\|/)[mM]otion[bB]uilder\.(?:bin|exe|app)
+#     [mM]otion[bB]uilder\.(?:bin|exe|app)

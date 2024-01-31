@@ -8,10 +8,8 @@ import hdefereval
 from Qt import QtCore
 
 from .abstract import AbstractWindow
+from .application import Houdini as App
 from .utils import setCoordinatesToScreen
-
-
-VERSION = hou.applicationVersion()[0]
 
 
 def getMainWindow():
@@ -30,12 +28,13 @@ class HoudiniWindow(AbstractWindow):
     """Window to use for Houdini.
     This also performs some necessary CSS edits to fix colours.
     """
+
+    Application = App
+
     def __init__(self, parent=None, **kwargs):
         if parent is None:
             parent = getMainWindow()
         super(HoudiniWindow, self).__init__(parent, **kwargs)
-
-        self.houdini = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
 
         # Fix some issues with widgets not taking the correct style
         self.setStyleSheet("""
@@ -56,10 +55,6 @@ class HoudiniWindow(AbstractWindow):
         # As of today, that's the only solution that seems to make this window stay over houdini.
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.Dialog)
 
-    @property
-    def application(self):
-        return 'Houdini'
-
     def closeEvent(self, event):
         """Save the window location on window close."""
         self.saveWindowPosition()
@@ -73,14 +68,15 @@ class HoudiniWindow(AbstractWindow):
     def windowPalette(self):
         currentPalette = super(HoudiniWindow, self).windowPalette()
         if currentPalette is None:
-            return 'Houdini.{}'.format(VERSION)
+            return 'Houdini.{}'.format(int(self.application.version))
         return currentPalette
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.application not in self.windowSettings:
-            self.windowSettings[self.application] = {}
-        settings = self.windowSettings[self.application]
+        if self.application.camelCase() in self.windowSettings:
+            settings = self.windowSettings[self.application.camelCase()]
+        else:
+            settings = self.windowSettings[self.application.camelCase()] = {}
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -95,12 +91,12 @@ class HoudiniWindow(AbstractWindow):
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
-        key = self._getSettingsKey()
         try:
-            x = self.windowSettings[self.application][key]['x']
-            y = self.windowSettings[self.application][key]['y']
-            width = self.windowSettings[self.application][key]['width']
-            height = self.windowSettings[self.application][key]['height']
+            settings = self.windowSettings[self.application.camelCase()][self._getSettingsKey()]
+            x = settings['x']
+            y = settings['y']
+            width = settings['width']
+            height = settings['height']
         except KeyError:
             super(HoudiniWindow, self).loadWindowPosition()
         else:

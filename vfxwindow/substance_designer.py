@@ -29,14 +29,13 @@ from Qt import QtCore, QtWidgets
 import sd
 
 from .abstract import AbstractWindow, getWindowSettings
+from .application import SubstanceDesigner as App
 from .utils import setCoordinatesToScreen, hybridmethod
 
 
 APPLICATION = sd.getContext().getSDApplication()
 
 MANAGER = APPLICATION.getQtForPythonUIMgr()
-
-VERSION = None  # TODO: Find out how to get the version
 
 
 def getMainWindow():
@@ -84,6 +83,10 @@ def dockWrap(windowClass, *args, **kwargs):
 
 
 class SubstanceDesignerWindow(AbstractWindow):
+    """Window to use for Substance Designer."""
+
+    Application = App
+
     def __init__(self, parent=None, dockable=False, **kwargs):
         if dockable:
             self._sdParent, parent = parent, None
@@ -91,13 +94,7 @@ class SubstanceDesignerWindow(AbstractWindow):
             parent = getMainWindow()
         super(SubstanceDesignerWindow, self).__init__(parent, **kwargs)
 
-        self.substanceDesigner = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-
         self.setDockable(dockable, override=True)
-
-    @property
-    def application(self):
-        return 'Substance Designer'
 
     def y(self):
         """Apply y offset for dialogs."""
@@ -138,9 +135,11 @@ class SubstanceDesignerWindow(AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.application not in self.windowSettings:
-            self.windowSettings[self.application] = {}
-        settings = self.windowSettings[self.application]
+        if self.application.camelCase() in self.windowSettings:
+            settings = self.windowSettings[self.application.camelCase()]
+        else:
+            settings = self.windowSettings[self.application.camelCase()] = {}
+
         settings['docked'] = self.dockable(raw=True)
 
         # Save docked settings
@@ -166,12 +165,12 @@ class SubstanceDesignerWindow(AbstractWindow):
         if self.dockable():
             return
 
-        key = self._getSettingsKey()
         try:
-            width = self.windowSettings[self.application][key]['width']
-            height = self.windowSettings[self.application][key]['height']
-            x = self.windowSettings[self.application][key]['x']
-            y = self.windowSettings[self.application][key]['y']
+            settings = self.windowSettings[self.application.camelCase()][self._getSettingsKey()]
+            width = settings['width']
+            height = settings['height']
+            x = settings['x']
+            y = settings['y']
         except KeyError:
             super(SubstanceDesignerWindow, self).loadWindowPosition()
         else:

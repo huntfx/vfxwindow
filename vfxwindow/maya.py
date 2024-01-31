@@ -12,13 +12,10 @@ import maya.api.OpenMaya as om
 import maya.OpenMayaUI as omUI
 
 from .abstract import AbstractWindow, getWindowSettings
+from .application import Maya as App
 from .standalone import StandaloneWindow
 from .utils import forceMenuBar, hybridmethod, setCoordinatesToScreen
 
-
-VERSION = mc.about(version=True)
-
-BATCH = mc.about(batch=True)
 
 # Map each function required for each callback
 SCENE_CALLBACKS = {
@@ -217,9 +214,7 @@ def toMObject(node):
 
 class MayaCommon(object):
 
-    @property
-    def application(self):
-        return 'Maya'
+    Application = App
 
     def deferred(self, func, *args, **kwargs):
         """Execute a deferred command.
@@ -236,18 +231,15 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
     This is an alternative to maya.app.general.mayaMixin.MayaQWidgetDockableMixin, as many features
     were already implemented when I found it, and is also missing a few parts I would have liked.
-    """
 
-    _Pre2017 = float(VERSION) < 2017  # workspaceControl was added in 2017
+    The checks against Maya 2017 are because `workspaceControl` was
+    added at that point.
+    """
 
     def __init__(self, parent=None, dockable=False, **kwargs):
         if parent is None:
             parent = getMainWindow()
         super(MayaWindow, self).__init__(parent, **kwargs)
-
-        self.maya = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-
-        self.batch = BATCH
         self.setDockable(dockable, override=True)
 
         # The line below can save the window preferences, but this window automatically does it
@@ -293,7 +285,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         dockable = self.dockable()
         if not dockable:
             self.saveWindowPosition()
-        elif self._Pre2017:
+        elif App.version < 2017:
             try:
                 self.saveWindowPosition()
             except TypeError:
@@ -302,21 +294,21 @@ class MayaWindow(MayaCommon, AbstractWindow):
         self.clearWindowInstance(self.WindowID, deleteWindow=True)
 
         # If dockControl is being used, then Maya will crash if close is called
-        if dockable and self._Pre2017:
+        if dockable and App.version < 2017:
             event.ignore()
         else:
             return super(MayaWindow, self).closeEvent(event)
 
     def exists(self):
         if self.dockable():
-            if self._Pre2017:
+            if App.version < 2017:
                 return mc.dockControl(self.WindowID, query=True, exists=True)
             return mc.workspaceControl(self.WindowID, query=True, exists=True)
         return not self.isClosed()
 
     def raise_(self):
         if self.dockable():
-            if self._Pre2017:
+            if App.version < 2017:
                 return mc.dockControl(self.WindowID, edit=True, r=True)
             return mc.workspaceControl(self.WindowID, edit=True, restore=True)
         return super(MayaWindow, self).raise_()
@@ -324,7 +316,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def setWindowTitle(self, title):
         if self.dockable():
             try:
-                if self._Pre2017:
+                if App.version < 2017:
                     return mc.dockControl(self.WindowID, edit=True, label=title)
                 return mc.workspaceControl(self.WindowID, edit=True, label=title)
             except RuntimeError:
@@ -334,7 +326,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def isVisible(self):
         if self.dockable():
             try:
-                if self._Pre2017:
+                if App.version < 2017:
                     return mc.dockControl(self.WindowID, query=True, visible=True)
                 return mc.workspaceControl(self.WindowID, query=True, visible=True)
             except RuntimeError:
@@ -352,7 +344,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
     def setDocked(self, dock):
         if self.dockable() and self.floating() == dock:
-            if self._Pre2017:
+            if App.version < 2017:
                 self.raise_()
                 mc.dockControl(self.WindowID, edit=True, floating=not dock)
                 self.raise_()
@@ -386,7 +378,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         """Get the current window palette."""
         currentPalette = super(MayaWindow, self).windowPalette()
         if currentPalette is None:
-            return 'Maya.{}'.format(VERSION)
+            return 'Maya.{}'.format(int(App.version))
         return currentPalette
 
     def _parentOverride(self):
@@ -402,7 +394,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 anyone, as the window is incapable of making a new dock
                 widget and can only restore to an existing one.
         """
-        if self._Pre2017:
+        if App.version < 2017:
             return self.parent()
 
         #Determine if it's a new window, we need to get the C++ pointer again
@@ -428,7 +420,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         """Return if the window is floating."""
         if not self.dockable():
             return False
-        if self._Pre2017:
+        if App.version < 2017:
             return mc.dockControl(self.WindowID, query=True, floating=True)
         return mc.workspaceControl(self.WindowID, query=True, floating=True)
 
@@ -438,7 +430,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             height = width.height()
             width = width.width()
         if self.dockable():
-            if self._Pre2017:
+            if App.version < 2017:
                 if not self.floating():
                     return mc.dockControl(self.WindowID, edit=True, width=width, height=height)
             else:
@@ -448,12 +440,12 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def siblings(self):
         """Find other widgets in the same tag group."""
         if self.dockable():
-            if self._Pre2017:
+            if App.version < 2017:
                 return []
             return self.parent().parent().children()
         return []
 
-    if _Pre2017:
+    if App.version < 2017:
         def area(self, *args, **kwargs):
             """Return the Maya area name."""
             return mc.dockControl(self.WindowID, query=True, area=True)
@@ -526,9 +518,11 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.application not in self.windowSettings:
-            self.windowSettings[self.application] = {}
-        settings = self.windowSettings[self.application]
+        if self.application.camelCase() in self.windowSettings:
+            settings = self.windowSettings[self.application.camelCase()]
+        else:
+            settings = self.windowSettings[self.application.camelCase()] = {}
+
         settings['docked'] = self.dockable(raw=True)
 
         key = self._getSettingsKey()
@@ -540,7 +534,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             # Save extra docked settings
             if dockable:
                 settings[key]['floating'] = self.floating()
-                if self._Pre2017:
+                if App.version < 2017:
                     settings[key]['area'] = self.area()
                 else:
                     settings[key]['control'] = self.control() or settings[key].get('control')
@@ -566,12 +560,12 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
-        key = self._getSettingsKey()
         try:
-            x = self.windowSettings[self.application][key]['x']
-            y = self.windowSettings[self.application][key]['y']
-            width = self.windowSettings[self.application][key]['width']
-            height = self.windowSettings[self.application][key]['height']
+            settings = self.windowSettings[self.application.camelCase()][self._getSettingsKey()]
+            x = settings['x']
+            y = settings['y']
+            width = settings['width']
+            height = settings['height']
         except KeyError:
             super(MayaWindow, self).loadWindowPosition()
         else:
@@ -900,7 +894,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         # because it will also delete the window location
         # It's better to handle it elsewhere if possible
         if deleteWindow and previousInstance['window'].dockable():
-            if cls._Pre2017:
+            if App.version < 2017:
                 deleteDockControl(previousInstance['window'].WindowID)
             else:
                 deleteWorkspaceControl(previousInstance['window'].WindowID)
@@ -915,7 +909,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def hide(self):
         """Hide the window."""
         if self.dockable():
-            if self._Pre2017:
+            if App.version < 2017:
                 return mc.dockControl(self.WindowID, edit=True, visible=False)
             self.parent().setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
             return mc.workspaceControl(self.WindowID, edit=True, visible=False)
@@ -929,7 +923,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         if self is not cls:
             # Case where window is already initialised
             if self.dockable():
-                if self._Pre2017:
+                if App.version < 2017:
                     return mc.dockControl(self.WindowID, edit=True, visible=True)
                 result = mc.workspaceControl(self.WindowID, edit=True, visible=True)
                 self.parent().setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -965,7 +959,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
         # Override docked mode in case of mayabatch
         batchOverride = False
-        if docked and BATCH:
+        if docked and App.batch:
             docked = cls.WindowDockable = False
             batchOverride = True
 
@@ -985,14 +979,14 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 dock = False
             else:
                 try:
-                    if self._Pre2017:
+                    if App.version < 2017:
                         dock = mayaSettings['dock'].get('area', True)
                     else:
                         dock = mayaSettings['dock'].get('control', True)
                 except KeyError:
                     dock = True
 
-            if self._Pre2017:
+            if App.version < 2017:
                 return dockControlWrap(cls, dock,  *args, **kwargs)
             return workspaceControlWrap(cls, dock, True, *args, **kwargs)
 
@@ -1009,7 +1003,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         """
         # This is quite buggy and can lock up Maya, so disable for now
         # The issue is likely related to what `setParent` returns.
-        if False and not cls._Pre2017:
+        if False and App.version >= 2017:
             # Note: Due to Python 2 limitations, *args and **kwargs can't be unpacked with the
             # title keyword present, so don't try to clean up the code by enabling unpacking again.
             def uiScript(cls, clsArgs=(), clsKwargs={}):
@@ -1048,14 +1042,6 @@ class MayaBatchWindow(MayaCommon, StandaloneWindow):
     While MayaWindow could be used, it can't be automatically setup.
     """
 
-    def __init__(self, parent=None, **kwargs):
-        super(MayaBatchWindow, self).__init__(parent, **kwargs)
-
-        self.maya = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-        self.standalone = False  #: .. deprecated:: 1.9.0
-
-        self.batch = True
-
     def saveWindowPosition(self):
         """Save the window location."""
         if self.application not in self.windowSettings:
@@ -1077,10 +1063,10 @@ class MayaBatchWindow(MayaCommon, StandaloneWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            width = self.windowSettings[self.application][key]['width']
-            height = self.windowSettings[self.application][key]['height']
-            x = self.windowSettings[self.application][key]['x']
-            y = self.windowSettings[self.application][key]['y']
+            width = settings['width']
+            height = settings['height']
+            x = settings['x']
+            y = settings['y']
         except KeyError:
             super(MayaBatchWindow, self).loadWindowPosition()
         else:

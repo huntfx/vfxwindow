@@ -20,7 +20,6 @@ __all__ = ['VFXWindow']
 __version__ = '1.9.0'
 
 import sys
-from .utils import software
 from . import application
 
 

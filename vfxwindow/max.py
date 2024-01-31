@@ -10,11 +10,9 @@ from Qt import QtWidgets, QtCompat, QtCore
 import MaxPlus
 
 from .abstract import AbstractWindow, getWindowSettings
+from .application import Max as App
 from .utils import hybridmethod, setCoordinatesToScreen
 from .standalone import StandaloneWindow
-
-
-VERSION = sys.executable.split(os.path.sep)[-2][8:]
 
 
 def getMainWindow():
@@ -31,22 +29,21 @@ def getMainWindow():
 
 
 class MaxWindow(AbstractWindow):
+    """Window to use for 3ds Max."""
+
+    Application = App
+
     def __init__(self, parent=None, **kwargs):
         if parent is None:
             parent = getMainWindow()
         super(MaxWindow, self).__init__(parent, **kwargs)
 
-        self.max = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
-
-    @property
-    def application(self):
-        return '3dsMax'
-
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.application not in self.windowSettings:
-            self.windowSettings[self.application] = {}
-        settings = self.windowSettings[self.application]
+        if self.application.camelCase() in self.windowSettings:
+            settings = self.windowSettings[self.application.camelCase()]
+        else:
+            settings = self.windowSettings[self.application.camelCase()] = {}
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -61,12 +58,12 @@ class MaxWindow(AbstractWindow):
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
-        key = self._getSettingsKey()
         try:
-            width = self.windowSettings[self.application][key]['width']
-            height = self.windowSettings[self.application][key]['height']
-            x = self.windowSettings[self.application][key]['x']
-            y = self.windowSettings[self.application][key]['y']
+            settings = self.windowSettings[self.application.camelCase()][self._getSettingsKey()]
+            width = settings['width']
+            height = settings['height']
+            x = settings['x']
+            y = settings['y']
         except KeyError:
             super(MaxWindow, self).loadWindowPosition()
         else:
@@ -86,7 +83,7 @@ class MaxWindow(AbstractWindow):
         """Get the current window palette."""
         currentPalette = super(MaxWindow, self).windowPalette()
         if currentPalette is None:
-            return 'Max.{}'.format(VERSION)
+            return 'Max.{}'.format(int(self.application.version))
         return currentPalette
 
     @hybridmethod
