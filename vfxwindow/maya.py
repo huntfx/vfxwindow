@@ -218,7 +218,7 @@ def toMObject(node):
 class MayaCommon(object):
 
     @property
-    def software(self):
+    def application(self):
         return 'Maya'
 
     def deferred(self, func, *args, **kwargs):
@@ -245,7 +245,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             parent = getMainWindow()
         super(MayaWindow, self).__init__(parent, **kwargs)
 
-        self.maya = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.maya = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
 
         self.batch = BATCH
         self.setDockable(dockable, override=True)
@@ -485,9 +485,9 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.software not in self.windowSettings:
-            self.windowSettings[self.software] = {}
-        settings = self.windowSettings[self.software]
+        if self.application not in self.windowSettings:
+            self.windowSettings[self.application] = {}
+        settings = self.windowSettings[self.application]
         settings['docked'] = self.dockable(raw=True)
 
         key = self._getSettingsKey()
@@ -524,10 +524,10 @@ class MayaWindow(MayaCommon, AbstractWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            x = self.windowSettings[self.software][key]['x']
-            y = self.windowSettings[self.software][key]['y']
-            width = self.windowSettings[self.software][key]['width']
-            height = self.windowSettings[self.software][key]['height']
+            x = self.windowSettings[self.application][key]['x']
+            y = self.windowSettings[self.application][key]['y']
+            width = self.windowSettings[self.application][key]['width']
+            height = self.windowSettings[self.application][key]['height']
         except KeyError:
             super(MayaWindow, self).loadWindowPosition()
         else:
@@ -903,15 +903,15 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
         # Load settings
         try:
-            mayaSettings = settings[self.software]
+            mayaSettings = settings[self.application]
         except KeyError:
-            mayaSettings = settings[self.software] = {}
+            mayaSettings = settings[self.application] = {}
 
         if hasattr(cls, 'WindowDockable'):
             docked = cls.WindowDockable
         else:
             try:
-                docked = settings[self.software]['docked']
+                docked = settings[self.application]['docked']
             except KeyError:
                 try:
                     docked = cls.WindowDefaults['docked']
@@ -930,7 +930,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 floating = not cls.WindowDocked
             else:
                 try:
-                    floating = settings[self.software]['dock']['floating']
+                    floating = settings[self.application]['dock']['floating']
                 except KeyError:
                     try:
                         floating = cls.WindowDefaults['floating']
@@ -941,9 +941,9 @@ class MayaWindow(MayaCommon, AbstractWindow):
             else:
                 try:
                     if self._Pre2017:
-                        dock = settings[self.software]['dock'].get('area', True)
+                        dock = settings[self.application]['dock'].get('area', True)
                     else:
-                        dock = settings[self.software]['dock'].get('control', True)
+                        dock = settings[self.application]['dock'].get('control', True)
                 except KeyError:
                     dock = True
             if self._Pre2017:
@@ -1005,16 +1005,16 @@ class MayaBatchWindow(MayaCommon, StandaloneWindow):
     def __init__(self, parent=None, **kwargs):
         super(MayaBatchWindow, self).__init__(parent, **kwargs)
 
-        self.maya = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
-        self.standalone = False  #: .. deprecated:: 1.9.0 Won't be needed anymore when using :property:`~AbstractWindow.software`.
+        self.maya = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.standalone = False  #: .. deprecated:: 1.9.0
 
         self.batch = True
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.software not in self.windowSettings:
-            self.windowSettings[self.software] = {}
-        settings = self.windowSettings[self.software]
+        if self.application not in self.windowSettings:
+            self.windowSettings[self.application] = {}
+        settings = self.windowSettings[self.application]
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -1031,10 +1031,10 @@ class MayaBatchWindow(MayaCommon, StandaloneWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            width = self.windowSettings[self.software][key]['width']
-            height = self.windowSettings[self.software][key]['height']
-            x = self.windowSettings[self.software][key]['x']
-            y = self.windowSettings[self.software][key]['y']
+            width = self.windowSettings[self.application][key]['width']
+            height = self.windowSettings[self.application][key]['height']
+            x = self.windowSettings[self.application][key]['x']
+            y = self.windowSettings[self.application][key]['y']
         except KeyError:
             super(MayaBatchWindow, self).loadWindowPosition()
         else:

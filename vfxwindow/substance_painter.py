@@ -61,12 +61,12 @@ class SubstancePainterWindow(AbstractWindow):
             parent = getMainWindow()
         super(SubstancePainterWindow, self).__init__(parent, **kwargs)
 
-        self.substancePainter = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.substancePainter = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
 
         self.setDockable(dockable, override=True)
 
     @property
-    def software(self):
+    def application(self):
         return 'Substance Painter'
 
     def deferred(self, func, *args, **kwargs):
@@ -107,9 +107,9 @@ class SubstancePainterWindow(AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.software not in self.windowSettings:
-            self.windowSettings[self.software] = {}
-        settings = self.windowSettings[self.software]
+        if self.application not in self.windowSettings:
+            self.windowSettings[self.application] = {}
+        settings = self.windowSettings[self.application]
         settings['docked'] = self.dockable(raw=True)
 
         # Save docked settings
@@ -137,10 +137,10 @@ class SubstancePainterWindow(AbstractWindow):
 
         key = self._getSettingsKey()
         try:
-            width = self.windowSettings[self.software][key]['width']
-            height = self.windowSettings[self.software][key]['height']
-            x = self.windowSettings[self.software][key]['x']
-            y = self.windowSettings[self.software][key]['y']
+            width = self.windowSettings[self.application][key]['width']
+            height = self.windowSettings[self.application][key]['height']
+            x = self.windowSettings[self.application][key]['x']
+            y = self.windowSettings[self.application][key]['y']
         except KeyError:
             super(SubstancePainterWindow, self).loadWindowPosition()
         else:
@@ -218,9 +218,9 @@ class SubstancePainterWindow(AbstractWindow):
 
         #Load settings
         try:
-            substanceSettings = settings[self.software]
+            substanceSettings = settings[self.application]
         except KeyError:
-            substanceSettings = settings[self.software] = {}
+            substanceSettings = settings[self.application] = {}
 
         if hasattr(cls, 'WindowDockable'):
             docked = cls.WindowDockable

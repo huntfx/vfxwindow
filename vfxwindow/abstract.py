@@ -97,17 +97,17 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         self.batch = False
 
-        self.maya = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
-        self.nuke = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
-        self.houdini = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
-        self.max = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
-        self.fusion = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
-        self.blender = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
-        self.unreal = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
-        self.substancePainter = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
-        self.substanceDesigner = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
-        self.cryengine = True  #: .. deprecated:: 1.9.0 Use :property:`~BlenderWindow.software` instead.
-        self.standalone = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
+        self.maya = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.nuke = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.houdini = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.max = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.fusion = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.blender = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.unreal = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.substancePainter = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.substanceDesigner = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.cryengine = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.standalone = False  #: .. deprecated:: 1.9.0
 
         # Read settings
         self._windowDataPath = getWindowSettingsPath(self.WindowID)
@@ -134,8 +134,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self.windowReady.connect(lambda: setattr(self, '_windowLoaded', True))
 
     @property
-    def software(self):
-        raise NotImplementedError('`{}.software` property not implemented for the current software.'.format(self.__class__.__name__))
+    def application(self):
+        raise NotImplementedError('`{}.application` property not implemented for the current application.'.format(self.__class__.__name__))
 
     def processEvents(self):
         """Wrapper over the inbult processEvents method.

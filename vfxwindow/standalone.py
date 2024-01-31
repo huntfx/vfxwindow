@@ -37,11 +37,11 @@ class StandaloneWindow(AbstractWindow):
 
     def __init__(self, parent=None):
         super(StandaloneWindow, self).__init__(parent)
-        
-        self.standalone = True  #: .. deprecated:: 1.9.0 Won't be needed anymore when using :property:`~AbstractWindow.software`.
+
+        self.standalone = True  #: .. deprecated:: 1.9.0
 
     @property
-    def software(self):
+    def application(self):
         return 'Standalone'
 
     @hybridmethod
@@ -121,9 +121,9 @@ class StandaloneWindow(AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.software not in self.windowSettings:
-            self.windowSettings[self.software] = {}
-        settings = self.windowSettings[self.software]
+        if self.application not in self.windowSettings:
+            self.windowSettings[self.application] = {}
+        settings = self.windowSettings[self.application]
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -140,10 +140,10 @@ class StandaloneWindow(AbstractWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            x = self.windowSettings[self.software][key]['x']
-            y = self.windowSettings[self.software][key]['y']
-            width = self.windowSettings[self.software][key]['width']
-            height = self.windowSettings[self.software][key]['height']
+            x = self.windowSettings[self.application][key]['x']
+            y = self.windowSettings[self.application][key]['y']
+            width = self.windowSettings[self.application][key]['width']
+            height = self.windowSettings[self.application][key]['height']
         except KeyError:
             super(StandaloneWindow, self).loadWindowPosition()
         else:

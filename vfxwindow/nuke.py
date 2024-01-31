@@ -229,7 +229,7 @@ class Pane(object):
 class NukeCommon(object):
 
     @property
-    def software(self):
+    def application(self):
         return 'Nuke'
 
     def __init__(self, *args, **kwargs):
@@ -278,7 +278,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             parent = getMainWindow()
         super(NukeWindow, self).__init__(parent, **kwargs)
 
-        self.nuke = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.    
+        self.nuke = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
 
         self.__windowHidden = False
         self.setDockable(dockable, override=True)
@@ -409,9 +409,9 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.software not in self.windowSettings:
-            self.windowSettings[self.software] = {}
-        settings = self.windowSettings[self.software]
+        if self.application not in self.windowSettings:
+            self.windowSettings[self.application] = {}
+        settings = self.windowSettings[self.application]
         settings['docked'] = self.dockable(raw=True)
 
         key = self._getSettingsKey()
@@ -442,7 +442,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         if self.dockable():
             return
         try:
-            settings = self.windowSettings[self.software]['main']
+            settings = self.windowSettings[self.application]['main']
             x = settings['x']
             y = settings['y']
             width = settings['width']
@@ -747,9 +747,9 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
         #Load settings
         try:
-            nukeSettings = settings[self.software]
+            nukeSettings = settings[self.application]
         except KeyError:
-            nukeSettings = settings[self.software] = {}
+            nukeSettings = settings[self.application] = {}
 
         if hasattr(cls, 'WindowDockable'):
             docked = cls.WindowDockable
@@ -830,8 +830,8 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
     def __init__(self, parent=None, **kwargs):
         super(NukeBatchWindow, self).__init__(parent, **kwargs)
 
-        self.nuke = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.software` instead.
-        self.standalone = False  #: .. deprecated:: 1.9.0 Won't be needed anymore when using :property:`~AbstractWindow.software`.
+        self.nuke = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.standalone = False  #: .. deprecated:: 1.9.0 Won't be needed anymore when using :property:`~AbstractWindow.application`.
 
         self.batch = True
 
@@ -841,9 +841,9 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.software not in self.windowSettings:
-            self.windowSettings[self.software] = {}
-        settings = self.windowSettings[self.software]
+        if self.application not in self.windowSettings:
+            self.windowSettings[self.application] = {}
+        settings = self.windowSettings[self.application]
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -864,10 +864,10 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            width = self.windowSettings[self.software][key]['width']
-            height = self.windowSettings[self.software][key]['height']
-            x = self.windowSettings[self.software][key]['x']
-            y = self.windowSettings[self.software][key]['y']
+            width = self.windowSettings[self.application][key]['width']
+            height = self.windowSettings[self.application][key]['height']
+            x = self.windowSettings[self.application][key]['x']
+            y = self.windowSettings[self.application][key]['y']
         except KeyError:
             super(NukeBatchWindow, self).loadWindowPosition()
         else:
