@@ -76,10 +76,7 @@ class AbstractApplication(str):
 
     def __ne__(self, other):
         """Case insensitive string comparison."""
-        try:
-            return self.name.lower() != other.lower()
-        except AttributeError:
-            return True
+        return not self.__eq__(other)
 
     @classmethod
     def isLoaded(cls):
