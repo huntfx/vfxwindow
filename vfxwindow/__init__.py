@@ -17,7 +17,7 @@ TODO:
 from __future__ import absolute_import
 
 __all__ = ['VFXWindow']
-__version__ = '1.8.0'
+__version__ = '1.9.0'
 
 import sys
 from .utils import software

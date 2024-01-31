@@ -95,18 +95,19 @@ class AbstractWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(getattr(self, 'WindowName', 'New Window'))
         self._setChildWindow(False)
 
-        # Track settings that to be read by any inherited windows
         self.batch = False
-        self.maya = False
-        self.nuke = False
-        self.houdini = False
-        self.max = False
-        self.fusion = False
-        self.blender = False
-        self.unreal = False
-        self.substancePainter = False
-        self.substanceDesigner = False
-        self.standalone = False
+
+        self.maya = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.nuke = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.houdini = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.max = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.fusion = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.blender = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.unreal = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.substancePainter = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.substanceDesigner = False  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.cryengine = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.standalone = False  #: .. deprecated:: 1.9.0
 
         # Read settings
         self._windowDataPath = getWindowSettingsPath(self.WindowID)
@@ -134,8 +135,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     @property
     def application(self):
-        """Get the current application."""
-        raise NotImplementedError
+        raise NotImplementedError('`{}.application` property not implemented for the current application.'.format(self.__class__.__name__))
 
     def processEvents(self):
         """Wrapper over the inbult processEvents method.
@@ -261,7 +261,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Return if the window is currently docked."""
         if not self.dockable():
             return False
-        return NotImplementedError('override needed')
+        return not self.floating()
 
     def setDocked(self, docked):
         """Force the window to dock or undock."""

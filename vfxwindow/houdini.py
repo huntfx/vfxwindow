@@ -34,7 +34,8 @@ class HoudiniWindow(AbstractWindow):
         if parent is None:
             parent = getMainWindow()
         super(HoudiniWindow, self).__init__(parent, **kwargs)
-        self.houdini = True
+
+        self.houdini = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
 
         # Fix some issues with widgets not taking the correct style
         self.setStyleSheet("""
@@ -55,6 +56,10 @@ class HoudiniWindow(AbstractWindow):
         # As of today, that's the only solution that seems to make this window stay over houdini.
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.Dialog)
 
+    @property
+    def application(self):
+        return 'Houdini'
+
     def closeEvent(self, event):
         """Save the window location on window close."""
         self.saveWindowPosition()
@@ -73,9 +78,9 @@ class HoudiniWindow(AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if 'houdini' not in self.windowSettings:
-            self.windowSettings['houdini'] = {}
-        settings = self.windowSettings['houdini']
+        if self.application not in self.windowSettings:
+            self.windowSettings[self.application] = {}
+        settings = self.windowSettings[self.application]
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -92,10 +97,10 @@ class HoudiniWindow(AbstractWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            x = self.windowSettings['houdini'][key]['x']
-            y = self.windowSettings['houdini'][key]['y']
-            width = self.windowSettings['houdini'][key]['width']
-            height = self.windowSettings['houdini'][key]['height']
+            x = self.windowSettings[self.application][key]['x']
+            y = self.windowSettings[self.application][key]['y']
+            width = self.windowSettings[self.application][key]['width']
+            height = self.windowSettings[self.application][key]['height']
         except KeyError:
             super(HoudiniWindow, self).loadWindowPosition()
         else:

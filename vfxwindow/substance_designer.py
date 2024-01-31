@@ -91,8 +91,13 @@ class SubstanceDesignerWindow(AbstractWindow):
             parent = getMainWindow()
         super(SubstanceDesignerWindow, self).__init__(parent, **kwargs)
 
-        self.substanceDesigner = True
+        self.substanceDesigner = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+
         self.setDockable(dockable, override=True)
+
+    @property
+    def application(self):
+        return 'Substance Designer'
 
     def y(self):
         """Apply y offset for dialogs."""
@@ -133,9 +138,9 @@ class SubstanceDesignerWindow(AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if 'substance' not in self.windowSettings:
-            self.windowSettings['substance'] = {}
-        settings = self.windowSettings['substance']
+        if self.application not in self.windowSettings:
+            self.windowSettings[self.application] = {}
+        settings = self.windowSettings[self.application]
         settings['docked'] = self.dockable(raw=True)
 
         # Save docked settings
@@ -163,10 +168,10 @@ class SubstanceDesignerWindow(AbstractWindow):
 
         key = self._getSettingsKey()
         try:
-            width = self.windowSettings['substance'][key]['width']
-            height = self.windowSettings['substance'][key]['height']
-            x = self.windowSettings['substance'][key]['x']
-            y = self.windowSettings['substance'][key]['y']
+            width = self.windowSettings[self.application][key]['width']
+            height = self.windowSettings[self.application][key]['height']
+            x = self.windowSettings[self.application][key]['x']
+            y = self.windowSettings[self.application][key]['y']
         except KeyError:
             super(SubstanceDesignerWindow, self).loadWindowPosition()
         else:
@@ -248,7 +253,7 @@ class SubstanceDesignerWindow(AbstractWindow):
             docked = cls.WindowDockable
         else:
             try:
-                docked = settings['substance']['docked']
+                docked = settings[self.application]['docked']
             except KeyError:
                 try:
                     docked = cls.WindowDefaults['docked']
@@ -257,9 +262,9 @@ class SubstanceDesignerWindow(AbstractWindow):
 
         #Load settings
         try:
-            substanceSettings = settings['substance']
+            substanceSettings = settings[self.application]
         except KeyError:
-            substanceSettings = settings['substance'] = {}
+            substanceSettings = settings[self.application] = {}
 
         if docked:
             return dockWrap(cls, *args, **kwargs)

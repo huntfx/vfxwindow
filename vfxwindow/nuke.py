@@ -200,7 +200,13 @@ class Pane(object):
 
 
 class NukeCommon(object):
-    pass
+
+    @property
+    def application(self):
+        return 'Nuke'
+
+    def __init__(self, *args, **kwargs):
+        super(NukeCommon, self).__init__(*args, **kwargs)
 
 
 class NukeWindow(NukeCommon, AbstractWindow):
@@ -244,7 +250,8 @@ class NukeWindow(NukeCommon, AbstractWindow):
         if parent is None:
             parent = getMainWindow()
         super(NukeWindow, self).__init__(parent, **kwargs)
-        self.nuke = True
+
+        self.nuke = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
 
         self.__windowHidden = False
         self.setDockable(dockable, override=True)
@@ -380,9 +387,9 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if 'nuke' not in self.windowSettings:
-            self.windowSettings['nuke'] = {}
-        settings = self.windowSettings['nuke']
+        if self.application not in self.windowSettings:
+            self.windowSettings[self.application] = {}
+        settings = self.windowSettings[self.application]
         settings['docked'] = self.dockable(raw=True)
 
         key = self._getSettingsKey()
@@ -413,7 +420,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         if self.dockable():
             return
         try:
-            settings = self.windowSettings['nuke']['main']
+            settings = self.windowSettings[self.application]['main']
             x = settings['x']
             y = settings['y']
             width = settings['width']
@@ -718,9 +725,9 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
         #Load settings
         try:
-            nukeSettings = settings['nuke']
+            nukeSettings = settings[self.application]
         except KeyError:
-            nukeSettings = settings['nuke'] = {}
+            nukeSettings = settings[self.application] = {}
 
         if hasattr(cls, 'WindowDockable'):
             docked = cls.WindowDockable
@@ -800,9 +807,11 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
     """Variant of the Standalone window for Nuke in batch mode."""
     def __init__(self, parent=None, **kwargs):
         super(NukeBatchWindow, self).__init__(parent, **kwargs)
-        self.nuke = False
+
+        self.nuke = True  #: .. deprecated:: 1.9.0 Use :property:`~AbstractWindow.application` instead.
+        self.standalone = False  #: .. deprecated:: 1.9.0 Won't be needed anymore when using :property:`~AbstractWindow.application`.
+
         self.batch = True
-        self.standalone = False
 
     def setWindowPalette(self, program, version=None, style=True, force=False):
         if force:
@@ -810,9 +819,9 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if 'nuke' not in self.windowSettings:
-            self.windowSettings['nuke'] = {}
-        settings = self.windowSettings['nuke']
+        if self.application not in self.windowSettings:
+            self.windowSettings[self.application] = {}
+        settings = self.windowSettings[self.application]
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -833,10 +842,10 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
         """Set the position of the window when loaded."""
         key = self._getSettingsKey()
         try:
-            width = self.windowSettings['nuke'][key]['width']
-            height = self.windowSettings['nuke'][key]['height']
-            x = self.windowSettings['nuke'][key]['x']
-            y = self.windowSettings['nuke'][key]['y']
+            width = self.windowSettings[self.application][key]['width']
+            height = self.windowSettings[self.application][key]['height']
+            x = self.windowSettings[self.application][key]['x']
+            y = self.windowSettings[self.application][key]['y']
         except KeyError:
             super(NukeBatchWindow, self).loadWindowPosition()
         else:
