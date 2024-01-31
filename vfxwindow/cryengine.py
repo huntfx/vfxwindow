@@ -36,10 +36,10 @@ class CryWindow(StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.application.camelCase() in self.windowSettings:
-            settings = self.windowSettings[self.application.camelCase()]
+        if self.application in self.windowSettings:
+            settings = self.windowSettings[self.application]
         else:
-            settings = self.windowSettings[self.application.camelCase()] = {}
+            settings = self.windowSettings[self.application] = {}
 
         settings['docked'] = self.dockable(raw=True)
 

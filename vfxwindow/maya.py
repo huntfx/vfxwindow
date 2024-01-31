@@ -518,10 +518,10 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.application.camelCase() in self.windowSettings:
-            settings = self.windowSettings[self.application.camelCase()]
+        if self.application in self.windowSettings:
+            settings = self.windowSettings[self.application]
         else:
-            settings = self.windowSettings[self.application.camelCase()] = {}
+            settings = self.windowSettings[self.application] = {}
 
         settings['docked'] = self.dockable(raw=True)
 
@@ -561,7 +561,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
         try:
-            settings = self.windowSettings[self.application.camelCase()][self._getSettingsKey()]
+            settings = self.windowSettings[self.application][self._getSettingsKey()]
             x = settings['x']
             y = settings['y']
             width = settings['width']
@@ -940,11 +940,10 @@ class MayaWindow(MayaCommon, AbstractWindow):
             settings = getWindowSettings(cls.WindowID)
 
         # Load settings
-        # Can't use `self.application` here as this is a classmethod
         try:
-            mayaSettings = settings['Maya']
+            mayaSettings = settings[App]
         except KeyError:
-            mayaSettings = settings['Maya'] = {}
+            mayaSettings = settings[App] = {}
 
         if hasattr(cls, 'WindowDockable'):
             docked = cls.WindowDockable

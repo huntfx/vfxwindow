@@ -4,8 +4,22 @@ import sys
 from .utils import standardiseVersions
 
 
-class AbstractApplication(object):
-    """Application data."""
+def _toCamelCase(string):
+    """Convert the application name to camel case.
+
+    Source: https://stackoverflow.com/a/20744956
+    """
+    output = ''.join(x for x in string.title() if x.isalnum())
+    return output[0].lower() + output[1:]
+
+
+class AbstractApplication(str):
+    """Application data.
+
+    Note that the string representation the user sees is a title, and
+    the equality checks work with this. Interally it is camel case so
+    that dictionary keys may work with it smoothly.
+    """
 
     NAME = ''  # Name of the application
 
@@ -15,10 +29,12 @@ class AbstractApplication(object):
 
     VERSION = None  # Subclass of `AbstractVersion`
 
-    def __init__(self):
-        self.name = self.NAME
-        self.loaded = self.isLoaded()
-        self.version = self.VERSION() if self.loaded and self.VERSION is not None else None
+    def __new__(cls):
+        new = str.__new__(cls, _toCamelCase(cls.NAME))
+        new.name = cls.NAME
+        new.loaded = cls.isLoaded()
+        new.version = cls.VERSION() if new.loaded and cls.VERSION is not None else None
+        return new
 
     def __str__(self):
         return self.name
@@ -65,7 +81,8 @@ class AbstractApplication(object):
         except AttributeError:
             return True
 
-    def isLoaded(self):
+    @classmethod
+    def isLoaded(cls):
         """Determine if the application is currently loaded.
 
         If the modules of a DCC can be imported, then it's likely but
@@ -77,8 +94,8 @@ class AbstractApplication(object):
         and `importlib.util.find_spec`, so a simple `__import__` is
         much cleaner to use in this case.
         """
-        if any((re.search(pattern, sys.executable) for pattern in self.PATHS)):
-            for imp in self.IMPORTS:
+        if any((re.search(pattern, sys.executable) for pattern in cls.PATHS)):
+            for imp in cls.IMPORTS:
                 if imp in sys.modules:
                     return True
 
@@ -98,22 +115,6 @@ class AbstractApplication(object):
     def batch(self):
         """If the application is in batch mode."""
         return not self.gui
-
-    def lower(self):
-        """Get the lowercase application name."""
-        return self.name.lower()
-
-    def upper(self):
-        """Get the uppercase application name."""
-        return self.name.upper()
-
-    def camelCase(self):
-        """Convert the application name to camel case.
-
-        Source: https://stackoverflow.com/a/20744956
-        """
-        output = ''.join(x for x in self.name.title() if x.isalnum())
-        return output[0].lower() + output[1:]
 
 
 class AbstractVersion(object):
