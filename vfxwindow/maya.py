@@ -361,7 +361,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             elif dock:
                 self.saveWindowPosition()  # It doesn't automatically save
                 try:
-                    control = self.windowSettings['maya']['dock']['control']
+                    control = self.windowSettings[self.application]['dock']['control']
                     if control is None:
                         raise KeyError
                 except KeyError:
@@ -392,6 +392,15 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def _parentOverride(self):
         """Get the correct parent needed to query window data.
         It needs to be set to an attribute or Python will forget the C++ pointer.
+
+        Known Issues:
+            - Creating a new dock by hand will result in an error saying
+                the `QTabWidget` has already been deleted when reading
+                information from the parent widget. Running it again is
+                totally fine however, and I wasn't able to figure out
+                how to fix. For most purposes this shouldn't affect
+                anyone, as the window is incapable of making a new dock
+                widget and can only restore to an existing one.
         """
         if self._Pre2017:
             return self.parent()
@@ -533,8 +542,8 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 settings[key]['floating'] = self.floating()
                 if self._Pre2017:
                     settings[key]['area'] = self.area()
-                elif not settings[key]['floating'] or 'control' not in settings[key]:
-                    settings[key]['control'] = self.control()
+                else:
+                    settings[key]['control'] = self.control() or settings[key].get('control')
 
             # Only save position if floating
             if not dockable or settings[key]['floating']:
@@ -937,16 +946,17 @@ class MayaWindow(MayaCommon, AbstractWindow):
             settings = getWindowSettings(cls.WindowID)
 
         # Load settings
+        # Can't use `self.application` here as this is a classmethod
         try:
-            mayaSettings = settings[self.application]
+            mayaSettings = settings['Maya']
         except KeyError:
-            mayaSettings = settings[self.application] = {}
+            mayaSettings = settings['Maya'] = {}
 
         if hasattr(cls, 'WindowDockable'):
             docked = cls.WindowDockable
         else:
             try:
-                docked = settings[self.application]['docked']
+                docked = mayaSettings['docked']
             except KeyError:
                 try:
                     docked = cls.WindowDefaults['docked']
@@ -965,7 +975,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
                 floating = not cls.WindowDocked
             else:
                 try:
-                    floating = settings[self.application]['dock']['floating']
+                    floating = mayaSettings['dock']['floating']
                 except KeyError:
                     try:
                         floating = cls.WindowDefaults['floating']
@@ -976,11 +986,12 @@ class MayaWindow(MayaCommon, AbstractWindow):
             else:
                 try:
                     if self._Pre2017:
-                        dock = settings[self.application]['dock'].get('area', True)
+                        dock = mayaSettings['dock'].get('area', True)
                     else:
-                        dock = settings[self.application]['dock'].get('control', True)
+                        dock = mayaSettings['dock'].get('control', True)
                 except KeyError:
                     dock = True
+
             if self._Pre2017:
                 return dockControlWrap(cls, dock,  *args, **kwargs)
             return workspaceControlWrap(cls, dock, True, *args, **kwargs)
