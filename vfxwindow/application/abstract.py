@@ -39,10 +39,24 @@ class AbstractApplication(object):
 
     def __eq__(self, other):
         """Case insensitive string comparison."""
+        name = self.name.lower()
         try:
-            return self.name.lower() == other.lower()
+            other = other.lower()
         except AttributeError:
             return False
+
+        if name == other:
+            return True
+
+        if ' ' in name:
+            # Check if name contains a part ('3ds Max' == 'Max')
+            if any(part in other for part in name.split(' ')):
+                return True
+            # Check if mismatched spaces ('3ds Max' == '3dsmax')
+            if name.replace(' ', '') == other.replace(' ', ''):
+                return True
+
+        return False
 
     def __ne__(self, other):
         """Case insensitive string comparison."""
