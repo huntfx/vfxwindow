@@ -4,22 +4,8 @@ import sys
 from .utils import standardiseVersions
 
 
-def _toCamelCase(string):
-    """Convert the application name to camel case.
-
-    Source: https://stackoverflow.com/a/20744956
-    """
-    output = ''.join(x for x in string.title() if x.isalnum())
-    return output[0].lower() + output[1:]
-
-
 class AbstractApplication(str):
-    """Application data.
-
-    Note that the string representation the user sees is a title, and
-    the equality checks work with this. Interally it is camel case so
-    that dictionary keys may work with it smoothly.
-    """
+    """Application data."""
 
     NAME = ''  # Name of the application
 
@@ -30,17 +16,11 @@ class AbstractApplication(str):
     VERSION = None  # Subclass of `AbstractVersion`
 
     def __new__(cls):
-        new = str.__new__(cls, _toCamelCase(cls.NAME))
+        new = str.__new__(cls, cls.NAME)
         new.name = cls.NAME
         new.loaded = cls.isLoaded()
         new.version = cls.VERSION() if new.loaded and cls.VERSION is not None else None
         return new
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return '<{} {!r}>'.format(self.name.replace(' ', ''), self.version)
 
     def __bool__(self):
         """If the application is loaded."""
