@@ -86,7 +86,7 @@ class AbstractApplication(str):
     @property
     def gui(self):
         """If the application is in GUI mode."""
-        raise True
+        return True
 
     @property
     def batch(self):
