@@ -149,122 +149,88 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Determine if the application is in batch mode.
         Deprecated and will be removed in 2.0.
         """
-        try:
-            if self.application is None:
-                return False
-            return self.application.batch
-        except NotImplementedError:
+        if self.Application is None:
             return False
+        if self.Application is AbstractWindow.Application:
+            return False
+        return self.Application.batch
 
     @property
     def maya(self):
         """Determine if the application is Maya.
         Deprecated and will be removed in 2.0.
         """
-        try:
-            return self.application == 'Maya'
-        except NotImplementedError:
-            return False
+        return self.Application == 'Maya'
 
     @property
     def nuke(self):
         """Determine if the application is Nuke.
         Deprecated and will be removed in 2.0.
         """
-        try:
-            return self.application == 'Nuke'
-        except NotImplementedError:
-            return False
+        return self.Application == 'Nuke'
 
     @property
     def houdini(self):
         """Determine if the application is Houdini.
         Deprecated and will be removed in 2.0.
         """
-        try:
-            return self.application == 'Houdini'
-        except NotImplementedError:
-            return False
+        return self.Application == 'Houdini'
 
     @property
     def max(self):
         """Determine if the application is 3ds Max.
         Deprecated and will be removed in 2.0.
         """
-        try:
-            return self.application == '3ds Max'
-        except NotImplementedError:
-            return False
+        return self.Application == '3ds Max'
 
     @property
     def fusion(self):
         """Determine if the application is Blackmagic Fusion.
         Deprecated and will be removed in 2.0.
         """
-        try:
-            return self.application == 'Fusion'
-        except NotImplementedError:
-            return False
+        return self.Application == 'Fusion'
 
     @property
     def blender(self):
         """Determine if the application is Blender.
         Deprecated and will be removed in 2.0.
         """
-        try:
-            return self.application == 'Blender'
-        except NotImplementedError:
-            return False
+        return self.Application == 'Blender'
 
     @property
     def unreal(self):
         """Determine if the application is Unreal Engine.
         Deprecated and will be removed in 2.0.
         """
-        try:
-            return self.application == 'Unreal Engine'
-        except NotImplementedError:
-            return False
+        return self.Application == 'Unreal Engine'
 
     @property
     def substancePainter(self):
         """Determine if the application is Substance Painter.
         Deprecated and will be removed in 2.0.
         """
-        try:
-            return self.application == 'Substance Painter'
-        except NotImplementedError:
-            return False
+        return self.Application == 'Substance Painter'
 
     @property
     def substanceDesigner(self):
         """Determine if the application is Substance Designer.
         Deprecated and will be removed in 2.0.
         """
-        try:
-            return self.application == 'Substance Designer'
-        except NotImplementedError:
-            return False
+        return self.Application == 'Substance Designer'
 
     @property
     def cryengine(self):
         """Determine if the application is CryEngine Sandbox.
         Deprecated and will be removed in 2.0.
         """
-        try:
-            return self.application == 'CryEngine Sandbox'
-        except NotImplementedError:
-            return False
+        return self.Application == 'CryEngine Sandbox'
 
     @property
     def standalone(self):
         """Determine if the window is a standalone window.
         Deprecated and will be removed in 2.0.
         """
-        try:
-            return self.application is None
-        except NotImplementedError:
-            return False
+        return self.Application is None
 
     def processEvents(self):
         """Wrapper over the inbult processEvents method.
