@@ -58,6 +58,9 @@ class AbstractApplication(str):
         """Case insensitive string comparison."""
         return not self.__eq__(other)
 
+    def __hash__(self):
+        return hash(self.name)
+
     @classmethod
     def isLoaded(cls):
         """Determine if the application is currently loaded.
