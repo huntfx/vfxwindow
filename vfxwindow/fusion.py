@@ -38,10 +38,10 @@ class FusionWindow(StandaloneWindow):
 
     def saveWindowPosition(self):
         """Save the window location."""
-        if self.application.camelCase() in self.windowSettings:
-            settings = self.windowSettings[self.application.camelCase()]
+        if self.application in self.windowSettings:
+            settings = self.windowSettings[self.application]
         else:
-            settings = self.windowSettings[self.application.camelCase()] = {}
+            settings = self.windowSettings[self.application] = {}
 
         key = self._getSettingsKey()
         if key not in settings:
@@ -57,7 +57,7 @@ class FusionWindow(StandaloneWindow):
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
         try:
-            settings = self.windowSettings[self.application.camelCase()][self._getSettingsKey()]
+            settings = self.windowSettings[self.application][self._getSettingsKey()]
             width = settings['width']
             height = settings['height']
             x = settings['x']
