@@ -1060,8 +1060,8 @@ class MayaBatchWindow(MayaCommon, StandaloneWindow):
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
-        key = self._getSettingsKey()
         try:
+            settings = self.windowSettings[self.application][self._getSettingsKey()]
             width = settings['width']
             height = settings['height']
             x = settings['x']
