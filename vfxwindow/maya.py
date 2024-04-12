@@ -150,7 +150,6 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
         pass
 
     # Restore the window (after maya is ready) since it may not be visible
-    windowInstance.deferred(windowInstance.raise_)
     windowInstance.deferred(windowInstance.windowReady.emit)
     return windowInstance
 
@@ -177,7 +176,6 @@ def dockControlWrap(windowClass, dock=True, *args, **kwargs):
             pass
 
         windowInstance.setWindowTitle(getattr(windowInstance, 'WindowName', 'New Window'))
-        windowInstance.deferred(windowInstance.raise_)
         windowInstance.deferred(windowInstance.windowReady.emit)
 
     # Set WindowID if needed but disable saving

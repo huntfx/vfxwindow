@@ -129,6 +129,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         }
 
         self.windowReady.connect(lambda: setattr(self, '_windowLoaded', True))
+        self.windowReady.connect(self.raise_)
 
     @property
     def application(self):
