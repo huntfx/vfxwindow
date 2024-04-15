@@ -1,12 +1,13 @@
 from __future__ import absolute_import
 
 import inspect
+import json
 import os
 import site
 import sys
+import tempfile
 from functools import wraps
 from types import ModuleType
-from Qt import QtWidgets
 
 if os.name == 'nt':
     from .windows import setCoordinatesToScreen
@@ -80,21 +81,54 @@ def searchGlobals(cls, globalsDict=None, visited=None):
             return k + '.' + result
 
 
-def forceMenuBar(win):
-    """Force add the menuBar if it is not there by default.
-    In Maya this is needed for docked windows.
+class CustomEncoder(json.JSONEncoder):
+    """JSON encoder that allows registering classes.
 
-    Each menuBar appears to contain a QToolButton and then the menus,
-    so check how many children
-    This only works with .insertWidget() - creating a new layout and
-    adding both widgets won't do anything.
+    Usage:
+        >>> class MyClass(object): ...
+        >>> CustomEncoder.register(MyClass, lambda x: str(id(x)))
+        >>> json.dumps(MyClass)
+        '1577854083720'
     """
-    menu = win.menuBar()
-    if not menu.actions():
-        for child in menu.children():
-            if isinstance(child, QtWidgets.QMenu):
-                break
-        else:
-            return
-    menu.setSizePolicy(menu.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Fixed)
-    win.centralWidget().layout().insertWidget(0, menu)
+
+    _RegisteredClasses = {}
+
+    @classmethod
+    def register(cls, encodeCls, encodeFn):
+        """Register a class and how to encode it."""
+        cls._RegisteredClasses[encodeCls] = encodeFn
+
+    def default(self, o):
+        """Handle serialisation for all registered classes."""
+        for cls, fn in self._RegisteredClasses.items():
+            if isinstance(o, cls):
+                return fn(o)
+        return super(CustomEncoder, self).default(o)
+
+
+def getWindowSettingsPath(windowID):
+    """Get a path to the window settings."""
+    return os.path.join(tempfile.gettempdir(), 'VFXWindow.{}.json'.format(windowID))
+
+
+def getWindowSettings(windowID, path=None):
+    """Load the window settings, or return empty dict if they don't exist."""
+    if path is None:
+        path = getWindowSettingsPath(windowID)
+    try:
+        with open(path, 'r') as f:
+            return json.loads(f.read())
+    except (IOError, ValueError):
+        return {}
+
+
+def saveWindowSettings(windowID, data, path=None):
+    """Save the window settings."""
+    if path is None:
+        path = getWindowSettingsPath(windowID)
+    try:
+        with open(path, 'w') as f:
+            f.write(json.dumps(data, indent=2, cls=CustomEncoder))
+    except IOError:
+        return False
+    return True
