@@ -373,7 +373,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         This will cause issues in the Maya GUI so it's disabled by default.
         The force parameter can be set to override this behaviour.
         """
-        if force or self.batch:
+        if force or self.application.batch:
             super(MayaWindow, self).setWindowPalette(program, version, style)
 
     def windowPalette(self):

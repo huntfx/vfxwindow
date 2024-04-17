@@ -26,9 +26,9 @@ class MyWindow(VFXWindow):
     def newScene(self, *args):
         """Example: Delete and reapply callbacks after loading a new scene."""
         self.removeCallbacks('sceneNewCallbacks')
-        if self.maya:
+        if self.application == 'Maya':
             self.addCallbackScene('kAfterNew', self.newScene, group='sceneNewCallbacks')
-        elif self.nuke:
+        elif self.application == 'Nuke':
             self.addCallbackOnCreate(self.newScene, nodeClass='Root', group='sceneNewCallbacks')
 
 if __name__ == '__main__':

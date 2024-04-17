@@ -268,7 +268,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def _getSettingsKey(self):
         """Get the key to use when saving settings."""
-        if self.batch:
+        if self.application is not None and self.application.batch:
             return 'batch'
         if self.dockable():
             return 'dock'
