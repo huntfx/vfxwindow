@@ -846,7 +846,8 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
             cls.clearWindowInstance(cls.WindowID)
         except AttributeError:
             pass
-        kwargs['instance'] = False
+        kwargs['init'] = False
+        kwargs['instance'] = True
         kwargs['exec_'] = True
         return super(NukeBatchWindow, cls).show(*args, **kwargs)
 

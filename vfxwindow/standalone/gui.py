@@ -42,6 +42,19 @@ class StandaloneWindow(AbstractWindow):
     @hybridmethod
     def show(cls, self, *args, **kwargs):
         """Start a standalone QApplication and launch the window.
+
+        Launch Parameters:
+            init (bool): If the QApplication should be initialised.
+                Set to False if this causes a program crash on startup.
+            instance (bool): If a QApplication instance should be used.
+                If False, then a new process will be started instead.
+                Note that all instanced apps will share the same
+                features such as palettes.
+            exec_ (bool): If the QApplication should be executed.
+                This is typically blocking but each application reacts
+                differently. It is best left off by default, and only
+                enabled if the window won't stay open.
+
         Multiprocessing can be used to launch a separate application instead of an instance.
         The disadvantage of an instance is the palette and other bits are all linked.
         """
@@ -50,11 +63,14 @@ class StandaloneWindow(AbstractWindow):
             return super(StandaloneWindow, self).show()
 
         # Open a new window
+        init = kwargs.pop('init', True)
         instance = kwargs.pop('instance', False)
         exec_ = kwargs.pop('exec_', True)
 
         window = None
         try:
+            if not init:
+                raise RuntimeError
             app = QtWidgets.QApplication(sys.argv)
             window = super(StandaloneWindow, cls).show(*args, **kwargs)
             if isinstance(app, QtWidgets.QApplication):
