@@ -651,7 +651,16 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
     def deferred(self, func, *args, **kwargs):
         """Execute a deferred command."""
-        utils.executeDeferred(func, *args, **kwargs)
+        def wrapper():
+            """Wrap the executed function to display any errors.
+            Without this, it will silently fail.
+            """
+            try:
+                func(*args, **kwargs)
+            except Exception:
+                import traceback
+                traceback.print_exc()
+        utils.executeDeferred(wrapper)
 
     def parent(self, *args, **kwargs):
         """Fix a weird Nuke crash.
