@@ -22,6 +22,7 @@ TODO:
 from __future__ import absolute_import
 
 import uuid
+from functools import partial
 from Qt import QtCore, QtWidgets
 
 import sd
@@ -232,7 +233,7 @@ class SubstanceDesignerWindow(AbstractWindow):
         """Defer a function execution by 1 second.
         Substance has no better alternative currently.
         """
-        QtCore.QTimer.singleShot(1000, func)
+        QtCore.QTimer.singleShot(1000, partial(func, *args, **kwargs))
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):

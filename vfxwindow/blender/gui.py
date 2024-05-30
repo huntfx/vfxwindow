@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 from collections import defaultdict
+from functools import partial
 
 import bpy
 
@@ -36,6 +37,10 @@ class BlenderWindow(StandaloneWindow):
     def application(self):
         """Get the current application."""
         return Application
+
+    def deferred(self, func, *args, **kwargs):
+        """Defer the execution of a function."""
+        bpy.app.timers.register(partial(func, *args, **kwargs), first_interval=0)
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
