@@ -40,7 +40,14 @@ class BlenderWindow(StandaloneWindow):
 
     def deferred(self, func, *args, **kwargs):
         """Defer the execution of a function."""
-        bpy.app.timers.register(partial(func, *args, **kwargs), first_interval=0)
+        def noReturn():
+            """Execute without a return value.
+
+            The timer uses return values to determine when to next run
+            the function, so skipping it ensures it's only run once.
+            """
+            func(*args, **kwargs)
+        bpy.app.timers.register(noReturn, first_interval=0)
 
     def loadWindowPosition(self):
         """Set the position of the window when loaded."""
