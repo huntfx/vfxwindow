@@ -825,7 +825,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def deferred(self, func, *args, **kwargs):
         """Placeholder for program specific deferred functions."""
-        func()
+        func(*args, **kwargs)
 
     def exists(self):
         """Return if the window currently exists.
