@@ -41,11 +41,11 @@ if __name__ == '__main__':
 | ------------------ | -------- | -------- | -------- | -------- | -------- | --------- | ------- |
 | Maya               | ✔️ | [✔️](# "Uses `workspaceControl` or falls back to `dockControl` for pre Maya 2017, saves/restores location of window.") | ✔️ | [2011-2016](# "Docked windows use `dockControl`, tested lightly on 2016."), [2017+](# "Docked windows use `workspaceControl`.") | ✔️ | ✔️ | ❔ |
 | Maya (Standalone)  | ✔️ | | ✔️ | | ❔ | ✔️ | ❔ |
-| Nuke               | ✔️ | [✔️](# "Uses `registerWidgetAsPanel` to dock window in a panel, saves/restores location of panel only when docked (not floating).") | ✔️ | 9-12 | ❔ | ✔️ | ❔ |
+| Nuke               | ✔️ | [✔️](# "Uses `registerWidgetAsPanel` to dock window in a panel, saves/restores location of panel only when docked (not floating).") | [✔️](# "Callbacks are only active while the window has focus. It is recommended to define a `checkForChanges()` method which will be run each time the callbacks get reactivated.") | 9-14 | ❔ | ✔️ | ❔ |
 | Nuke (Terminal)    | ✔️ | | ✔️ | | ❔ | ✔️ | ❔ |
 | Houdini            | ✔️ | ❌ | ❌ | 16-19 | ✔️ | ✔️ | ❔ |
 | Unreal Engine      | ✔️ | ❌ | ❌ | 4.19-4.23, 5.0-5.3 | [❌](# "Tested on UE5.") | ✔️ | ❔ |
-| Blender            | ✔️ | ❌ | ✔️ | 2.8-3.4 | ❔ | ✔️ | ❔ |
+| Blender            | ✔️ | ❌ | ✔️ | 2.8-3.6 | ❔ | ✔️ | ❔ |
 | 3ds Max            | ✔️ | ❌ | ❌ | 2018-2020 | ❔ | [✔️](# "Tested previously but unable to confirm.") | ❔ |
 | Substance Painter  | ✔️ | [✔️](# "Uses `substance_painter.ui.add_dock_widget`, does not save/restore location of window.") | ❌ | 8.3 | ✔️ | ✔️ | ❔ |
 | Substance Designer | ✔️ | [✔️](# "Uses `sd.getContext().getSDApplication().getQtForPythonUIMgr().newDockWidget`, does not save/restore location of window.") | ❌ | 2019.3, 7.1, 12.3 | ✔️ | ✔️ | ❔ |
