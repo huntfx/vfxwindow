@@ -8,6 +8,7 @@ Issues:
 
 from __future__ import absolute_import
 
+from functools import partial
 import uuid
 from Qt import QtCore, QtWidgets
 
@@ -72,10 +73,8 @@ class SubstancePainterWindow(AbstractWindow):
         return Application
 
     def deferred(self, func, *args, **kwargs):
-        """Defer a function execution by 1 second.
-        Substance has no better alternative currently.
-        """
-        QtCore.QTimer.singleShot(1000, func)
+        """Execute a deferred command."""
+        substance_painter.project.execute_when_not_busy(partial(func, *args, **kwargs))
 
     def move(self, x, y=None):
         if self.docked() and not self.floating():
