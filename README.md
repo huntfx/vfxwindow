@@ -5,7 +5,7 @@ The main purpose of the class is to integrate into the program UI, but it also c
 
 The intended usage is to make your window class inherit `VFXWindow` - which is an instance of `QMainWindow`. By calling `cls.show()`, it will launch the correct window type based on what program is loaded, and what settings were previously saved.
 
-This is perfectly stable, but there is still plenty that needs improvement. Maya, Nuke, 3DS Max, Houdini, Blender, Substance Designer, Unreal and Fusion are currently supported, though any help to extend those would be appreciated, as well as support for any other applications.
+This is perfectly stable, but there is still plenty that needs improvement. Any help with extending existing application support or adding new applications is very much appreciated.
 
 ### Installation
     pip install vfxwindow
@@ -71,5 +71,6 @@ Currently there is no way of launching `VFXWindow` from inside these application
 
 ### Special Thanks
  - [Blue Zoo](https://www.blue-zoo.co.uk/) - I've been building this up while working there
- - [Lior Ben Horin](https://gist.github.com/liorbenhorin): [Simple_MayaDockingClass.py](https://gist.github.com/liorbenhorin/69da10ec6f22c6d7b92deefdb4a4f475) - used for main Maya docking code
- - [Fredrik Averpil](https://github.com/fredrikaverpil): [pyvfx-boilerplate](https://github.com/fredrikaverpil/pyvfx-boilerplate) - helped with palettes, Nuke, and pre-2017 Maya
+ - [Lior Ben Horin](https://gist.github.com/liorbenhorin): [Simple_MayaDockingClass.py](https://gist.github.com/liorbenhorin/69da10ec6f22c6d7b92deefdb4a4f475) - Used for Maya docking code
+ - [Fredrik Averpil](https://github.com/fredrikaverpil): [pyvfx-boilerplate](https://github.com/fredrikaverpil/pyvfx-boilerplate) - Used to help with palettes, Nuke, and pre-2017 Maya
+ - And a shoutout to anyone who has helped [contribute](https://github.com/huntfx/vfxwindow/graphs/contributors) to the module.
