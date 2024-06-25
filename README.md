@@ -52,6 +52,7 @@ if __name__ == '__main__':
 | Blackmagic Fusion  | ✔️ | ❌ | ❌ | 9 | ❔ | [✔️](# "Unable to read Fusion version, and causes recursion error if calling `show`/`hide`/`setVisible`.") | ❔ |
 | CryEngine Sandbox  | ✔️ | [❌](# "There's a `SandboxBridge.register_window` function, but I was not able to figure it out.") | ❌ | 5.7 | ❔ | [✔️](# "Causes recursion error if calling `show`/`hide`/`setVisible`.") | ❔ |
 | Standalone Python  | ✔️ | | | 2.7 (Qt4), 3.7-3.9 (Qt5) | ❔ | ✔️ | ❔ |
+| RenderDoc          | [✔️](# "Only runs in the interactive shell, not the script editor.") | ❌ | ❌ | 1.33 | ❔ | ✔️ | ❔ |
 
 ### Features
  - Automatically save/restore window position

@@ -20,6 +20,7 @@ from .houdini.application import Application as Houdini
 from .max.application import Application as Max
 from .maya.application import Application as Maya
 from .nuke.application import Application as Nuke
+from .renderdoc.application import Application as RenderDoc
 from .substance_designer.application import Application as SubstanceDesigner
 from .substance_painter.application import Application as SubstancePainter
 from .unreal.application import Application as Unreal
