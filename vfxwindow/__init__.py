@@ -21,6 +21,10 @@ __version__ = '1.9.0'
 import sys
 from . import application
 
+# Ensure sys.argv exists
+if not hasattr(sys, 'argv'):
+    sys.argv = []
+
 
 def _setup_qapp():
     """Attempt to start a QApplication automatically in batch mode.
