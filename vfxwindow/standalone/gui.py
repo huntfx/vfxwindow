@@ -3,7 +3,10 @@
 from __future__ import absolute_import
 
 import sys
-from multiprocessing import Process
+try:
+    from multiprocessing import Process
+except ImportError:
+    Process = object
 from Qt import QtWidgets, IsPySide, IsPyQt4, IsPySide2, IsPyQt5
 
 from ..abstract.gui import AbstractWindow
@@ -76,7 +79,7 @@ class StandaloneWindow(AbstractWindow):
             if isinstance(app, QtWidgets.QApplication):
                 app.setActiveWindow(window)
         except RuntimeError:
-            if instance:
+            if instance or Process is object:
                 app = QtWidgets.QApplication.instance()
                 window = super(StandaloneWindow, cls).show(*args, **kwargs)
                 if isinstance(app, QtWidgets.QApplication):
