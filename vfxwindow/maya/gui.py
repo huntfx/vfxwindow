@@ -12,6 +12,7 @@ import maya.api.OpenMaya as om
 import maya.OpenMayaUI as omUI
 
 from .application import Application
+from .callbacks import MayaCallbacks
 from ..abstract.gui import AbstractWindow
 from ..standalone.gui import StandaloneWindow
 from ..utils import hybridmethod, setCoordinatesToScreen, getWindowSettings
@@ -212,6 +213,8 @@ def toMObject(node):
 
 
 class MayaCommon(object):
+
+    CallbackClass = MayaCallbacks
 
     @property
     def application(self):
@@ -880,6 +883,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         if previousInstance is None:
             return
         cls.removeCallbacks(windowInstance=previousInstance)
+        previousInstance['window'].callbacks.unregister()
 
         # Disconnect the destroyed signal
         if previousInstance['window'].dockable():

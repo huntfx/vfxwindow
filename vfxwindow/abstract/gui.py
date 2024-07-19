@@ -53,10 +53,16 @@ class AbstractWindow(QtWidgets.QMainWindow):
     clearedInstance = QtCore.Signal()
     windowReady = QtCore.Signal()
 
+    CallbackClass = None
+
     _WINDOW_INSTANCES = {}
 
     def __init__(self, parent=None, **kwargs):
         super(AbstractWindow, self).__init__(parent, **kwargs)
+        if self.CallbackClass is not None:
+            self.callbacks = self.CallbackClass()
+        else:
+            self.callbacks = None  # Temporary until fully integrated
 
         # Setup window attributes and saving
         self.enableSaveWindowPosition(True)
