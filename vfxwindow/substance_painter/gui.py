@@ -4,6 +4,28 @@ Issues:
     Opening a new window with the old one already open will result in a warning:
         [Application] Duplicates found in dock widget object names: `<window>`.
         There will be issues in UI layout save and restore.
+
+TODO:
+    https://helpx.adobe.com/substance-3d-painter-python/api/substance-painter/event.html
+    import substance_painter.event as __e
+
+    # Subscribe to project related events.
+    connections = {
+        __e.ProjectOpened: _UIWindow.addCallbackProjectOpened,
+        __e.ProjectCreated: _UIWindow.addCallbackProjectCreated,
+        __e.ProjectAboutToClose: _UIWindow.addCallbackProjectAboutToClose,
+        __e.ProjectAboutToSave: _UIWindow.addCallbackProjectAboutToSave,
+        __e.ProjectSaved: _UIWindow.addCallbackProjectSaved,
+        __e.ExportTexturesAboutToStart: _UIWindow.addCallbackExportTexturesAboutToStart,
+        __e.ExportTexturesEnded: _UIWindow.addCallbackExportTexturesEnded,
+        __e.ShelfCrawlingStarted: _UIWindow.addCallbackShelfCrawlingStarted,
+        __e.ShelfCrawlingEnded: _UIWindow.addCallbackShelfCrawlingEnded,
+        __e.ProjectEditionEntered: _UIWindow.addCallbackProjectEditionEntered,
+        __e.ProjectEditionLeft: _UIWindow.addCallbackProjectEditionLeft,
+
+    }
+    for event, callback in connections.items():
+        __e.DISPATCHER.connect(event, callback)
 """
 
 from __future__ import absolute_import

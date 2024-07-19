@@ -1,26 +1,13 @@
 """Window class for Substance.
 
-Help: https://docs.substance3d.com/sddoc/creating-user-interface-elements-172824940.html
-
-TODO:
-    APPLICATION.registerBeforeFileLoadedCallback(callable)
-        Register a callback to be called before a file is loaded
-
-    APPLICATION.registerAfterFileLoadedCallback(callable)
-        Register a callback to be called after a file is loaded
-
-    APPLICATION.registerBeforeFileSavedCallback(callable):
-        Register a callback to be called before a file is saved
-
-    APPLICATION.registerAfterFileSavedCallback(callable):
-        Register a callback to be called after a file is saved
-
-    APPLICATION.unregisterCallback(callbackID):
-        Unregister a callback
+Help:
+    https://helpx.adobe.com/substance-3d-designer/scripting/creating-user-interface-elements.html
+    https://helpx.adobe.com/substance-3d-designer/scripting/application-callbacks.html
 """
 
 from __future__ import absolute_import
 
+from collections import defaultdict
 import uuid
 from functools import partial
 from Qt import QtCore, QtWidgets
@@ -202,6 +189,7 @@ class SubstanceDesignerWindow(AbstractWindow):
             return
         if previousInstance is None:
             return
+        cls.removeCallbacks(windowInstance=previousInstance)
 
         #Shut down the window
         if not previousInstance['window'].isClosed():
@@ -278,3 +266,96 @@ class SubstanceDesignerWindow(AbstractWindow):
         if parent is None:
             parent = getMainWindow()
         return super(SubstanceDesignerWindow, cls).dialog(parent=parent, *args, **kwargs)
+
+    def _addSubstanceDesignerCallbackGroup(self, group):
+        """Add a callback group."""
+        windowInstance = self.windowInstance()
+        if group in windowInstance['callback']:
+            return
+        windowInstance['callback'][group] = defaultdict(list)
+
+    def addCallbackBeforeFileLoaded(self, func, group=None):
+        """Register a callback to be called after a file is loaded."""
+        self._addSubstanceDesignerCallbackGroup(group)
+        callbackID = APPLICATION.registerBeforeFileLoadedCallback(func)
+        self.windowInstance()['callback'][group][APPLICATION.unregisterCallback].append(callbackID)
+
+    def addCallbackAfterFileLoaded(self, func, group=None):
+        """Register a callback to be called after a file is loaded."""
+        self._addSubstanceDesignerCallbackGroup(group)
+        callbackID = APPLICATION.registerAfterFileLoadedCallback(func)
+        self.windowInstance()['callback'][group][APPLICATION.unregisterCallback].append(callbackID)
+
+    def addCallbackBeforeFileSaved(self, func, group=None):
+        """Register a callback to be called before a file is saved."""
+        self._addSubstanceDesignerCallbackGroup(group)
+        callbackID = APPLICATION.registerBeforeFileSavedCallback(func)
+        self.windowInstance()['callback'][group][APPLICATION.unregisterCallback].append(callbackID)
+
+    def addCallbackAfterFileSaved(self, func, group=None):
+        """Register a callback to be called after a file is saved."""
+        self._addSubstanceDesignerCallbackGroup(group)
+        callbackID = APPLICATION.registerAfterFileSavedCallback(func)
+        self.windowInstance()['callback'][group][APPLICATION.unregisterCallback].append(callbackID)
+
+    def addCallbackBeforeFileClosed(self, func, group=None):
+        """Register a callback to be called before a file is closed."""
+        self._addSubstanceDesignerCallbackGroup(group)
+        callbackID = APPLICATION.registerBeforeFileClosedCallback(func)
+        self.windowInstance()['callback'][group][APPLICATION.unregisterCallback].append(callbackID)
+
+    def addCallbackAfterFileClosed(self, func, group=None):
+        """Register a callback to be called after a file is closed."""
+        self._addSubstanceDesignerCallbackGroup(group)
+        callbackID = APPLICATION.registerAfterFileClosedCallback(func)
+        self.windowInstance()['callback'][group][APPLICATION.unregisterCallback].append(callbackID)
+
+    def addCallbackGraphViewCreated(self, func, group=None):
+        """Register a callback to be called when a new graph view is created."""
+        self._addSubstanceDesignerCallbackGroup(group)
+        callbackID = MANAGER.registerGraphViewCreatedCallback(func)
+        self.windowInstance()['callback'][group][MANAGER.unregisterCallback].append(callbackID)
+
+    def addCallbackExplorerCreated(self, func, group=None):
+        """Register a callback to be called when a new explorer is created."""
+        self.registerExplorerCreatedCallback(group)
+        callbackID = MANAGER.registerGraphViewCreatedCallback(func)
+        self.windowInstance()['callback'][group][MANAGER.unregisterCallback].append(callbackID)
+
+    def addCallbackExplorerSelectionChanged(self, func, group=None):
+        """Register a callback to be called when the explorer selection changed."""
+        self._addSubstanceDesignerCallbackGroup(group)
+        callbackID = MANAGER.registerExplorerSelectionChangedCallback(func)
+        self.windowInstance()['callback'][group][MANAGER.unregisterCallback].append(callbackID)
+
+    @hybridmethod
+    def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
+        """Remove all the registered callbacks.
+        If group is not set, then all will be removed.
+
+        Either windowInstance or windowID is needed if calling without a class instance.
+        """
+        # Handle classmethod
+        if self is cls:
+            if windowInstance is None and windowID is not None:
+                windowInstance = cls.windowInstance(windowID)
+            if windowInstance is None:
+                raise ValueError('windowInstance or windowID parameter is required for classmethod')
+        # Handle normal method
+        elif windowInstance is None:
+            windowInstance = self.windowInstance()
+
+        # Select all groups if specific one not provided
+        if group is None:
+            groups = list(windowInstance['callback'].keys())
+        else:
+            if group not in windowInstance['callback']:
+                return 0
+            groups = [group]
+
+        numEvents = 0
+        for group in groups:
+            for callbackID, unregisterFn in windowInstance['callback'].pop(group):
+                unregisterFn(callbackID)
+                numEvents += 1
+        return numEvents
