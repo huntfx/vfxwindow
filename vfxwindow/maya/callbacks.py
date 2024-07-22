@@ -12,74 +12,334 @@ class MayaCallbacks(AbstractCallbacks):
     def add(self, name, func, *args, **kwargs):
         """Register a callback.
 
-        Implemented:
-            'new' (same as 'new.after')
-            'new.before'
-            'new.before.check'
-            'new.after'
-            'open' (same as 'open.after')
-            'open.before'
-            'open.before.check'
-            'open.after'
-            'save' (same as 'save.after')
-            'save.before'
-            'save.before.check'
-            'save.after'
-            'import' (same as 'import.after')
-            'import.before'
-            'import.before.check'
-            'import.after'
-            'reference'  (same as 'reference.create.after')
-            'reference.create'  (same as 'reference.create.after')
-            'reference.create.before'
-            'reference.create.before.check'
-            'reference.create.after'
-            'reference.remove'  (same as 'reference.remove.after')
-            'reference.remove.before'
-            'reference.remove.after'
-            'reference.load'  (same as 'reference.load.after')
-            'reference.load.before'
-            'reference.load.before.check'
-            'reference.load.after'
-            'reference.unload'  (same as 'reference.unload.after')
-            'reference.unload.before'
-            'reference.unload.after'
-            'reference.import'  (same as 'reference.import.after')
-            'reference.import.before'
-            'reference.import.after'
-            'reference.export'  (same as 'reference.export.after')
-            'reference.export.before'
-            'reference.export.after'
-            'render'  (same as 'render.software.after')
-            'render.software'  (same as 'render.software.after')
-            'render.software.before'
-            'render.software.after'
-            'render.software.frame'  (same as 'render.software.frame.after')
-            'render.software.frame.before'
-            'render.software.frame.after'
-            'render.software.interrupted'
-            'application.start'
-            'application.exit'
-            'plugin.load'  (same as 'plugin.load.after')
-            'plugin.load.before'
-            'plugin.load.after'
-            'plugin.unload'  (same as 'plugin.unload.after')
-            'plugin.unload.before'
-            'plugin.unload.after'
-            'connection'  (same as 'connection.after')
-            'connection.before'
-            'connection.changed'
-            'node.added'
-            'node.removed'
-            'node.dirty'
-            'node.dirty.plug'
-            'node.name.changed'
-            'node.uuid.changed'
-            'frame.changed'
-            'frame.changed.deferred'
-            'attribute.changed'
-            'attribute.value.changed'
-            'attribute.keyable.changed'
+        Callbacks:
+            new:
+                Mapped to 'new.after'.
+
+            new.before:
+                Called before a File > New operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            new.before.check:
+                Called prior to File > New operation, allows user to cancel action.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> bool
+
+            new.after:
+                Called after a File > New operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            open:
+                Mapped to 'open.after'.
+
+            open.before:
+                Called before a File > Open operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            open.before.check:
+                Called prior to File > Open operation, allows user to cancel action.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> bool
+
+            open.after:
+                Called after a File > Open operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            save:
+                Mapped to 'save.after'.
+
+            save.before:
+                Called before a File > Save (or SaveAs) operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            save.before.check:
+                Called before a File > Save (or SaveAs) operation.
+                Parameters: (clientData=None)
+                Signature: (file: MFileObject, clientData) -> bool
+
+            save.after:
+                Called after a File > Save (or SaveAs) operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            import:
+                Mapped to 'import.after'.
+
+            import.before:
+                Called before a File > Import operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            import.before.check:
+                Called prior to File > Import operation, allows user to cancel action.
+                Parameters: (clientData=None)
+                Signature: (file: MFileObject, clientData) -> bool
+
+            import.after:
+                Called after a File > Import operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            export:
+                Mapped to 'export.after'.
+
+            export.before:
+                Called before a File > Export operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            export.before.check:
+                Called prior to File > Export operation, allows user to cancel action.
+                Parameters: (clientData=None)
+                Signature: (file: MFileObject, clientData) -> bool
+
+            export.after:
+                Called after a File > Export operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            reference:
+                Mapped to 'reference.create.after'.
+
+            reference.create:
+                Mapped to 'reference.create.after'.
+
+            reference.create.before:
+                Called before a File > CreateReference operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            reference.create.before.check:
+                Called prior to a File > CreateReference operation, allows user to cancel action.
+                Parameters: (clientData=None)
+                Signature: (file: MFileObject, clientData) -> bool
+
+            reference.create.after
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            reference.remove:
+                Mapped to 'reference.remove.after'.
+
+            reference.remove.before:
+                Called before a File > RemoveReference operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            reference.remove.after:
+                Called after a File > RemoveReference operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            reference.load:
+                Mapped to 'reference.load.after'.
+
+            reference.load.before:
+                Called before a File > LoadReference operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            reference.load.before.check:
+                Called before a File > LoadReference operation, allows user to cancel action.
+                Parameters: (clientData=None)
+                Signature: (file: MFileObject, clientData) -> bool
+
+            reference.load.after:
+                Called after a File > LoadReference operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            reference.unload:
+                Mapped to 'reference.unload.after'.
+
+            reference.unload.before:
+                Called before a File > UnloadReference operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            reference.unload.after:
+                Called after a File > UnloadReference operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            reference.import:
+                Mapped to 'reference.import.after'.
+
+            reference.import.before':
+                Called before a File > ImportReference operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            reference.import.after':
+                Called after a File > ImportReference operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            reference.export':
+                Mapped to 'reference.export.after')
+
+            reference.export.before:
+                Called before a File > ExportReference operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            reference.export.after:
+                Called after a File > ExportReference operation.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            render:
+                Mapped to 'render.software.after'
+
+            render.software:
+                Mapped to 'render.software.after'
+
+            render.software.before:
+                Called before a Software Render begins.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            render.software.after:
+                Called after a Software Render ends.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            render.software.frame:
+                Mapped to 'render.software.frame.after'
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            render.software.frame.before:
+                Called before each frame of a Software Render.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            render.software.frame.after:
+                Called after each frame of a Software Render.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            render.software.interrupted:
+                Called when an interactive render is interrupted by the user.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            application.start:
+                Called on interactive or batch startup after initialization.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            application.exit:
+                Called just before Maya exits.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            plugin.load:
+                Mapped to 'plugin.load.after'
+
+            plugin.load.before:
+                Called prior to a plugin being loaded.
+                Parameters: (clientData=None)
+                Signature: ([path: str], clientData) -> None
+
+            plugin.load.after:
+                Called after a plugin is loaded.
+                Parameters: (clientData=None)
+                Signature: ([path: str, name: str], clientData) -> None
+
+            plugin.unload:
+                Mapped to 'plugin.unload.after'.
+
+            plugin.unload.before:
+                Called prior to a plugin being unloaded.
+                Parameters: (clientData=None)
+                Signature: ([name: str], clientData) -> None
+
+            plugin.unload.after:
+                Called after a plugin is unloaded.
+                Parameters: (clientData=None)
+                Signature: ([name: str, path: str], clientData) -> None
+
+            connection:
+                Mapped to 'connection.after'.
+
+            connection.before:
+                Called before a connection is made or broken in the dependency graph.
+                Parameters: (clientData=None)
+                Signature: (srcPlug: MPlug, destPlug: MPlug, made: bool, clientData) -> None
+
+            connection.after:
+                Called after a connection is made or broken in the dependency graph.
+                Parameters: (clientData=None)
+                Signature: (srcPlug: MPlug, destPlug: MPlug, made: bool, clientData) -> None
+
+            node.added:
+                Called whenever a new node is added to the dependency graph.
+                The nodeType argument allows you to specify the type of nodes that will trigger the callback.
+                The default node type is "dependNode" which matches all nodes.
+                Parameters: (nodeType='dependNode', clientData=None)
+                Signature: (node: MObject, clientData) -> None
+
+            node.removed:
+                Called whenever a new node is removed from the dependency graph.
+                The nodeType argument allows you to specify the type of nodes that will trigger the callback.
+                The default node type is "dependNode" which matches all nodes.
+                Parameters: (nodeType='dependNode', clientData=None)
+                Signature: (node: MObject, clientData) -> None
+
+            node.dirty:
+                Called for node dirty messages.
+                Parameters: (node: MObject, clientData=None)
+                Signature: (node: MObject, plug: MPlug, clientData) -> None
+
+            node.dirty.plug:
+                Called for node dirty messages.
+                Parameters: (node: MObject, clientData=None)
+                Signature: (node: MObject, plug: MPlug, clientData) -> None
+
+            node.name.changed:
+                Called for name changed messages.
+                Use a null MObject to listen for all nodes.
+                Parameters: (node: MObject, clientData=None)
+                Signature (node: MObject, prevName: str, clientData) -> None
+
+            node.uuid.changed:
+                Called for UUID changed messages.
+                Parameters: (node: MObject, clientData=None)
+                Signature (node: MObject, prevUuid: MUuid, clientData) -> None
+
+            frame.changed:
+                Callback that is called whenever the time changes in the dependency graph.
+                Parameters: (clientData=None)
+                Signature: (time: MTime, clientData) -> None
+
+            frame.changed.deferred:
+                Called after the time changes and after all DG nodes have been evaluated.
+                Parameters: (clientData=None)
+                Signature: (time: MTime, clientData) -> None
+
+            attribute.changed:
+                Called when an attribute is added or removed.
+                Parameters: (node: MObject, clientData=None)
+                Signature: TODO
+
+            attribute.value.changed:
+                Called for attribute value changed messages.
+                The callback is disabled while Maya is in playback or scrubbing modes.
+                Parameters: (node: MObject, clientData=None)
+                Signature: TODO
+
+            attribute.keyable.changed:
+                Called for attribute keyable state changes.
+                Return a value to accept or reject the change.
+                Only one keyable change callback per attribute is allowed.
+                Parameters: (plug: MPlug, clientData=None)
+                Signature: TODO
 
         TODO:
             'scriptjob.event'
@@ -106,6 +366,8 @@ class MayaCallbacks(AbstractCallbacks):
         scriptJobCondition = None
         dgMessage = None
         nodeMessage = None
+        dgMessageWithNode = None
+        nodeMessageWithNode = None
 
         if parts[0] == 'new':
             if parts[1] == 'before':
@@ -247,12 +509,12 @@ class MayaCallbacks(AbstractCallbacks):
                     nodeMessage = om2.MNodeMessage.addNameChangedCallback
             elif parts[1] == 'uuid':
                 if parts[2] == 'changed':
-                    nodeMessage = om2.MNodeMessage.addUUIdChangedCallback
+                    nodeMessage = om2.MNodeMessage.addUuidChangedCallback
             elif parts[2] == 'dirty':
                 if parts[3] == 'plug':
-                    nodeMessage = om2.MNodeMessage.addNodeDirtyPlugCallback
+                    dgMessageWithNode = om2.MNodeMessage.addNodeDirtyPlugCallback
                 elif parts[3] is None:
-                    nodeMessage = om2.MNodeMessage.addNodeDirtyCallback
+                    dgMessageWithNode = om2.MNodeMessage.addNodeDirtyCallback
             elif parts[2] == 'destroyed':
                 nodeMessage = om2.MNodeMessage.addNodeDestroyedCallback
 
@@ -265,13 +527,13 @@ class MayaCallbacks(AbstractCallbacks):
 
         elif parts[0] == 'attribute':
             if parts[1] == 'changed':
-                nodeMessage = om2.MNodeMessage.addAttributeAddedOrRemovedCallback
+                nodeMessageWithNode = om2.MNodeMessage.addAttributeAddedOrRemovedCallback
             elif parts[1] == 'value':
                 if parts[2] == 'changed':
-                    nodeMessage = om2.MNodeMessage.addAttributeChangedCallback
+                    nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
             elif parts[1] == 'keyable':
                 if parts[2] == 'changed':
-                    nodeMessage = om2.MNodeMessage.addKeyableChangeOverride
+                    nodeMessageWithNode = om2.MNodeMessage.addKeyableChangeOverride
 
         if sceneMessage is not None:
             register = partial(om2.MSceneMessage.addCallback, sceneMessage)
@@ -288,9 +550,17 @@ class MayaCallbacks(AbstractCallbacks):
         elif dgMessage is not None:
             register = dgMessage
             unregister = om2.MMessage.removeCallback
+        elif dgMessageWithNode is not None:
+            register = partial(dgMessageWithNode, args[0])
+            args = args[1:]
+            unregister = om2.MMessage.removeCallback
         elif nodeMessage is not None:
             register = nodeMessage
             unregister = om2.MNodeMessage.removeCallback
+        elif nodeMessageWithNode is not None:
+            register = partial(nodeMessageWithNode, args[0])
+            unregister = om2.MNodeMessage.removeCallback
+            args = args[1:]
         elif scriptJobEvent is not None:
             register = lambda func, *args, **kwargs: mc.scriptJob(event=[scriptJobEvent, func], *args, **kwargs)
             unregister = lambda callbackID: mc.scriptJob(kill=callbackID)

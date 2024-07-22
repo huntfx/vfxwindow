@@ -83,6 +83,10 @@ class TestWindow(VFXWindow):
         if self.application == 'Maya':
             self.callbacks.add('new', lambda clientData: print('Callback: new'))
             self.callbacks.add('new.before', lambda clientData: print('Callback: new.before'))
+            def beforeNewCheck(clientData):
+                print('Callback: new.before.check')
+                return True
+            self.callbacks.add('new.before.check', beforeNewCheck)
             self.callbacks.add('new.after', lambda clientData: print('Callback: new.after'))
             self.callbacks.add('open', lambda clientData: print('Callback: open'))
             self.callbacks.add('open.before', lambda clientData: print('Callback: open.before'))
@@ -158,8 +162,8 @@ class TestWindow(VFXWindow):
             # self.callbacks.add('node.name.changed', lambda node, prevName, clientData: print('Callback: node.name.changed ({})'.format(node, prevName)))
             # self.callbacks.add('node.uuid.changed', lambda node, prevName, clientData: print('Callback: node.name.changed ({})'.format(node, prevName)))
             # self.callbacks.add('node.destroyed', lambda clientData: print('Callback: destroyed'))
-            self.callbacks['pauseOnNew'].add('frame.changed', lambda time, clientData: print('Callback: frame.changed: ({})'.format(time)))
-            self.callbacks['pauseOnNew'].add('frame.changed.deferred', lambda time, clientData: print('Callback: frame.changed.deferred: ({})'.format(time)))
+            self.callbacks['pauseOnNew'].add('frame.changed', lambda time, clientData: print('Callback: frame.changed: ({})'.format(time.value)))
+            self.callbacks['pauseOnNew'].add('frame.changed.deferred', lambda time, clientData: print('Callback: frame.changed.deferred: ({})'.format(time.value)))
             # self.callbacks.add('attribute.changed', lambda msg, plug, clientData: print('Callback: changed.changed ({}, {}, {})'.format(msg, plug)))
             # self.callbacks.add('attribute.value.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.value.changed ({}, {}, {})'.format(msg, plug, otherPlug)))
             # self.callbacks.add('attribute.keyable.changed', lambda plug, clientData: print('Callback: render'))
