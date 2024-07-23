@@ -1,6 +1,9 @@
+from __future__ import absolute_import
 
 from collections import defaultdict
 from contextlib import contextmanager
+import weakref
+
 from ..exceptions import UnknownCallbackError
 
 
@@ -47,7 +50,8 @@ class CallbackProxy(object):
 class AbstractCallbacks(object):
     """Base class for callbacks."""
 
-    def __init__(self):
+    def __init__(self, gui):
+        self._gui = weakref.ref(gui)
         self._callbacks = []
         self._groups = defaultdict(type(self))
 
@@ -105,3 +109,10 @@ class AbstractCallbacks(object):
             yield
         finally:
             self.register()
+
+    @property
+    def gui(self):
+        """Get the GUI the class belongs to.
+        It may return None if the GUI is deleted.
+        """
+        return self._gui()

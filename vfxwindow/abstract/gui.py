@@ -59,8 +59,10 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None, **kwargs):
         super(AbstractWindow, self).__init__(parent, **kwargs)
-        if self.CallbackClass is not None:
-            self.callbacks = self.CallbackClass()
+
+        callbackClass = type(self).CallbackClass
+        if callbackClass is not None:
+            self.callbacks = callbackClass(self)
         else:
             self.callbacks = None  # Temporary until fully integrated
 

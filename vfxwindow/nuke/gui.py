@@ -15,6 +15,7 @@ import nuke
 from nukescripts import panels, utils
 
 from .application import Application
+from .callbacks import NukeCallbacks
 from ..abstract.gui import AbstractWindow
 from ..standalone.gui import StandaloneWindow
 from ..utils import hybridmethod, setCoordinatesToScreen, searchGlobals, getWindowSettings
@@ -197,6 +198,8 @@ class Pane(object):
 
 class NukeCommon(object):
 
+    CallbackClass = NukeCallbacks
+
     @property
     def application(self):
         """Get the current application."""
@@ -245,7 +248,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             parent = getMainWindow()
         super(NukeWindow, self).__init__(parent, **kwargs)
 
-        self.__windowHidden = False
+        self._isHiddenNk = False
         self.setDockable(dockable, override=True)
 
         # Fix for parent bug
@@ -461,6 +464,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
                         else:
                             getattr(nuke, callbackAdd)(func, nodeClass=nodeClass)
                         numEvents += 1
+        self.callbacks.register()
         return numEvents
 
     def _unregisterNukeCallbacks(self, group=None):
@@ -476,6 +480,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
                         else:
                             getattr(nuke, callbackRemove)(func, nodeClass=nodeClass)
                         numEvents += 1
+        self.callbacks.unregister()
         return numEvents
 
     def removeCallback(self, func, group=None, nodeClass=None):
@@ -554,7 +559,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onUserCreate'][func].add(nodeClass)
-        if not self.__windowHidden:
+        if not self._isHiddenNk:
             if nodeClass is None:
                 nuke.addOnUserCreate(func)
             else:
@@ -566,7 +571,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onCreate'][func].add(nodeClass)
-        if not self.__windowHidden:
+        if not self._isHiddenNk:
             if nodeClass is None:
                 nuke.addOnCreate(func)
             else:
@@ -578,7 +583,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onScriptLoad'][func].add(nodeClass)
-        if not self.__windowHidden:
+        if not self._isHiddenNk:
             if nodeClass is None:
                 nuke.addOnScriptLoad(func)
             else:
@@ -588,7 +593,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """Executed when the user tries to save a script."""
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onScriptSave'][func].add(nodeClass)
-        if not self.__windowHidden:
+        if not self._isHiddenNk:
             if nodeClass is None:
                 nuke.addOnScriptSave(func)
             else:
@@ -598,7 +603,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """Executed when Nuke is exited or the script is closed."""
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onScriptClose'][func].add(nodeClass)
-        if not self.__windowHidden:
+        if not self._isHiddenNk:
             if nodeClass is None:
                 nuke.addOnScriptClose(func)
             else:
@@ -607,7 +612,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
     def addCallbackOnDestroy(self, func, nodeClass=None, group=None):
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onDestroy'][func].add(nodeClass)
-        if not self.__windowHidden:
+        if not self._isHiddenNk:
             if nodeClass is None:
                 nuke.addOnDestroy(func)
             else:
@@ -616,7 +621,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
     def addCallbackKnobChanged(self, func, nodeClass=None, group=None):
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['knobChanged'][func].add(nodeClass)
-        if not self.__windowHidden:
+        if not self._isHiddenNk:
             if nodeClass is None:
                 nuke.addKnobChanged(func)
             else:
@@ -625,7 +630,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
     def addCallbackUpdateUI(self, func, nodeClass=None, group=None):
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['updateUI'][func].add(nodeClass)
-        if not self.__windowHidden:
+        if not self._isHiddenNk:
             if nodeClass is None:
                 nuke.addUpdateUI(func)
             else:
@@ -641,6 +646,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         if previousInstance is None:
             return
         cls.removeCallbacks(windowInstance=previousInstance)
+        previousInstance['window'].callbacks.unregister()
 
         #Shut down the window
         if not previousInstance['window'].isClosed():
@@ -684,7 +690,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             try:
                 self._unregisterNukeCallbacks()
             except TypeError:
-                self.__windowHidden = True
+                self._isHiddenNk = True
             self.saveWindowPosition()
         return super(NukeWindow, self).hideEvent(event)
 
@@ -692,7 +698,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """Register callbacks and update UI (if checkForChanges is defined)."""
         if not event.spontaneous():
             self._registerNukeCallbacks()
-            self.__windowHidden = False
+            self._isHiddenNk = False
             if hasattr(self, 'checkForChanges'):
                 self.checkForChanges()
         return super(NukeWindow, self).showEvent(event)
