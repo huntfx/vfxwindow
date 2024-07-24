@@ -19,12 +19,21 @@ class CallbackProxy(object):
         self._args = args
         self._kwargs = kwargs
 
+        self._registered = False
+        self._result = None
+
     def __bool__(self):
         return self.registered
     __nonzero__ = __bool__
 
     def __repr__(self):
         return '<{}({!r}, {})>'.format(type(self).__name__, self._name, self._func)
+
+    def getUnregisterParam(self):
+        """Get the parameter to pass to the unregister function.
+        This may require overriding.
+        """
+        return self._result
 
     @property
     def registered(self):
@@ -33,17 +42,18 @@ class CallbackProxy(object):
 
     def register(self):
         """Register the callback."""
-        if self._id is None:
+        if not self._registered:
             print('Registering: {}'.format(self._name))
-            self._id = self._register(self._func, *self._args, **self._kwargs)
+            self._result = self._register(self._func, *self._args, **self._kwargs)
+            self._registered = True
         return self
 
     def unregister(self):
         """Unregister the callback."""
-        if self._id is not None:
+        if self._registered:
             print('Unregistering: {}'.format(self._name))
-            self._unregister(self._id)
-            self._id = None
+            self._unregister(self.getUnregisterParam())
+            self._registered = False
         return self
 
 

@@ -467,7 +467,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         self.callbacks.register()
         return numEvents
 
-    def _unregisterNukeCallbacks(self, group=None):
+    def _unregisterNukeCallbacks(self):
         """Unregister all callbacks."""
         numEvents = 0
         windowInstance = self.windowInstance()
@@ -687,10 +687,8 @@ class NukeWindow(NukeCommon, AbstractWindow):
     def hideEvent(self, event):
         """Unregister callbacks and save window location."""
         if not event.spontaneous() and not self.isClosed():
-            try:
-                self._unregisterNukeCallbacks()
-            except TypeError:
-                self._isHiddenNk = True
+            self._isHiddenNk = True
+            self._unregisterNukeCallbacks()
             self.saveWindowPosition()
         return super(NukeWindow, self).hideEvent(event)
 

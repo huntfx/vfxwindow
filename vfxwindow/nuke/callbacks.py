@@ -7,6 +7,13 @@ import nuke
 from ..abstract.callbacks import AbstractCallbacks, CallbackProxy
 
 
+class NukeCallbackProxy(CallbackProxy):
+
+    def getUnregisterParam(self):
+        """Get the parameter to pass to the unregister function."""
+        return self._func
+
+
 class NukeCallbacks(AbstractCallbacks):
     def add(self, name, func, *args, **kwargs):
         """Register a callback.
@@ -133,13 +140,13 @@ class NukeCallbacks(AbstractCallbacks):
 
                 elif parts[2] == 'frame':
                     if parts[3] in ('after', None):
-                        register = nuke.addBackgroundFrameRender
+                        register = nuke.addAfterBackgroundFrameRender
                         unregister = nuke.removeAfterBackgroundFrameRender
 
         if register is None:
             return None
 
-        callback = CallbackProxy(name, register, unregister, func, args, kwargs)
+        callback = NukeCallbackProxy(name, register, unregister, func, args, kwargs)
 
         # Only register if the Nuke window is loaded
         if self.gui is not None and not self.gui._isHiddenNk:
