@@ -10,7 +10,20 @@ from ..exceptions import UnknownCallbackError
 class CallbackProxy(object):
     """Hold the callback data for easy registering/unregistering."""
 
-    def __init__(self, name, register, unregister, func, args, kwargs):
+    def __init__(self, name, register, unregister, func, args, kwargs, intercept=None):
+        """Create a proxy.
+
+        Parameters:
+            name (str): Name to give to the proxy to display in messages.
+            register (callable): Function to register the callback.
+            unregister (callable): Function to unregister the callback.
+            func (callable): Function to register.
+            args: User defined for the register function.
+            kwargs: User defined for the register function.
+            itercept (callable): Function to determine if the callback should run.
+                Returning True will intercept and stop the callback.
+                It should take the same args and kwargs as `func`.
+        """
         self._id = None
         self._name = name
         self._register = register
@@ -18,6 +31,7 @@ class CallbackProxy(object):
         self._func = func
         self._args = args
         self._kwargs = kwargs
+        self._itercept = intercept if intercept is not None else lambda *args, **kwargs: False
 
         self._registered = False
         self._result = None
@@ -40,11 +54,16 @@ class CallbackProxy(object):
         """Determine if the callback is registered."""
         return self._id is not None
 
+    def callbackFunc(self, *args, **kwargs):
+        """Run the callback function."""
+        if not self._itercept(*args, **kwargs):
+            self._func(*args, **kwargs)
+
     def register(self):
         """Register the callback."""
         if not self._registered:
             print('Registering: {}'.format(self._name))
-            self._result = self._register(self._func, *self._args, **self._kwargs)
+            self._result = self._register(self.callbackFunc, *self._args, **self._kwargs)
             self._registered = True
         return self
 

@@ -11,7 +11,7 @@ class NukeCallbackProxy(CallbackProxy):
 
     def getUnregisterParam(self):
         """Get the parameter to pass to the unregister function."""
-        return self._func
+        return self.callbackFunc
 
 
 class NukeCallbacks(AbstractCallbacks):
@@ -88,10 +88,11 @@ class NukeCallbacks(AbstractCallbacks):
         """
         parts = name.split('.') + [None, None, None]
 
-        register = unregister = None
+        register = unregister = intercept = None
         if parts[0] == 'new':
             register = partial(nuke.addOnCreate, nodeClass='Root')
-            unregister = nuke.removeOnCreate
+            unregister = partial(nuke.removeOnCreate, nodeClass='Root')
+            intercept = lambda *args, **kwargs: bool(nuke.thisNode()['name'].value())
 
         elif parts[0] == 'load':
             register = nuke.addOnScriptLoad
@@ -146,7 +147,7 @@ class NukeCallbacks(AbstractCallbacks):
         if register is None:
             return None
 
-        callback = NukeCallbackProxy(name, register, unregister, func, args, kwargs)
+        callback = NukeCallbackProxy(name, register, unregister, func, args, kwargs, intercept)
 
         # Only register if the Nuke window is loaded
         if self.gui is not None and not self.gui._isHiddenNk:
