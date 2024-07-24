@@ -168,8 +168,28 @@ class TestWindow(VFXWindow):
             # self.callbacks.add('attribute.value.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.value.changed ({}, {}, {})'.format(msg, plug, otherPlug)))
             # self.callbacks.add('attribute.keyable.changed', lambda plug, clientData: print('Callback: render'))
 
+        elif self.application == 'Nuke':
+            import nuke
+            self.callbacks.add('new', lambda: print('Callback: new ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('load', lambda: print('Callback: load ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('save', lambda: print('Callback: save ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('close', lambda: print('Callback: close ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('create', lambda: print('Callback: create ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('create.user', lambda: print('Callback: create.user ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('destroy', lambda: print('Callback: destroy ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('render', lambda: print('Callback: render ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('render.before', lambda: print('Callback: render.before ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('render.after', lambda: print('Callback: render.after ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('render.frame', lambda: print('Callback: render.frame ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('render.frame.before', lambda: print('Callback: render.frame.before ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('render.frame.after', lambda: print('Callback: render.frame.after ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('render.background', lambda: print('Callback: render.background'))
+            self.callbacks.add('render.background.after', lambda: print('Callback: render.background.after'))
+            self.callbacks.add('render.background.frame', lambda: print('Callback: render.background.frame'))
+            self.callbacks.add('render.background.frame.after', lambda: print('Callback: render.background.frame.after'))
+
         # TODO: Add other callbacks
-        if self.application == 'Substance Desiger':
+        elif self.application == 'Substance Desiger':
             self.addCallbackBeforeFileLoaded(self.substanceDesignerBeforeFileLoad)
             self.addCallbackAfterFileLoaded(self.substanceDesignerAfterFileLoad)
             self.addCallbackBeforeFileSaved(self.substanceDesignerBeforeFileSave)
@@ -244,6 +264,13 @@ class TestWindow(VFXWindow):
 
     def substanceDesignerAfterFileClose(self, filePath, succeed):
         print('After file closed (file: {}, succeed: {})'.format(filePath, succeed))
+
+    def _nukeThisNode(self):
+        import nuke
+        thisNode = nuke.thisNode()
+        if thisNode is None:
+            return None
+        return thisNode['name'].value() or 'Root'
 
 
 def main():

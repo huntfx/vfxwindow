@@ -150,6 +150,7 @@ class NukeCallbacks(AbstractCallbacks):
         callback = NukeCallbackProxy(name, register, unregister, func, args, kwargs, intercept)
 
         # Only register if the Nuke window is loaded
+        # TODO: Test what happens when a group is unloaded in Nuke
         if self.gui is not None and not self.gui._isHiddenNk:
             callback.register()
 
