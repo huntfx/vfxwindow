@@ -218,6 +218,9 @@ class TestWindow(VFXWindow):
             self.callbacks.add('frame.playback.before', persistent(lambda scene, depsgraph: print('Callback: frame.playback.before ({})'.format(scene.name))))
             self.callbacks.add('frame.playback.after', persistent(lambda scene, depsgraph: print('Callback: frame.playback.after ({})'.format(scene.name))))
 
+            self.callbacks.add('undo', lambda scene, _: print('Callback: redo non-persistent ({})'.format(scene.name)))
+            self.callbacks.add('redo', lambda scene, _: print('Callback: redo non-persistent ({})'.format(scene.name)))
+
         # TODO: Add other callbacks
         elif self.application == 'Substance Desiger':
             self.addCallbackBeforeFileLoaded(self.substanceDesignerBeforeFileLoad)

@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from collections import defaultdict
 from contextlib import contextmanager
+from functools import wraps
 import weakref
 
 from ..exceptions import UnknownCallbackError
@@ -36,6 +37,18 @@ class CallbackProxy(object):
         self._registered = False
         self._result = None
 
+        @wraps(func)
+        def runCallback(*args, **kwargs):
+            """Run the callback function."""
+            if intercept is None or not intercept(*args, **kwargs):
+                func(*args, **kwargs)
+
+        # Copy over custom data (eg. Blender's '_bpy_persistent' attribute)
+        for k, v in vars(func).items():
+            setattr(runCallback, k, v)
+
+        self.func = runCallback
+
     def __bool__(self):
         return self.registered
     __nonzero__ = __bool__
@@ -52,24 +65,19 @@ class CallbackProxy(object):
     @property
     def registered(self):
         """Determine if the callback is registered."""
-        return self._registered is not None
-
-    def callbackFunc(self, *args, **kwargs):
-        """Run the callback function."""
-        if not self._itercept(*args, **kwargs):
-            self._func(*args, **kwargs)
+        return self._registered
 
     def register(self):
         """Register the callback."""
-        if not self._registered:
+        if not self.registered:
             print('Registering: {}'.format(self._name))
-            self._result = self._register(self.callbackFunc, *self._args, **self._kwargs)
+            self._result = self._register(self.func, *self._args, **self._kwargs)
             self._registered = True
         return self
 
     def unregister(self):
         """Unregister the callback."""
-        if self._registered:
+        if self.registered:
             print('Unregistering: {}'.format(self._name))
             self._unregister(self.getUnregisterParam())
             self._registered = False

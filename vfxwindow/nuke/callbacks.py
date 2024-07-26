@@ -11,7 +11,7 @@ class NukeCallbackProxy(CallbackProxy):
 
     def getUnregisterParam(self):
         """Get the parameter to pass to the unregister function."""
-        return self.callbackFunc
+        return self.func
 
 
 class NukeCallbacks(AbstractCallbacks):

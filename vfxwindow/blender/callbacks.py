@@ -11,7 +11,12 @@ class BlenderCallbackProxy(CallbackProxy):
 
     def getUnregisterParam(self):
         """Get the parameter to pass to the unregister function."""
-        return self.callbackFunc
+        return self.func
+
+    @property
+    def registered(self):
+        """Determine if the callback is registered."""
+        return self.func in self._register.__self__
 
 
 class BlenderCallbacks(AbstractCallbacks):
