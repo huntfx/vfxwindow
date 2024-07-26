@@ -55,6 +55,7 @@ class SubstanceDesignerCallbacks(AbstractCallbacks):
         """
         parts = name.split('.') + [None, None, None]
 
+        register = unregister = None
         if parts[0] == 'file':
             unregister = APPLICATION.unregisterCallback
             if parts[1] == 'load':
@@ -85,8 +86,8 @@ class SubstanceDesignerCallbacks(AbstractCallbacks):
                     if parts[3] == 'changed':
                         register = MANAGER.registerExplorerSelectionChangedCallback
 
-        register = MANAGER.registerGraphViewCreatedCallback
-        unregister = MANAGER.unregisterCallback
+        if register is None:
+            return None
 
         callback = CallbackProxy(name, register, unregister, func, args, kwargs)
 
