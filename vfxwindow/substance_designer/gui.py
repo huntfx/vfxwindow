@@ -81,6 +81,7 @@ class SubstanceDesignerWindow(AbstractWindow):
             parent = getMainWindow()
         super(SubstanceDesignerWindow, self).__init__(parent, **kwargs)
 
+        self._isHiddenSD = False
         self.setDockable(dockable, override=True)
 
     @property
@@ -182,6 +183,23 @@ class SubstanceDesignerWindow(AbstractWindow):
         if not self.dockable():
             self.saveWindowPosition()
         return super(SubstanceDesignerWindow, self).closeEvent(event)
+
+    def hideEvent(self, event):
+        """Unregister callbacks and save window location."""
+        if not event.spontaneous() and not self.isClosed():
+            self._isHiddenSD = True
+            self.callbacks.unregister()
+            self.saveWindowPosition()
+        return super(SubstanceDesignerWindow, self).hideEvent(event)
+
+    def showEvent(self, event):
+        """Register callbacks and update UI (if checkForChanges is defined)."""
+        if not event.spontaneous():
+            self.callbacks.register()
+            self._isHiddenSD = False
+            if hasattr(self, 'checkForChanges'):
+                self.checkForChanges()
+        return super(SubstanceDesignerWindow, self).showEvent(event)
 
     @classmethod
     def clearWindowInstance(cls, windowID):
