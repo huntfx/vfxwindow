@@ -8,12 +8,15 @@ from functools import partial
 import bpy
 
 from .application import Application
+from .callbacks import BlenderCallbacks
 from ..utils import setCoordinatesToScreen, hybridmethod
 from ..standalone.gui import StandaloneWindow
 
 
 class BlenderWindow(StandaloneWindow):
     """Window to use for Blender."""
+
+    CallbackClass = BlenderCallbacks
 
     def saveWindowPosition(self):
         """Save the window location."""
@@ -79,6 +82,16 @@ class BlenderWindow(StandaloneWindow):
         kwargs['instance'] = True
         kwargs['exec_'] = False
         return super(BlenderWindow, cls).show(*args, **kwargs)
+
+    @classmethod
+    def clearWindowInstance(cls, windowID):
+        """Close the last class instance."""
+        inst = super(BlenderWindow, cls).clearWindowInstance(windowID)
+
+        if inst is not None:
+            inst['window'].callbacks.unregister()
+
+        return inst
 
     @hybridmethod
     def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):

@@ -188,6 +188,36 @@ class TestWindow(VFXWindow):
             self.callbacks.add('render.background.frame', lambda: print('Callback: render.background.frame'))
             self.callbacks.add('render.background.frame.after', lambda: print('Callback: render.background.frame.after'))
 
+        elif self.application == 'Blender':
+            from bpy.app.handlers import persistent
+            self.callbacks.add('file.load', persistent(lambda path, _: print('Callback: file.load ({})'.format(path))))
+            self.callbacks.add('file.load.before', persistent(lambda path, _: print('Callback: file.load.before ({})'.format(path))))
+            self.callbacks.add('file.load.after', persistent(lambda path, _: print('Callback: file.load.after ({})'.format(path))))
+            self.callbacks.add('file.load.fail', persistent(lambda path, _: print('Callback: file.load.fail ({})'.format(path))))
+            self.callbacks.add('file.save', persistent(lambda path, _: print('Callback: file.save ({})'.format(path))))
+            self.callbacks.add('file.save.before', persistent(lambda path, _: print('Callback: file.save.before ({})'.format(path))))
+            self.callbacks.add('file.save.after', persistent(lambda path, _: print('Callback: file.save.after ({})'.format(path))))
+            self.callbacks.add('file.save.fail', persistent(lambda path, _: print('Callback: file.save.fail ({})'.format(path))))
+            self.callbacks.add('render', persistent(lambda scene, _: print('Callback: render ({})'.format(scene.name))))
+            self.callbacks.add('render.cancel', persistent(lambda scene, _: print('Callback: render.cancel ({})'.format(scene.name))))
+            self.callbacks.add('render.before', persistent(lambda scene, _: print('Callback: render.before ({})'.format(scene.name))))
+            self.callbacks.add('render.after', persistent(lambda scene, _: print('Callback: render.after ({})'.format(scene.name))))
+            self.callbacks.add('render.frame.before', persistent(lambda scene, _: print('Callback: render.frame.before ({})'.format(scene.name))))
+            self.callbacks.add('render.frame.after', persistent(lambda scene, _: print('Callback: render.frame.after ({})'.format(scene.name))))
+            self.callbacks.add('render.frame.write', persistent(lambda scene, _: print('Callback: render.frame.write ({})'.format(scene.name))))
+            self.callbacks.add('undo', persistent(lambda scene, _: print('Callback: undo ({})'.format(scene.name))))
+            self.callbacks.add('undo.before', persistent(lambda scene, _: print('Callback: undo.before ({})'.format(scene.name))))
+            self.callbacks.add('undo.after', persistent(lambda scene, _: print('Callback: undo.after ({})'.format(scene.name))))
+            self.callbacks.add('redo', persistent(lambda scene, _: print('Callback: redo ({})'.format(scene.name))))
+            self.callbacks.add('redo.before', persistent(lambda scene, _: print('Callback: redo.before ({})'.format(scene.name))))
+            self.callbacks.add('redo.after', persistent(lambda scene, _: print('Callback: redo.after ({})'.format(scene.name))))
+            self.callbacks.add('frame.changed', persistent(lambda scene, _: print('Callback: frame.changed ({})'.format(scene.name))))
+            self.callbacks.add('frame.changed.before', persistent(lambda scene, _: print('Callback: frame.changed.before ({})'.format(scene.name))))
+            self.callbacks.add('frame.changed.after', persistent(lambda scene, depsgraph: print('Callback: frame.changed.after ({})'.format(scene.name))))
+            self.callbacks.add('frame.playback', persistent(lambda scene, depsgraph: print('Callback: frame.playback ({})'.format(scene.name))))
+            self.callbacks.add('frame.playback.before', persistent(lambda scene, depsgraph: print('Callback: frame.playback.before ({})'.format(scene.name))))
+            self.callbacks.add('frame.playback.after', persistent(lambda scene, depsgraph: print('Callback: frame.playback.after ({})'.format(scene.name))))
+
         # TODO: Add other callbacks
         elif self.application == 'Substance Desiger':
             self.addCallbackBeforeFileLoaded(self.substanceDesignerBeforeFileLoad)

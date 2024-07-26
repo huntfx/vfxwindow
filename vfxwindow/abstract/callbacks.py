@@ -52,7 +52,7 @@ class CallbackProxy(object):
     @property
     def registered(self):
         """Determine if the callback is registered."""
-        return self._id is not None
+        return self._registered is not None
 
     def callbackFunc(self, *args, **kwargs):
         """Run the callback function."""

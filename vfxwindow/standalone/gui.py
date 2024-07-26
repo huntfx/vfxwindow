@@ -116,16 +116,18 @@ class StandaloneWindow(AbstractWindow):
     @classmethod
     def clearWindowInstance(cls, windowID):
         """Close the last class instance."""
-        previousInstance = super(StandaloneWindow, cls).clearWindowInstance(windowID)
-        if previousInstance is None:
-            return
+        inst = super(StandaloneWindow, cls).clearWindowInstance(windowID)
+        if inst is None:
+            return None
 
         #Shut down the window
-        if not previousInstance['window'].isClosed():
+        if not inst['window'].isClosed():
             try:
-                previousInstance['window'].close()
+                inst['window'].close()
             except (RuntimeError, ReferenceError):
                 pass
+
+        return inst
 
     def closeEvent(self, event):
         """Save the window location on window close."""
