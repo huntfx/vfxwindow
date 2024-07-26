@@ -221,14 +221,19 @@ class TestWindow(VFXWindow):
             self.callbacks.add('undo', lambda scene, _: print('Callback: redo non-persistent ({})'.format(scene.name)))
             self.callbacks.add('redo', lambda scene, _: print('Callback: redo non-persistent ({})'.format(scene.name)))
 
-        # TODO: Add other callbacks
         elif self.application == 'Substance Desiger':
-            self.addCallbackBeforeFileLoaded(self.substanceDesignerBeforeFileLoad)
-            self.addCallbackAfterFileLoaded(self.substanceDesignerAfterFileLoad)
-            self.addCallbackBeforeFileSaved(self.substanceDesignerBeforeFileSave)
-            self.addCallbackAfterFileSaved(self.substanceDesignerAfterFileSave)
-            self.addCallbackBeforeFileClosed(self.substanceDesignerBeforeFileClose)
-            self.addCallbackAfterFileClosed(self.substanceDesignerAfterFileClose)
+            self.callbacks.add('file.load', lambda explorerID: print('file.load (explorerID={!r})'.format(explorerID)))
+            self.callbacks.add('file.load.before', lambda explorerID: print('file.load.before (explorerID={!r})'.format(explorerID)))
+            self.callbacks.add('file.load.after', lambda explorerID: print('file.load.after (explorerID={!r})'.format(explorerID)))
+            self.callbacks.add('file.save', lambda explorerID: print('file.save (explorerID={!r})'.format(explorerID)))
+            self.callbacks.add('file.save.before', lambda explorerID: print('file.save.before (explorerID={!r})'.format(explorerID)))
+            self.callbacks.add('file.save.after', lambda explorerID: print('file.save.after (explorerID={!r})'.format(explorerID)))
+            self.callbacks.add('file.close', lambda explorerID: print('file.close (explorerID={!r})'.format(explorerID)))
+            self.callbacks.add('file.close.before', lambda explorerID: print('file.close.before (explorerID={!r})'.format(explorerID)))
+            self.callbacks.add('file.close.after', lambda explorerID: print('file.close.after (explorerID={!r})'.format(explorerID)))
+            self.callbacks.add('ui.graph.created', lambda graphViewID: print('graph.created (graphViewID={!r})'.format(graphViewID)))
+            self.callbacks.add('ui.explorer.created', lambda explorerID: print('explorer.created (explorerID={!r})'.format(explorerID)))
+            self.callbacks.add('ui.explorer.selection.changed', lambda explorerID: print('explorer.selection.changed (explorerID={!r})'.format(explorerID)))
 
     @QtCore.Slot()
     def refresh(self):
@@ -279,24 +284,6 @@ class TestWindow(VFXWindow):
     def eventFilter(self, obj, event):
         print('eventFilter on {}: {}'.format(obj, event.type()))
         return super(TestWindow, self).eventFilter(obj, event)
-
-    def substanceDesignerBeforeFileLoad(self, filePath):
-        print('Before file load (file: {})'.format(filePath))
-
-    def substanceDesignerAfterFileLoad(self, filePath, succeed, updated):
-        print('After file load (file: {}, succeed: {}, updated: {})'.format(filePath, succeed, updated))
-
-    def substanceDesignerBeforeFileSave(self, filePath, parentPackagePath):
-        print('Before file saved (file: {}, parentPackage: {})'.format(filePath, parentPackagePath))
-
-    def substanceDesignerAfterFileSave(self, filePath, succeed):
-        print('After file saved (file: {}, succeed: {})'.format(filePath, succeed))
-
-    def substanceDesignerBeforeFileClose(self, filePath):
-        print('Before file closed (file: {})'.format(filePath))
-
-    def substanceDesignerAfterFileClose(self, filePath, succeed):
-        print('After file closed (file: {}, succeed: {})'.format(filePath, succeed))
 
     def _nukeThisNode(self):
         import nuke

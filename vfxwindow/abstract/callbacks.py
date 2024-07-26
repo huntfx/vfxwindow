@@ -41,6 +41,7 @@ class CallbackProxy(object):
         def runCallback(*args, **kwargs):
             """Run the callback function."""
             if intercept is None or not intercept(*args, **kwargs):
+                print('Running {}...'.format(name))
                 func(*args, **kwargs)
 
         # Copy over custom data (eg. Blender's '_bpy_persistent' attribute)

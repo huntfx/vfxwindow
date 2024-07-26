@@ -15,6 +15,7 @@ from Qt import QtCore, QtWidgets
 import sd
 
 from .application import Application
+from .callbacks import SubstanceDesignerCallbacks
 from ..abstract.gui import AbstractWindow
 from ..utils import setCoordinatesToScreen, hybridmethod, getWindowSettings
 
@@ -70,6 +71,8 @@ def dockWrap(windowClass, *args, **kwargs):
 
 class SubstanceDesignerWindow(AbstractWindow):
     """Window to use for Substance Designer."""
+
+    CallbackClass = SubstanceDesignerCallbacks
 
     def __init__(self, parent=None, dockable=False, **kwargs):
         if dockable:
@@ -184,17 +187,18 @@ class SubstanceDesignerWindow(AbstractWindow):
     def clearWindowInstance(cls, windowID):
         """Close the last class instance."""
         try:
-            previousInstance = super(SubstanceDesignerWindow, cls).clearWindowInstance(windowID)
+            inst = super(SubstanceDesignerWindow, cls).clearWindowInstance(windowID)
         except TypeError:
             return
-        if previousInstance is None:
+        if inst is None:
             return
-        cls.removeCallbacks(windowInstance=previousInstance)
+        cls.removeCallbacks(windowInstance=inst)
+        inst['window'].callbacks.unregister()
 
         #Shut down the window
-        if not previousInstance['window'].isClosed():
+        if not inst['window'].isClosed():
             try:
-                previousInstance['window'].close()
+                inst['window'].close()
             except (RuntimeError, ReferenceError):
                 pass
 
