@@ -235,6 +235,20 @@ class TestWindow(VFXWindow):
             self.callbacks.add('ui.explorer.created', lambda explorerID: print('explorer.created (explorerID={!r})'.format(explorerID)))
             self.callbacks.add('ui.explorer.selection.changed', lambda explorerID: print('explorer.selection.changed (explorerID={!r})'.format(explorerID)))
 
+        elif self.application == 'Substance Painter':
+            self.callbacks.add('file.open', lambda evt: print('file.open'))
+            self.callbacks.add('file.new', lambda evt: print('file.new'))
+            self.callbacks.add('file.close', lambda evt: print('file.close'))
+            self.callbacks.add('file.close.before', lambda evt: print('file.close.before'))
+            self.callbacks.add('file.save', lambda evt: print('file.save'))
+            self.callbacks.add('file.save.before', lambda evt: print('file.save.before (file_path={!r})'.format(evt.file_path)))
+            self.callbacks.add('file.save.after', lambda evt: print('file.save'))
+            self.callbacks.add('export.textures.before', lambda evt: print('file.new (textures={!r})'.format(evt.textures)))
+            self.callbacks.add('export.textures.after', lambda evt: print('file.new (message={!r}, status={!r}, textures={!r})'.format(evt.message, evt.status, evt.textures)))
+            self.callbacks.add('shelf.crawling', lambda evt: print('shelf.crawling (shelf_name={!r})'.format(evt.shelf_name)))
+            self.callbacks.add('shelf.crawling.before', lambda evt: print('shelf.crawling.before (shelf_name={!r})'.format(evt.shelf_name)))
+            self.callbacks.add('shelf.crawling.after', lambda evt: print('shelf.crawling.after (shelf_name={!r})'.format(evt.shelf_name)))
+
     @QtCore.Slot()
     def refresh(self):
         self._signalPause = True

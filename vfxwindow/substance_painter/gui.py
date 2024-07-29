@@ -4,28 +4,6 @@ Issues:
     Opening a new window with the old one already open will result in a warning:
         [Application] Duplicates found in dock widget object names: `<window>`.
         There will be issues in UI layout save and restore.
-
-TODO:
-    https://helpx.adobe.com/substance-3d-painter-python/api/substance-painter/event.html
-    import substance_painter.event as __e
-
-    # Subscribe to project related events.
-    connections = {
-        __e.ProjectOpened: _UIWindow.addCallbackProjectOpened,
-        __e.ProjectCreated: _UIWindow.addCallbackProjectCreated,
-        __e.ProjectAboutToClose: _UIWindow.addCallbackProjectAboutToClose,
-        __e.ProjectAboutToSave: _UIWindow.addCallbackProjectAboutToSave,
-        __e.ProjectSaved: _UIWindow.addCallbackProjectSaved,
-        __e.ExportTexturesAboutToStart: _UIWindow.addCallbackExportTexturesAboutToStart,
-        __e.ExportTexturesEnded: _UIWindow.addCallbackExportTexturesEnded,
-        __e.ShelfCrawlingStarted: _UIWindow.addCallbackShelfCrawlingStarted,
-        __e.ShelfCrawlingEnded: _UIWindow.addCallbackShelfCrawlingEnded,
-        __e.ProjectEditionEntered: _UIWindow.addCallbackProjectEditionEntered,
-        __e.ProjectEditionLeft: _UIWindow.addCallbackProjectEditionLeft,
-
-    }
-    for event, callback in connections.items():
-        __e.DISPATCHER.connect(event, callback)
 """
 
 from __future__ import absolute_import
@@ -37,6 +15,7 @@ from Qt import QtCore, QtWidgets
 import substance_painter
 
 from .application import Application
+from .callbacks import SubstancePainterCallbacks
 from ..abstract.gui import AbstractWindow
 from ..utils import setCoordinatesToScreen, hybridmethod, getWindowSettings
 
@@ -81,6 +60,8 @@ def dockWrap(windowClass, *args, **kwargs):
 
 class SubstancePainterWindow(AbstractWindow):
     """Window to use for Substance Painter."""
+
+    CallbackClass = SubstancePainterCallbacks
 
     def __init__(self, parent=None, dockable=False, **kwargs):
         if parent is None:
@@ -182,16 +163,17 @@ class SubstancePainterWindow(AbstractWindow):
     def clearWindowInstance(cls, windowID):
         """Close the last class instance."""
         try:
-            previousInstance = super(SubstancePainterWindow, cls).clearWindowInstance(windowID)
+            inst = super(SubstancePainterWindow, cls).clearWindowInstance(windowID)
         except TypeError:
             return
-        if previousInstance is None:
+        if inst is None:
             return
+        inst['window'].callbacks.unregister()
 
         #Shut down the window
-        if not previousInstance['window'].isClosed():
+        if not inst['window'].isClosed():
             try:
-                previousInstance['window'].close()
+                inst['window'].close()
             except (RuntimeError, ReferenceError):
                 pass
 
