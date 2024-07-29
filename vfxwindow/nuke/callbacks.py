@@ -19,24 +19,24 @@ class NukeCallbacks(AbstractCallbacks):
         """Register a callback.
 
         Callbacks:
-            new: Called whenever a new script is made.
+            file.new: Called whenever a new script is made.
 
-            load:
+            file.load:
                 Called whenever a script is loaded.
                 This is run immediately after `onCreate` for the root.
 
-            save:
+            file.save:
                 Called when the user tries to save a script.
 
-            close:
+            file.close:
                 This is run immediately before `onDestroy` for the root
 
-            create:
+            node.added:
                 Called when any node is created.
                 Examples are loading a script, pasting a node, selecting
                 a menu item or undoing a delete.
 
-            destroy:
+            node.removed:
                 Called when any node is deleted.
                 This includes undo, closing a script or exiting Nuke.
                 It is not run for preferences, Python knobs or crashes.
@@ -89,33 +89,35 @@ class NukeCallbacks(AbstractCallbacks):
         parts = name.split('.') + [None, None, None]
 
         register = unregister = intercept = None
-        if parts[0] == 'new':
-            register = partial(nuke.addOnCreate, nodeClass='Root')
-            unregister = partial(nuke.removeOnCreate, nodeClass='Root')
-            intercept = lambda *args, **kwargs: bool(nuke.thisNode()['name'].value())
+        if parts[0] == 'file':
+            if parts[1] == 'new':
+                register = partial(nuke.addOnCreate, nodeClass='Root')
+                unregister = partial(nuke.removeOnCreate, nodeClass='Root')
+                intercept = lambda *args, **kwargs: bool(nuke.thisNode()['name'].value())
 
-        elif parts[0] == 'load':
-            register = nuke.addOnScriptLoad
-            unregister = nuke.removeOnScriptLoad
+            elif parts[1] == 'load':
+                register = nuke.addOnScriptLoad
+                unregister = nuke.removeOnScriptLoad
 
-        elif parts[0] == 'save':
-            register = nuke.addOnScriptSave
-            unregister = nuke.removeOnScriptSave
+            elif parts[1] == 'save':
+                register = nuke.addOnScriptSave
+                unregister = nuke.removeOnScriptSave
 
-        elif parts[0] == 'close':
-            register = nuke.addOnScriptClose
-            unregister = nuke.removeOnScriptClose
+            elif parts[1] == 'close':
+                register = nuke.addOnScriptClose
+                unregister = nuke.removeOnScriptClose
 
-        elif parts[0] == 'create':
-            if parts[1] == 'user':
-                register = nuke.addOnUserCreate
-                unregister = nuke.removeOnUserCreate
-            elif parts[1] is None:
-                register = nuke.addOnCreate
-                unregister = nuke.removeOnCreate
+        elif parts[0] == 'node':
+            if parts[1] == 'added':
+                if parts[2] == 'user':
+                    register = nuke.addOnUserCreate
+                    unregister = nuke.removeOnUserCreate
+                elif parts[2] is None:
+                    register = nuke.addOnCreate
+                    unregister = nuke.removeOnCreate
 
-        elif parts[0] == 'destroy':
-            register = nuke.addOnDestroy
+            elif parts[1] == 'removed':
+                register = nuke.addOnDestroy
             unregister = nuke.removeOnDestroy
 
         elif parts[0] == 'render':

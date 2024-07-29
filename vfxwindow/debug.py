@@ -74,34 +74,34 @@ class TestWindow(VFXWindow):
 
         # Add legit callbacks
         if self.application == 'Maya':
-            self.callbacks.add('new.before', lambda clientData: self.callbacks['pauseOnNew'].unregister())
-            self.callbacks.add('new.after', lambda clientData: self.callbacks['pauseOnNew'].register())
-            self.callbacks.add('open.before', lambda clientData: self.callbacks['pauseOnNew'].unregister())
-            self.callbacks.add('open.after', lambda clientData: self.callbacks['pauseOnNew'].register())
+            self.callbacks.add('file.new.before', lambda clientData: self.callbacks['pauseOnNew'].unregister())
+            self.callbacks.add('file.new.after', lambda clientData: self.callbacks['pauseOnNew'].register())
+            self.callbacks.add('file.open.before', lambda clientData: self.callbacks['pauseOnNew'].unregister())
+            self.callbacks.add('file.open.after', lambda clientData: self.callbacks['pauseOnNew'].register())
 
         # Add test callbacks
         if self.application == 'Maya':
-            self.callbacks.add('new', lambda clientData: print('Callback: new'))
-            self.callbacks.add('new.before', lambda clientData: print('Callback: new.before'))
+            self.callbacks.add('file.new', lambda clientData: print('Callback: file.new'))
+            self.callbacks.add('file.new.before', lambda clientData: print('Callback: file.new.before'))
             def beforeNewCheck(clientData):
-                print('Callback: new.before.check')
+                print('Callback: file.new.before.check')
                 return True
-            self.callbacks.add('new.before.check', beforeNewCheck)
-            self.callbacks.add('new.after', lambda clientData: print('Callback: new.after'))
-            self.callbacks.add('open', lambda clientData: print('Callback: open'))
-            self.callbacks.add('open.before', lambda clientData: print('Callback: open.before'))
+            self.callbacks.add('file.new.before.check', beforeNewCheck)
+            self.callbacks.add('file.new.after', lambda clientData: print('Callback: file.new.after'))
+            self.callbacks.add('file.open', lambda clientData: print('Callback: file.open'))
+            self.callbacks.add('file.open.before', lambda clientData: print('Callback: file.open.before'))
             def beforeOpenCheck(fileObj, clientData):
-                print('Callback: open.before.check ({})'.format(fileObj.resolvedFullName()))
+                print('Callback: file.open.before.check ({})'.format(fileObj.resolvedFullName()))
                 return True
-            self.callbacks.add('open.before.check', beforeOpenCheck)
-            self.callbacks.add('open.after', lambda clientData: print('Callback: open.after'))
-            self.callbacks.add('save', lambda clientData: print('Callback: save'))
-            self.callbacks.add('save.before', lambda clientData: print('Callback: save.before'))
+            self.callbacks.add('file.open.before.check', beforeOpenCheck)
+            self.callbacks.add('file.open.after', lambda clientData: print('Callback: file.open.after'))
+            self.callbacks.add('file.save', lambda clientData: print('Callback: file.save'))
+            self.callbacks.add('file.save.before', lambda clientData: print('Callback: file.save.before'))
             def beforeSaveCheck(clientData):
-                print('Callback: save.before.check')
+                print('Callback: file.save.before.check')
                 return True
-            self.callbacks.add('save.before.check', beforeSaveCheck)
-            self.callbacks.add('save.after', lambda clientData: print('Callback: save.after'))
+            self.callbacks.add('file.save.before.check', beforeSaveCheck)
+            self.callbacks.add('file.save.after', lambda clientData: print('Callback: file.save.after'))
             self.callbacks.add('import', lambda clientData: print('Callback: import'))
             self.callbacks.add('import.before', lambda clientData: print('Callback: import.before'))
             def beforeImportCheck(fileObj, clientData):
@@ -163,20 +163,20 @@ class TestWindow(VFXWindow):
             # self.callbacks.add('node.uuid.changed', lambda node, prevName, clientData: print('Callback: node.name.changed ({})'.format(node, prevName)))
             # self.callbacks.add('node.destroyed', lambda clientData: print('Callback: destroyed'))
             self.callbacks['pauseOnNew'].add('frame.changed', lambda time, clientData: print('Callback: frame.changed: ({})'.format(time.value)))
-            self.callbacks['pauseOnNew'].add('frame.changed.deferred', lambda time, clientData: print('Callback: frame.changed.deferred: ({})'.format(time.value)))
+            self.callbacks['pauseOnNew'].add('frame.changed.after', lambda time, clientData: print('Callback: frame.changed.deferred: ({})'.format(time.value)))
             # self.callbacks.add('attribute.changed', lambda msg, plug, clientData: print('Callback: changed.changed ({}, {}, {})'.format(msg, plug)))
             # self.callbacks.add('attribute.value.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.value.changed ({}, {}, {})'.format(msg, plug, otherPlug)))
             # self.callbacks.add('attribute.keyable.changed', lambda plug, clientData: print('Callback: render'))
 
         elif self.application == 'Nuke':
             import nuke
-            self.callbacks.add('new', lambda: print('Callback: new ({})'.format(self._nukeThisNode())))
-            self.callbacks.add('load', lambda: print('Callback: load ({})'.format(self._nukeThisNode())))
-            self.callbacks.add('save', lambda: print('Callback: save ({})'.format(self._nukeThisNode())))
-            self.callbacks.add('close', lambda: print('Callback: close ({})'.format(self._nukeThisNode())))
-            self.callbacks.add('create', lambda: print('Callback: create ({})'.format(self._nukeThisNode())))
-            self.callbacks.add('create.user', lambda: print('Callback: create.user ({})'.format(self._nukeThisNode())))
-            self.callbacks.add('destroy', lambda: print('Callback: destroy ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('file.new', lambda: print('Callback: file.new ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('load', lambda: print('Callback: file.load ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('save', lambda: print('Callback: file.save ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('file.close', lambda: print('Callback: file.close ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('node.added', lambda: print('Callback: node.added ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('node.added.user', lambda: print('Callback: node.added.user ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('node.removed', lambda: print('Callback: node.removed ({})'.format(self._nukeThisNode())))
             self.callbacks.add('render', lambda: print('Callback: render ({})'.format(self._nukeThisNode())))
             self.callbacks.add('render.before', lambda: print('Callback: render.before ({})'.format(self._nukeThisNode())))
             self.callbacks.add('render.after', lambda: print('Callback: render.after ({})'.format(self._nukeThisNode())))

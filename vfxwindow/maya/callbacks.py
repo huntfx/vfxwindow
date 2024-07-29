@@ -13,56 +13,56 @@ class MayaCallbacks(AbstractCallbacks):
         """Register a callback.
 
         Callbacks:
-            new:
-                Mapped to 'new.after'.
+            'file.new:
+                Mapped to 'file.new.after'.
 
-            new.before:
+            file.new.before:
                 Called before a File > New operation.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            new.before.check:
+            file.new.before.check:
                 Called prior to File > New operation, allows user to cancel action.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> bool
 
-            new.after:
+            file.new.after:
                 Called after a File > New operation.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            open:
-                Mapped to 'open.after'.
+            file.open:
+                Mapped to 'file.open.after'.
 
-            open.before:
+            file.open.before:
                 Called before a File > Open operation.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            open.before.check:
+            file.open.before.check:
                 Called prior to File > Open operation, allows user to cancel action.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> bool
 
-            open.after:
+            file.open.after:
                 Called after a File > Open operation.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            save:
-                Mapped to 'save.after'.
+            file.save:
+                Mapped to 'file.save.after'.
 
-            save.before:
+            file.save.before:
                 Called before a File > Save (or SaveAs) operation.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            save.before.check:
+            file.save.before.check:
                 Called before a File > Save (or SaveAs) operation.
                 Parameters: (clientData=None)
                 Signature: (file: MFileObject, clientData) -> bool
 
-            save.after:
+            file.save.after:
                 Called after a File > Save (or SaveAs) operation.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
@@ -350,13 +350,13 @@ class MayaCallbacks(AbstractCallbacks):
                 om.MMessage.removeCallback
                 undo
                 redo
-                timeChanged
+                timeChanged  = frame.change
                 ActiveViewChanged
                 cameraChange
                 time.changed
                 selection.changed
         """
-        parts = name.split('.') + [None, None, None]
+        parts = name.split('.') + [None, None, None, None]
 
         sceneMessage = None
         sceneCheckMessage = None
@@ -369,32 +369,33 @@ class MayaCallbacks(AbstractCallbacks):
         dgMessageWithNode = None
         nodeMessageWithNode = None
 
-        if parts[0] == 'new':
-            if parts[1] == 'before':
-                if parts[2] == 'check':
-                    sceneCheckMessage = om2.MSceneMessage.kBeforeNewCheck
-                elif parts[2] is None:
-                    sceneMessage = om2.MSceneMessage.kBeforeNew
-            elif parts[1] in ('after', None):
-                sceneMessage = om2.MSceneMessage.kAfterNew
+        if parts[0] == 'file':
+            if parts[1] == 'new':
+                if parts[2] == 'before':
+                    if parts[3] == 'check':
+                        sceneCheckMessage = om2.MSceneMessage.kBeforeNewCheck
+                    elif parts[3] is None:
+                        sceneMessage = om2.MSceneMessage.kBeforeNew
+                elif parts[2] in ('after', None):
+                    sceneMessage = om2.MSceneMessage.kAfterNew
 
-        elif parts[0] == 'open':
-            if parts[1] == 'before':
-                if parts[2] == 'check':
-                    sceneFileCheckMessage = om2.MSceneMessage.kBeforeOpenCheck
-                elif parts[2] is None:
-                    sceneMessage = om2.MSceneMessage.kBeforeOpen
-            elif parts[1] in ('after', None):
-                sceneMessage = om2.MSceneMessage.kAfterOpen
+            elif parts[1] == 'open':
+                if parts[2] == 'before':
+                    if parts[3] == 'check':
+                        sceneFileCheckMessage = om2.MSceneMessage.kBeforeOpenCheck
+                    elif parts[3] is None:
+                        sceneMessage = om2.MSceneMessage.kBeforeOpen
+                elif parts[2] in ('after', None):
+                    sceneMessage = om2.MSceneMessage.kAfterOpen
 
-        elif parts[0] == 'save':
-            if parts[1] == 'before':
-                if parts[2] == 'check':
-                    sceneCheckMessage = om2.MSceneMessage.kBeforeSaveCheck
-                elif parts[2] is None:
-                    sceneMessage = om2.MSceneMessage.kBeforeSave
-            elif parts[1] in ('after', None):
-                sceneMessage = om2.MSceneMessage.kAfterSave
+            elif parts[1] == 'save':
+                if parts[2] == 'before':
+                    if parts[3] == 'check':
+                        sceneCheckMessage = om2.MSceneMessage.kBeforeSaveCheck
+                    elif parts[3] is None:
+                        sceneMessage = om2.MSceneMessage.kBeforeSave
+                elif parts[2] in ('after', None):
+                    sceneMessage = om2.MSceneMessage.kAfterSave
 
         elif parts[0] == 'import':
             if parts[1] == 'before':
@@ -522,7 +523,7 @@ class MayaCallbacks(AbstractCallbacks):
             if parts[1] == 'changed':
                 if parts[2] is None:
                     dgMessage = om2.MDGMessage.addTimeChangeCallback
-                elif parts[2] == 'deferred':
+                elif parts[2] == 'after':
                     dgMessage = om2.MDGMessage.addForceUpdateCallback
 
         elif parts[0] == 'attribute':
