@@ -12,6 +12,7 @@ from functools import partial
 from Qt import QtCore, QtGui, QtWidgets
 
 from .application import AbstractApplication
+from .callbacks import AbstractCallbacks
 from ..utils import hybridmethod, setCoordinatesToScreen, saveWindowSettings, getWindowSettings, getWindowSettingsPath
 from ..utils.palette import savePaletteData, setPalette
 
@@ -64,7 +65,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         if callbackClass is not None:
             self.callbacks = callbackClass(self)
         else:
-            self.callbacks = None  # Temporary until fully integrated
+            self.callbacks = AbstractCallbacks(self)
 
         # Setup window attributes and saving
         self.enableSaveWindowPosition(True)
