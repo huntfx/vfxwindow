@@ -75,7 +75,7 @@ class AbstractApplication(str):
 
         if ' ' in name:
             # Check if name contains a part ('3ds Max' == 'Max')
-            if any(part in other for part in name.split(' ')):
+            if ' ' not in other and any(part in other for part in name.split(' ')):
                 return True
             # Check if mismatched spaces ('3ds Max' == '3dsmax')
             if name.replace(' ', '') == other.replace(' ', ''):
