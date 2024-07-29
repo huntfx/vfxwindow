@@ -68,6 +68,7 @@ class SubstancePainterWindow(AbstractWindow):
             parent = getMainWindow()
         super(SubstancePainterWindow, self).__init__(parent, **kwargs)
 
+        self._isHiddenSP = False
         self.setDockable(dockable, override=True)
 
     @property
@@ -158,6 +159,23 @@ class SubstancePainterWindow(AbstractWindow):
         """The dialog is already centered so skip."""
         if not self.isDialog():
             return super(SubstancePainterWindow, self).centreWindow(*args, **kwargs)
+
+    def hideEvent(self, event):
+        """Unregister callbacks and save window location."""
+        if not event.spontaneous() and not self.isClosed():
+            self._isHiddenSP = True
+            self.callbacks.unregister()
+            self.saveWindowPosition()
+        return super(SubstancePainterWindow, self).hideEvent(event)
+
+    def showEvent(self, event):
+        """Register callbacks and update UI (if checkForChanges is defined)."""
+        if not event.spontaneous():
+            self.callbacks.register()
+            self._isHiddenSP = False
+            if hasattr(self, 'checkForChanges'):
+                self.checkForChanges()
+        return super(SubstancePainterWindow, self).showEvent(event)
 
     @classmethod
     def clearWindowInstance(cls, windowID):

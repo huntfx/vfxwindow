@@ -91,7 +91,7 @@ class SubstanceDesignerCallbacks(AbstractCallbacks):
 
         callback = CallbackProxy(name, register, unregister, func, args, kwargs)
 
-        # Only register if the Nuke window is loaded
+        # Only register if the Substance Designer window is loaded
         # TODO: Test what happens when a group is unloaded in Substance Designer
         if self.gui is not None and not self.gui._isHiddenSD:
             callback.register()
