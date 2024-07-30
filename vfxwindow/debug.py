@@ -81,6 +81,8 @@ class TestWindow(VFXWindow):
 
         # Add test callbacks
         if self.application == 'Maya':
+            import maya.cmds as mc
+            import maya.api.OpenMaya as om2
             self.callbacks.add('file.new', lambda clientData: print('Callback: file.new'))
             self.callbacks.add('file.new.before', lambda clientData: print('Callback: file.new.before'))
             def beforeNewCheck(clientData):
@@ -144,8 +146,8 @@ class TestWindow(VFXWindow):
             self.callbacks.add('render.software.frame.before', lambda clientData: print('Callback: render.software.frame.before'))
             self.callbacks.add('render.software.frame.after', lambda clientData: print('Callback: render.software.frame.after'))
             self.callbacks.add('render.software.interrupted', lambda clientData: print('Callback: render.software.interrupted'))
-            self.callbacks.add('application.start', lambda clientData: print('Callback: application.start'))
-            self.callbacks.add('application.exit', lambda clientData: print('Callback: application.exit'))
+            self.callbacks.add('app.start', lambda clientData: print('Callback: app.init'))
+            self.callbacks.add('app.exit', lambda clientData: print('Callback: app.exit'))
             self.callbacks.add('plugin.load', lambda data, clientData: print('Callback: plugin.load ({})'.format(data)))
             self.callbacks.add('plugin.load.before', lambda data, clientData: print('Callback: plugin.load.before ({})'.format(data)))
             self.callbacks.add('plugin.load.after', lambda data, clientData: print('Callback: plugin.load.after ({})'.format(data)))
@@ -155,28 +157,49 @@ class TestWindow(VFXWindow):
             self.callbacks['pauseOnNew'].add('connection', lambda srcPlug, dstPlug, made, clientData: print('Callback: connection ({}, {}, {})'.format(srcPlug, dstPlug, made)))
             self.callbacks['pauseOnNew'].add('connection.before', lambda srcPlug, dstPlug, made, clientData: print('Callback: connection.before ({}, {}, {})'.format(srcPlug, dstPlug, made)))
             self.callbacks['pauseOnNew'].add('connection.after', lambda srcPlug, dstPlug, made, clientData: print('Callback: connection.after ({}, {}, {})'.format(srcPlug, dstPlug, made)))
-            # self.callbacks.add('node.added', lambda node, clientData: print('Callback: node.added ({})'.format(node)), nodeType='dependNode')
-            # self.callbacks.add('node.removed', lambda node, clientData: print('Callback: node.removed ({})'.format(node)), nodeType='dependNode')
-            # self.callbacks.add('node.dirty', lambda node, clientData: print('Callback: node.dirty ({})'.format(node)))
-            # self.callbacks.add('node.dirty.plug', lambda node, plug, clientData: print('Callback: node.dirty.plug ({})'.format(node, plug)))
-            # self.callbacks.add('node.name.changed', lambda node, prevName, clientData: print('Callback: node.name.changed ({})'.format(node, prevName)))
-            # self.callbacks.add('node.uuid.changed', lambda node, prevName, clientData: print('Callback: node.name.changed ({})'.format(node, prevName)))
-            # self.callbacks.add('node.destroyed', lambda clientData: print('Callback: destroyed'))
             self.callbacks['pauseOnNew'].add('frame.changed', lambda time, clientData: print('Callback: frame.changed: ({})'.format(time.value)))
             self.callbacks['pauseOnNew'].add('frame.changed.after', lambda time, clientData: print('Callback: frame.changed.deferred: ({})'.format(time.value)))
-            # self.callbacks.add('attribute.changed', lambda msg, plug, clientData: print('Callback: changed.changed ({}, {}, {})'.format(msg, plug)))
-            # self.callbacks.add('attribute.value.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.value.changed ({}, {}, {})'.format(msg, plug, otherPlug)))
-            # self.callbacks.add('attribute.keyable.changed', lambda plug, clientData: print('Callback: render'))
+            self.callbacks.add('node.added', lambda node, clientData: print('Callback: node.added ({})'.format(node)), nodeType='dependNode')
+            self.callbacks.add('node.removed', lambda node, clientData: print('Callback: node.removed ({})'.format(node)), nodeType='dependNode')
+            self.callbacks.add('node.rename', lambda node, prevName, clientData: print('Callback: node.renamed ({}, {})'.format(node, prevName)), om2.MObject.kNullObj)
+            self.callbacks.add('node.uuid.set', lambda node, prevUuid, clientData: print('Callback: node.uuid.set ({}, {})'.format(node, prevUuid)), om2.MObject.kNullObj)
+            self.callbacks.add('node.dirty', lambda node, clientData: print('Callback: node.dirty ({})'.format(node)), om2.MObject.kNullObj)
+            self.callbacks.add('node.dirty.plug', lambda node, plug, clientData: print('Callback: node.dirty.plug ({})'.format(node, plug)), om2.MObject.kNullObj)
+            self.callbacks.add('node.destroyed', lambda clientData: print('Callback: destroyed'), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.changed ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.added', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.added ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.removed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.removed ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.rename', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.renamed ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.value', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.value ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.value.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.value.changed ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.locked', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.locked ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.locked.set', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.locked.set ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.locked.unset', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.locked.unset ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.keyable', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.keyable ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.keyable.set', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.keyable.set ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.keyable.unset', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.keyable.unset ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+
+            if mc.objExists('pCube1'):
+                selection = om2.MSelectionList()
+                selection.add('pCube1.translateX')
+                def keyableChangeOverride(plug, clientData, msg):
+                    print('attribute.keyable.override ({}, {})'.format(plug, msg))
+                    return True
+                self.callbacks.add('attribute.keyable.override', keyableChangeOverride, selection.getPlug(0))
+
 
         elif self.application == 'Nuke':
             import nuke
             self.callbacks.add('file.new', lambda: print('Callback: file.new ({})'.format(self._nukeThisNode())))
-            self.callbacks.add('load', lambda: print('Callback: file.load ({})'.format(self._nukeThisNode())))
-            self.callbacks.add('save', lambda: print('Callback: file.save ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('file.load', lambda: print('Callback: file.load ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('file.save', lambda: print('Callback: file.save ({})'.format(self._nukeThisNode())))
             self.callbacks.add('file.close', lambda: print('Callback: file.close ({})'.format(self._nukeThisNode())))
             self.callbacks.add('node.added', lambda: print('Callback: node.added ({})'.format(self._nukeThisNode())))
             self.callbacks.add('node.added.user', lambda: print('Callback: node.added.user ({})'.format(self._nukeThisNode())))
             self.callbacks.add('node.removed', lambda: print('Callback: node.removed ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('knob.changed', lambda: print('Callback: knob.changed ({}, {})'.format(self._nukeThisNode(), self._nukeThisKnob())))
+            self.callbacks.add('ui.update', lambda: print('Callback: ui.update ({})'.format(self._nukeThisNode())))
+
             self.callbacks.add('render', lambda: print('Callback: render ({})'.format(self._nukeThisNode())))
             self.callbacks.add('render.before', lambda: print('Callback: render.before ({})'.format(self._nukeThisNode())))
             self.callbacks.add('render.after', lambda: print('Callback: render.after ({})'.format(self._nukeThisNode())))
@@ -221,7 +244,7 @@ class TestWindow(VFXWindow):
             self.callbacks.add('undo', lambda scene, _: print('Callback: redo non-persistent ({})'.format(scene.name)))
             self.callbacks.add('redo', lambda scene, _: print('Callback: redo non-persistent ({})'.format(scene.name)))
 
-        elif self.application == 'Substance Desiger':
+        elif self.application == 'Substance Designer':
             self.callbacks.add('file.load', lambda explorerID: print('file.load (explorerID={!r})'.format(explorerID)))
             self.callbacks.add('file.load.before', lambda explorerID: print('file.load.before (explorerID={!r})'.format(explorerID)))
             self.callbacks.add('file.load.after', lambda explorerID: print('file.load.after (explorerID={!r})'.format(explorerID)))
@@ -301,11 +324,17 @@ class TestWindow(VFXWindow):
 
     def _nukeThisNode(self):
         import nuke
-        thisNode = nuke.thisNode()
-        if thisNode is None:
+        node = nuke.thisNode()
+        if node is None or not isinstance(node, nuke.Node):
             return None
-        return thisNode['name'].value() or 'Root'
+        return node.name() or 'Root'
 
+    def _nukeThisKnob(self):
+        import nuke
+        knob = nuke.thisKnob()
+        if knob is None:
+            return None
+        return knob.name()
 
 def main():
     return TestWindow.show()

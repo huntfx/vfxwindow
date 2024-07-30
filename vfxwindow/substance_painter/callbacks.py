@@ -128,6 +128,8 @@ class SubstancePainterCallbacks(AbstractCallbacks):
                 elif parts[2] in ('after', None):
                     event = sp.event.ShelfCrawlingEnded
 
+        if event is None:
+            return super(SubstancePainterCallbacks, self).add(name, func, *args, **kwargs)
 
         register = partial(sp.event.DISPATCHER.connect_strong, event)
         unregister = partial(sp.event.DISPATCHER.disconnect, event)
@@ -135,7 +137,6 @@ class SubstancePainterCallbacks(AbstractCallbacks):
         callback = SubstancePainterCallbackProxy(name, register, unregister, func, args, kwargs)
 
         # Only register if the Substance Painter window is loaded
-        # TODO: Test what happens when a group is unloaded in Substance Painter
         if self.gui is not None and not self.gui._isHiddenSP:
             callback.register()
 

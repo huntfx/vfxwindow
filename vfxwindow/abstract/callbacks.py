@@ -71,7 +71,7 @@ class CallbackProxy(object):
     def register(self):
         """Register the callback."""
         if not self.registered:
-            print('Registering: {}'.format(self._name))
+            print('Registering: {} ({}, {})'.format(self._name, self._args, self._kwargs))
             self._result = self._register(self.func, *self._args, **self._kwargs)
             self._registered = True
         return self
@@ -89,15 +89,21 @@ class AbstractCallbacks(object):
     """Base class for callbacks."""
 
     def __init__(self, gui):
-        self._gui = weakref.ref(gui)
+        if isinstance(gui, weakref.ReferenceType):
+            self._gui = gui
+        else:
+            self._gui = weakref.ref(gui)
         self._callbacks = []
-        self._groups = defaultdict(type(self))
+        self._groups = defaultdict(self._new)
+
+    def _new(self):
+        return type(self)(self._gui)
 
     def __getitem__(self, group):
         return self._groups[group]
 
     def __delitem__(self, group):
-        self._groups[group].unregister()
+        self._groups[group].delete()
         del self._groups[group]
 
     def __iter__(self):
@@ -114,39 +120,47 @@ class AbstractCallbacks(object):
 
     def add(self, name, func, *args, **kwargs):
         """Add a callback."""
-        return None
+        raise UnknownCallbackError(name)
 
     def remove(self, callbackProxy):
         """Remove a callback."""
-        callbackProxy.unregister()
-        self._callbacks.remove(callbackProxy)
+        self._callbacks.remove(callbackProxy.unregister())
 
     def register(self):
         """Register all callbacks.
         This is not needed unless `unregister()` has been called.
         """
-        for callback in self._callbacks:
-            callback.register()
-
+        callbacks = [cb.register() for cb in self._callbacks if not cb.registered]
         for group in self._groups.values():
-            group.register()
+            callbacks.extend(group.register())
+        return callbacks
 
     def unregister(self):
         """Unregister all callbacks."""
-        for callback in self._callbacks:
-            callback.unregister()
-
+        callbacks = [cb.unregister() for cb in self._callbacks if cb.registered]
         for group in self._groups.values():
-            group.unregister()
+            callbacks.extend(group.unregister())
+        return callbacks
+
+    def delete(self):
+        """Delete all callbacks."""
+        callbacks = [cb.unregister() for cb in self._callbacks]
+        for group in self._groups.values():
+            callbacks.extend(group.delete())
+
+        self._callbacks[:] = []
+        self._groups.clear()
+        return callbacks
 
     @contextmanager
     def pause(self):
         """Temporarily pause all callbacks."""
-        self.unregister()
+        callbacks = self.unregister()
         try:
             yield
         finally:
-            self.register()
+            for callback in callbacks:
+                callback.register()
 
     @property
     def gui(self):

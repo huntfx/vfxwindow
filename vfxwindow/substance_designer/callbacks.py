@@ -87,12 +87,11 @@ class SubstanceDesignerCallbacks(AbstractCallbacks):
                         register = MANAGER.registerExplorerSelectionChangedCallback
 
         if register is None:
-            return None
+            return super(SubstanceDesignerCallbacks, self).add(name, func, *args, **kwargs)
 
         callback = CallbackProxy(name, register, unregister, func, args, kwargs)
 
         # Only register if the Substance Designer window is loaded
-        # TODO: Test what happens when a group is unloaded in Substance Designer
         if self.gui is not None and not self.gui._isHiddenSD:
             callback.register()
 

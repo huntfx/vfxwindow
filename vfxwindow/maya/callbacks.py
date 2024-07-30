@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from functools import partial
+from functools import partial, wraps
 
 import maya.api.OpenMaya as om2
 import maya.cmds as mc
@@ -229,12 +229,12 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            application.start:
+            app.init:
                 Called on interactive or batch startup after initialization.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            application.exit:
+            app.exit:
                 Called just before Maya exits.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
@@ -294,52 +294,112 @@ class MayaCallbacks(AbstractCallbacks):
 
             node.dirty:
                 Called for node dirty messages.
+                Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
                 Signature: (node: MObject, plug: MPlug, clientData) -> None
 
             node.dirty.plug:
                 Called for node dirty messages.
+                Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
                 Signature: (node: MObject, plug: MPlug, clientData) -> None
 
-            node.name.changed:
+            node.rename:
                 Called for name changed messages.
                 Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
-                Signature (node: MObject, prevName: str, clientData) -> None
+                Signature: (node: MObject, prevName: str, clientData) -> None
 
-            node.uuid.changed:
+            node.uuid.set:
                 Called for UUID changed messages.
                 Parameters: (node: MObject, clientData=None)
-                Signature (node: MObject, prevUuid: MUuid, clientData) -> None
+                Signature: (node: MObject, prevUuid: MUuid, clientData) -> None
+
+            node.destroyed:
+                Called when the node is destroyed.
+                Parameters: (node: MObject, clientData=None)
+                Signature: (clientData) -> None
 
             frame.changed:
                 Callback that is called whenever the time changes in the dependency graph.
                 Parameters: (clientData=None)
                 Signature: (time: MTime, clientData) -> None
 
-            frame.changed.deferred:
+            frame.changed.after:
                 Called after the time changes and after all DG nodes have been evaluated.
                 Parameters: (clientData=None)
                 Signature: (time: MTime, clientData) -> None
 
             attribute.changed:
-                Called when an attribute is added or removed.
+                Called for all attribute value changed messages.
+                The callback is disabled while Maya is in playback or scrubbing modes.
+                Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
-                Signature: TODO
+                Signature: (msg: int, plug: MPlug, clientData) -> None
+
+            attribute.added:
+                Called when an attribute is added.
+                Use a null MObject to listen for all nodes.
+                Parameters: (node: MObject, clientData=None)
+                Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
+
+            attribute.removed:
+                Called when an attribute is removed.
+                Use a null MObject to listen for all nodes.
+                Parameters: (node: MObject, clientData=None)
+                Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
+
+            attribute.value:
+                Mapped to 'attribute.value.changed'
 
             attribute.value.changed:
-                Called for attribute value changed messages.
-                The callback is disabled while Maya is in playback or scrubbing modes.
+                Called when an attribute value is changed.
+                Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
-                Signature: TODO
+                Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
 
-            attribute.keyable.changed:
+            attribute.locked:
+                Called when an attribute is locked or unlocked.
+                Use a null MObject to listen for all nodes.
+                Parameters: (node: MObject, clientData=None)
+                Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
+
+            attribute.locked.set:
+                Called when an attribute is locked.
+                Use a null MObject to listen for all nodes.
+                Parameters: (node: MObject, clientData=None)
+                Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
+
+            attribute.locked.unset:
+                Called when an attribute is unlocked.
+                Use a null MObject to listen for all nodes.
+                Parameters: (node: MObject, clientData=None)
+                Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
+
+            attribute.keyable:
+                Called when an attribute is made keyable or unkeyable.
+                Use a null MObject to listen for all nodes.
+                Parameters: (node: MObject, clientData=None)
+                Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
+
+            attribute.keyable.set:
+                Called when an attribute is made keyable.
+                Use a null MObject to listen for all nodes.
+                Parameters: (node: MObject, clientData=None)
+                Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
+
+            attribute.keyable.unset:
+                Called when an attribute is made unkeyable.
+                Use a null MObject to listen for all nodes.
+                Parameters: (node: MObject, clientData=None)
+                Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
+
+            attribute.keyable.override:
                 Called for attribute keyable state changes.
                 Return a value to accept or reject the change.
                 Only one keyable change callback per attribute is allowed.
                 Parameters: (plug: MPlug, clientData=None)
-                Signature: TODO
+                Signature: (plug: MPlug, clientData) -> bool
 
         TODO:
             'scriptjob.event'
@@ -355,7 +415,10 @@ class MayaCallbacks(AbstractCallbacks):
                 cameraChange
                 time.changed
                 selection.changed
+
+            om2.MDGMessage.addNodeChangeUuidCheckCallback
         """
+        _func = func
         parts = name.split('.') + [None, None, None, None]
 
         sceneMessage = None
@@ -472,10 +535,10 @@ class MayaCallbacks(AbstractCallbacks):
                 elif parts[2] == 'interrupted':
                     sceneMessage = om2.MSceneMessage.kSoftwareRenderInterrupted
 
-        elif parts[0] == 'application':
-            if parts[1] == 'start':
+        elif parts[0] == 'app':
+            if parts[1] == 'init':
                 sceneMessage = om2.MSceneMessage.kMayaInitialized
-            elif parts[1] == 'end':
+            elif parts[1] == 'exit':
                 sceneMessage = om2.MSceneMessage.kMayaExiting
 
         elif parts[0] == 'plugin':
@@ -501,23 +564,22 @@ class MayaCallbacks(AbstractCallbacks):
                 dgMessage = om2.MDGMessage.addNodeAddedCallback
             elif parts[1] == 'removed':
                 # if parts[2] == 'before':
-                #     nodeMessage = om2.MNodeMessage.addNodePreRemovalCallback
+                #     nodeMessageWithNode = om2.MNodeMessage.addNodePreRemovalCallback
                 # elif parts[2] in ('after', None):
                 #     dgMessage = om2.MDGMessage.addNodeRemovedCallback
                 dgMessage = om2.MDGMessage.addNodeRemovedCallback
-            elif parts[1] == 'name':
-                if parts[2] == 'changed':
-                    nodeMessage = om2.MNodeMessage.addNameChangedCallback
+            elif parts[1] == 'rename':
+                nodeMessageWithNode = om2.MNodeMessage.addNameChangedCallback
             elif parts[1] == 'uuid':
-                if parts[2] == 'changed':
-                    nodeMessage = om2.MNodeMessage.addUuidChangedCallback
+                if parts[2] == 'set':
+                    nodeMessageWithNode = om2.MNodeMessage.addUuidChangedCallback
             elif parts[2] == 'dirty':
                 if parts[3] == 'plug':
-                    dgMessageWithNode = om2.MNodeMessage.addNodeDirtyPlugCallback
+                    nodeMessageWithNode = om2.MNodeMessage.addNodeDirtyPlugCallback
                 elif parts[3] is None:
-                    dgMessageWithNode = om2.MNodeMessage.addNodeDirtyCallback
+                    nodeMessageWithNode = om2.MNodeMessage.addNodeDirtyCallback
             elif parts[2] == 'destroyed':
-                nodeMessage = om2.MNodeMessage.addNodeDestroyedCallback
+                nodeMessageWithNode = om2.MNodeMessage.addNodeDestroyedCallback
 
         elif parts[0] == 'frame':
             if parts[1] == 'changed':
@@ -527,14 +589,57 @@ class MayaCallbacks(AbstractCallbacks):
                     dgMessage = om2.MDGMessage.addForceUpdateCallback
 
         elif parts[0] == 'attribute':
-            if parts[1] == 'changed':
-                nodeMessageWithNode = om2.MNodeMessage.addAttributeAddedOrRemovedCallback
+            def filterByMsg(allowedFilter):
+                """Avoid running a callback when a message doesn't match."""
+                @wraps(_func)
+                def wrapper(msg, plug, otherPlug, clientData):
+                    if msg & allowedFilter:
+                        _func(msg, plug, otherPlug, clientData)
+                return wrapper
+
+            if parts[1] is None:
+                nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
+
+            elif parts[1] == 'added':
+                nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
+                func = filterByMsg(om2.MNodeMessage.kAttributeAdded)
+
+            elif parts[1] == 'removed':
+                nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
+                func = filterByMsg(om2.MNodeMessage.kAttributeRemoved)
+
             elif parts[1] == 'value':
-                if parts[2] == 'changed':
+                if parts[2] in ('changed', None):
                     nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
+                    func = filterByMsg(om2.MNodeMessage.kAttributeSet)
+
+            elif parts[1] == 'locked':
+                if parts[2] == 'set':
+                    nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
+                    func = filterByMsg(om2.MNodeMessage.kAttributeLocked)
+                elif parts[2] == 'unset':
+                    nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
+                    func = filterByMsg(om2.MNodeMessage.kAttributeUnlocked)
+                elif parts[2] is None:
+                    nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
+                    func = filterByMsg(om2.MNodeMessage.kAttributeLocked | om2.MNodeMessage.kAttributeUnlocked)
+
             elif parts[1] == 'keyable':
-                if parts[2] == 'changed':
+                if parts[2] == 'set':
+                    nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
+                    func = filterByMsg(om2.MNodeMessage.kAttributeKeyable)
+                elif parts[2] == 'unset':
+                    nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
+                    func = filterByMsg(om2.MNodeMessage.kAttributeUnkeyable)
+                elif parts[2] is None:
+                    nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
+                    func = filterByMsg(om2.MNodeMessage.kAttributeKeyable | om2.MNodeMessage.kAttributeUnkeyable)
+                elif parts[2] == 'override':
                     nodeMessageWithNode = om2.MNodeMessage.addKeyableChangeOverride
+
+            elif parts[1] == 'rename':
+                nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
+                func = filterByMsg(om2.MNodeMessage.kAttributeRenamed)
 
         if sceneMessage is not None:
             register = partial(om2.MSceneMessage.addCallback, sceneMessage)
@@ -552,14 +657,20 @@ class MayaCallbacks(AbstractCallbacks):
             register = dgMessage
             unregister = om2.MMessage.removeCallback
         elif dgMessageWithNode is not None:
-            register = partial(dgMessageWithNode, args[0])
+            try:
+                register = partial(dgMessageWithNode, args[0])
+            except IndexError:
+                raise ValueError('missing required argument')
             args = args[1:]
             unregister = om2.MMessage.removeCallback
         elif nodeMessage is not None:
             register = nodeMessage
             unregister = om2.MNodeMessage.removeCallback
         elif nodeMessageWithNode is not None:
-            register = partial(nodeMessageWithNode, args[0])
+            try:
+                register = partial(nodeMessageWithNode, args[0])
+            except IndexError:
+                raise ValueError('missing required argument')
             unregister = om2.MNodeMessage.removeCallback
             args = args[1:]
         elif scriptJobEvent is not None:
@@ -569,7 +680,11 @@ class MayaCallbacks(AbstractCallbacks):
             register = lambda func, *args, **kwargs: mc.scriptJob(conditionChange=[scriptJobCondition, func], *args, **kwargs)
             unregister = lambda callbackID: mc.scriptJob(kill=callbackID)
         else:
-            return None
+            return super(MayaCallbacks, self).add(name, func, *args, **kwargs)
+
+        # Directly passing in the `nodeType` argument causes an error
+        if 'nodeType' in kwargs:
+            args = list(args) + [kwargs.pop('nodeType')]
 
         callback = CallbackProxy(name, register, unregister, func, args, kwargs).register()
         self._callbacks.append(callback)

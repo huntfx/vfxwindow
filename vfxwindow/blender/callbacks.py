@@ -228,7 +228,7 @@ class BlenderCallbacks(AbstractCallbacks):
                 handler = bpy.app.handlers.redo_post
 
         if handler is None:
-            return None
+            return super(BlenderCallbacks, self).add(name, func, *args, **kwargs)
 
         callback = BlenderCallbackProxy(name, handler.append, handler.remove, func, args, kwargs).register()
         self._callbacks.append(callback)

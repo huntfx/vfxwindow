@@ -20,26 +20,37 @@ class NukeCallbacks(AbstractCallbacks):
 
         Callbacks:
             file.new: Called whenever a new script is made.
+                Signature: () -> None
 
             file.load:
                 Called whenever a script is loaded.
                 This is run immediately after `onCreate` for the root.
+                Signature: () -> None
 
             file.save:
                 Called when the user tries to save a script.
+                Signature: () -> None
 
             file.close:
-                This is run immediately before `onDestroy` for the root
+                This is run immediately before `onDestroy` for the root.
+                Signature: () -> None
 
             node.added:
                 Called when any node is created.
-                Examples are loading a script, pasting a node, selecting
-                a menu item or undoing a delete.
+                Parameters: (nodeClass: Optional[str] = None)
+                Signature: () -> None
+
+            node.added.user:
+                Called when any node is created by the user in the GUI.
+                Parameters: (nodeClass: Optional[str] = None)
+                Signature: () -> None
 
             node.removed:
                 Called when any node is deleted.
                 This includes undo, closing a script or exiting Nuke.
                 It is not run for preferences, Python knobs or crashes.
+                Parameters: (nodeClass: Optional[str] = None)
+                Signature: () -> None
 
             render:
                 Mapped to 'render.after'
@@ -47,10 +58,12 @@ class NukeCallbacks(AbstractCallbacks):
             render.before:
                 Called prior to starting rendering.
                 Any error causes the render to abort.
+                Signature: () -> None
 
             render.after:
                 Called after rendering of all frames is finished.
                 Any error causes the render to abort.
+                Signature: () -> None
 
             render.frame:
                 Mapped to 'render.frame.after'
@@ -58,10 +71,12 @@ class NukeCallbacks(AbstractCallbacks):
             render.frame.before:
                 Called prior to starting rendering of each frame.
                 Any error causes the render to abort.
+                Signature: () -> None
 
             render.frame.after:
                 Called after each frame has finished rendering.
                 Any error causes the render to abort.
+                Signature: () -> None
 
             render.background:
                 Mapped to 'render.background.after'
@@ -77,9 +92,20 @@ class NukeCallbacks(AbstractCallbacks):
                 Called after each frame of a background render.
                 Signature: (context={'id': ..., 'frame': int, numFrames: int, frameProgress: int}) -> None
 
+            knob.changed:
+                Called when the user changes the value of any knob.
+                Only triggers when the control panel is open.
+                Parameters: (nodeClass: Optional[str] = None)
+                Signature: () -> None
+
+            ui.update:
+                Called when any changes are made to each node.
+                This is low priority so Nuke may have already started
+                calculating the Viewer image.
+                Parameters: (nodeClass: Optional[str] = None)
+                Signature: () -> None
+
         Unimplemented:
-            knobChanged
-            updateUI
             autolabel
             filenameFilter
             validateFilename
@@ -93,7 +119,7 @@ class NukeCallbacks(AbstractCallbacks):
             if parts[1] == 'new':
                 register = partial(nuke.addOnCreate, nodeClass='Root')
                 unregister = partial(nuke.removeOnCreate, nodeClass='Root')
-                intercept = lambda *args, **kwargs: bool(nuke.thisNode()['name'].value())
+                intercept = lambda *args, **kwargs: nuke.thisNode().Class() == 'Root'
 
             elif parts[1] == 'load':
                 register = nuke.addOnScriptLoad
@@ -118,7 +144,12 @@ class NukeCallbacks(AbstractCallbacks):
 
             elif parts[1] == 'removed':
                 register = nuke.addOnDestroy
-            unregister = nuke.removeOnDestroy
+                unregister = nuke.removeOnDestroy
+
+        elif parts[0] == 'knob':
+            if parts[1] == 'changed':
+                register = nuke.addKnobChanged
+                unregister = nuke.removeKnobChanged
 
         elif parts[0] == 'render':
             if parts[1] == 'before':
@@ -146,13 +177,21 @@ class NukeCallbacks(AbstractCallbacks):
                         register = nuke.addAfterBackgroundFrameRender
                         unregister = nuke.removeAfterBackgroundFrameRender
 
+        elif parts[0] == 'ui':
+            if parts[1] == 'update':
+                register = nuke.addUpdateUI
+                unregister = nuke.removeUpdateUI
+
         if register is None:
-            return None
+            return super(NukeCallbacks, self).add(name, func, *args, **kwargs)
+
+        # The nodeClass argument causes an error if not set
+        if 'nodeClass' in kwargs and kwargs['nodeClass'] is None:
+            del kwargs['nodeClass']
 
         callback = NukeCallbackProxy(name, register, unregister, func, args, kwargs, intercept)
 
         # Only register if the Nuke window is loaded
-        # TODO: Test what happens when a group is unloaded in Nuke
         if self.gui is not None and not self.gui._isHiddenNk:
             callback.register()
 
