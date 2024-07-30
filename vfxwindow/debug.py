@@ -90,13 +90,13 @@ class TestWindow(VFXWindow):
                 return True
             self.callbacks.add('file.new.before.check', beforeNewCheck)
             self.callbacks.add('file.new.after', lambda clientData: print('Callback: file.new.after'))
-            self.callbacks.add('file.open', lambda clientData: print('Callback: file.open'))
-            self.callbacks.add('file.open.before', lambda clientData: print('Callback: file.open.before'))
+            self.callbacks.add('file.load', lambda clientData: print('Callback: file.load'))
+            self.callbacks.add('file.load.before', lambda clientData: print('Callback: file.load.before'))
             def beforeOpenCheck(fileObj, clientData):
-                print('Callback: file.open.before.check ({})'.format(fileObj.resolvedFullName()))
+                print('Callback: file.load.before.check ({})'.format(fileObj.resolvedFullName()))
                 return True
-            self.callbacks.add('file.open.before.check', beforeOpenCheck)
-            self.callbacks.add('file.open.after', lambda clientData: print('Callback: file.open.after'))
+            self.callbacks.add('file.load.before.check', beforeOpenCheck)
+            self.callbacks.add('file.load.after', lambda clientData: print('Callback: file.load.after'))
             self.callbacks.add('file.save', lambda clientData: print('Callback: file.save'))
             self.callbacks.add('file.save.before', lambda clientData: print('Callback: file.save.before'))
             def beforeSaveCheck(clientData):
@@ -259,7 +259,7 @@ class TestWindow(VFXWindow):
             self.callbacks.add('ui.explorer.selection.changed', lambda explorerID: print('explorer.selection.changed (explorerID={!r})'.format(explorerID)))
 
         elif self.application == 'Substance Painter':
-            self.callbacks.add('file.open', lambda evt: print('file.open'))
+            self.callbacks.add('file.load', lambda evt: print('file.load'))
             self.callbacks.add('file.new', lambda evt: print('file.new'))
             self.callbacks.add('file.close', lambda evt: print('file.close'))
             self.callbacks.add('file.close.before', lambda evt: print('file.close.before'))

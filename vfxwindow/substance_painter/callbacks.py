@@ -19,7 +19,7 @@ class SubstancePainterCallbacks(AbstractCallbacks):
         """Register a callback.
 
         Callbacks:
-            file.open:
+            file.load:
                 Called when an existing project has been opened.
                 The project may still be loading at this point.
                 Signature: (evt: Event()) -> None
@@ -101,7 +101,7 @@ class SubstancePainterCallbacks(AbstractCallbacks):
             if parts[1] == 'new':
                 event = sp.event.ProjectCreated
 
-            elif parts[1] == 'open':
+            elif parts[1] == 'load':
                 event = sp.event.ProjectOpened
 
             elif parts[1] == 'save':

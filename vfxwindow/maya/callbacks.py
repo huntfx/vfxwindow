@@ -31,20 +31,20 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            file.open:
-                Mapped to 'file.open.after'.
+            file.load:
+                Mapped to 'file.load.after'.
 
-            file.open.before:
+            file.load.before:
                 Called before a File > Open operation.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            file.open.before.check:
+            file.load.before.check:
                 Called prior to File > Open operation, allows user to cancel action.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> bool
 
-            file.open.after:
+            file.load.after:
                 Called after a File > Open operation.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
@@ -442,7 +442,7 @@ class MayaCallbacks(AbstractCallbacks):
                 elif parts[2] in ('after', None):
                     sceneMessage = om2.MSceneMessage.kAfterNew
 
-            elif parts[1] == 'open':
+            elif parts[1] == 'load':
                 if parts[2] == 'before':
                     if parts[3] == 'check':
                         sceneFileCheckMessage = om2.MSceneMessage.kBeforeOpenCheck
