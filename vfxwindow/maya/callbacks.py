@@ -224,7 +224,7 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            render.software.interrupted:
+            render.software.cancel:
                 Called when an interactive render is interrupted by the user.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
@@ -278,14 +278,14 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (clientData=None)
                 Signature: (srcPlug: MPlug, destPlug: MPlug, made: bool, clientData) -> None
 
-            node.added:
+            node.add:
                 Called whenever a new node is added to the dependency graph.
                 The nodeType argument allows you to specify the type of nodes that will trigger the callback.
                 The default node type is "dependNode" which matches all nodes.
                 Parameters: (nodeType='dependNode', clientData=None)
                 Signature: (node: MObject, clientData) -> None
 
-            node.removed:
+            node.remove:
                 Called whenever a new node is removed from the dependency graph.
                 The nodeType argument allows you to specify the type of nodes that will trigger the callback.
                 The default node type is "dependNode" which matches all nodes.
@@ -337,13 +337,13 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (node: MObject, clientData=None)
                 Signature: (msg: int, plug: MPlug, clientData) -> None
 
-            attribute.added:
+            attribute.add:
                 Called when an attribute is added.
                 Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
                 Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
 
-            attribute.removed:
+            attribute.remove:
                 Called when an attribute is removed.
                 Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
@@ -427,17 +427,6 @@ class MayaCallbacks(AbstractCallbacks):
         TODO:
             'scriptjob.event'
             'scriptjob.condition'
-
-            om.MEventMessage.getEventNames():
-                om.MEventMessage.addEventCallback
-                om.MMessage.removeCallback
-                undo
-                redo
-                timeChanged  = frame.change
-                ActiveViewChanged
-                cameraChange
-                time.changed
-                selection.changed
 
             om2.MDGMessage.addNodeChangeUuidCheckCallback
         """
@@ -556,7 +545,7 @@ class MayaCallbacks(AbstractCallbacks):
                         sceneMessage = om2.MSceneMessage.kBeforeSoftwareFrameRender
                     elif parts[3] in ('after', None):
                         sceneMessage = om2.MSceneMessage.kAfterSoftwareFrameRender
-                elif parts[2] == 'interrupted':
+                elif parts[2] == 'cancel':
                     sceneMessage = om2.MSceneMessage.kSoftwareRenderInterrupted
 
         elif parts[0] == 'app':
@@ -584,9 +573,9 @@ class MayaCallbacks(AbstractCallbacks):
                 dgMessage = om2.MDGMessage.addConnectionCallback
 
         elif parts[0] == 'node':
-            if parts[1] == 'added':
+            if parts[1] == 'add':
                 dgMessage = om2.MDGMessage.addNodeAddedCallback
-            elif parts[1] == 'removed':
+            elif parts[1] == 'remove':
                 # if parts[2] == 'before':
                 #     nodeMessageWithNode = om2.MNodeMessage.addNodePreRemovalCallback
                 # elif parts[2] in ('after', None):
@@ -624,11 +613,11 @@ class MayaCallbacks(AbstractCallbacks):
             if parts[1] is None:
                 nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
 
-            elif parts[1] == 'added':
+            elif parts[1] == 'add':
                 nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
                 func = filterByMsg(om2.MNodeMessage.kAttributeAdded)
 
-            elif parts[1] == 'removed':
+            elif parts[1] == 'remove':
                 nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
                 func = filterByMsg(om2.MNodeMessage.kAttributeRemoved)
 

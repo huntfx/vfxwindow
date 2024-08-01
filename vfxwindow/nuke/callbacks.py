@@ -35,17 +35,17 @@ class NukeCallbacks(AbstractCallbacks):
                 This is run immediately before `onDestroy` for the root.
                 Signature: () -> None
 
-            node.added:
+            node.add:
                 Called when any node is created.
                 Parameters: (nodeClass: Optional[str] = None)
                 Signature: () -> None
 
-            node.added.user:
+            node.add.user:
                 Called when any node is created by the user in the GUI.
                 Parameters: (nodeClass: Optional[str] = None)
                 Signature: () -> None
 
-            node.removed:
+            node.remove:
                 Called when any node is deleted.
                 This includes undo, closing a script or exiting Nuke.
                 It is not run for preferences, Python knobs or crashes.
@@ -134,7 +134,7 @@ class NukeCallbacks(AbstractCallbacks):
                 unregister = nuke.removeOnScriptClose
 
         elif parts[0] == 'node':
-            if parts[1] == 'added':
+            if parts[1] == 'add':
                 if parts[2] == 'user':
                     register = nuke.addOnUserCreate
                     unregister = nuke.removeOnUserCreate
@@ -142,7 +142,7 @@ class NukeCallbacks(AbstractCallbacks):
                     register = nuke.addOnCreate
                     unregister = nuke.removeOnCreate
 
-            elif parts[1] == 'removed':
+            elif parts[1] == 'remove':
                 register = nuke.addOnDestroy
                 unregister = nuke.removeOnDestroy
 
