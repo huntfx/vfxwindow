@@ -294,13 +294,11 @@ class MayaCallbacks(AbstractCallbacks):
 
             node.dirty:
                 Called for node dirty messages.
-                Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
                 Signature: (node: MObject, plug: MPlug, clientData) -> None
 
             node.dirty.plug:
                 Called for node dirty messages.
-                Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
                 Signature: (node: MObject, plug: MPlug, clientData) -> None
 
@@ -310,10 +308,23 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (node: MObject, clientData=None)
                 Signature: (node: MObject, prevName: str, clientData) -> None
 
-            node.uuid.set:
+            node.uuid.changed:
                 Called for UUID changed messages.
                 Parameters: (node: MObject, clientData=None)
                 Signature: (node: MObject, prevUuid: MUuid, clientData) -> None
+
+            node.uuid.changed.check:
+                Called whenever a node may have its UUID changed.
+                Possible causes include renaming/reading from a file.
+                Parameters: (clientData=None)
+                Signature: (doAction: bool, node: MObject, uuid: MUuid, clientData) -> Action
+                    doAction: Whether the UUID will be applied.
+                    uuid: The UUID that may be applied to the node.
+                        The callback may modify this parameter.
+                    Action: Enum defined in `om2.MMessage`.
+                        kDefaultAction: Do not change if the UUID is used or not.
+                        kDoNotDoAction: Do not use the new UUID.
+                        kDoAction: Use the new UUID.
 
             node.destroyed:
                 Called when the node is destroyed.
@@ -584,14 +595,17 @@ class MayaCallbacks(AbstractCallbacks):
             elif parts[1] == 'rename':
                 nodeMessageWithNode = om2.MNodeMessage.addNameChangedCallback
             elif parts[1] == 'uuid':
-                if parts[2] == 'set':
-                    nodeMessageWithNode = om2.MNodeMessage.addUuidChangedCallback
-            elif parts[2] == 'dirty':
-                if parts[3] == 'plug':
+                if parts[2] == 'changed':
+                    if parts[3] == 'check':
+                        dgMessage = om2.MDGMessage.addNodeChangeUuidCheckCallback
+                    elif parts[3] is None:
+                        nodeMessageWithNode = om2.MNodeMessage.addUuidChangedCallback
+            elif parts[1] == 'dirty':
+                if parts[2] == 'plug':
                     nodeMessageWithNode = om2.MNodeMessage.addNodeDirtyPlugCallback
-                elif parts[3] is None:
+                elif parts[2] is None:
                     nodeMessageWithNode = om2.MNodeMessage.addNodeDirtyCallback
-            elif parts[2] == 'destroyed':
+            elif parts[1] == 'destroyed':
                 nodeMessageWithNode = om2.MNodeMessage.addNodeDestroyedCallback
 
         elif parts[0] == 'frame':
@@ -610,7 +624,7 @@ class MayaCallbacks(AbstractCallbacks):
                         _func(msg, plug, otherPlug, clientData)
                 return wrapper
 
-            if parts[1] is None:
+            if parts[1] == 'changed':
                 nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
 
             elif parts[1] == 'add':

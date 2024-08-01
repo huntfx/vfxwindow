@@ -76,8 +76,8 @@ class TestWindow(VFXWindow):
         if self.application == 'Maya':
             self.callbacks.add('file.new.before', lambda clientData: self.callbacks['pauseOnNew'].unregister())
             self.callbacks.add('file.new.after', lambda clientData: self.callbacks['pauseOnNew'].register())
-            self.callbacks.add('file.open.before', lambda clientData: self.callbacks['pauseOnNew'].unregister())
-            self.callbacks.add('file.open.after', lambda clientData: self.callbacks['pauseOnNew'].register())
+            self.callbacks.add('file.load.before', lambda clientData: self.callbacks['pauseOnNew'].unregister())
+            self.callbacks.add('file.load.after', lambda clientData: self.callbacks['pauseOnNew'].register())
 
         # Add test callbacks
         if self.application == 'Maya':
@@ -145,8 +145,8 @@ class TestWindow(VFXWindow):
             self.callbacks.add('render.software.frame', lambda clientData: print('Callback: render.software.frame'))
             self.callbacks.add('render.software.frame.before', lambda clientData: print('Callback: render.software.frame.before'))
             self.callbacks.add('render.software.frame.after', lambda clientData: print('Callback: render.software.frame.after'))
-            self.callbacks.add('render.software.interrupted', lambda clientData: print('Callback: render.software.interrupted'))
-            self.callbacks.add('app.start', lambda clientData: print('Callback: app.init'))
+            self.callbacks.add('render.software.cancel', lambda clientData: print('Callback: render.software.cancel'))
+            self.callbacks.add('app.init', lambda clientData: print('Callback: app.init'))
             self.callbacks.add('app.exit', lambda clientData: print('Callback: app.exit'))
             self.callbacks.add('plugin.load', lambda data, clientData: print('Callback: plugin.load ({})'.format(data)))
             self.callbacks.add('plugin.load.before', lambda data, clientData: print('Callback: plugin.load.before ({})'.format(data)))
@@ -162,10 +162,11 @@ class TestWindow(VFXWindow):
             self.callbacks.add('node.add', lambda node, clientData: print('Callback: node.add ({})'.format(node)), nodeType='dependNode')
             self.callbacks.add('node.remove', lambda node, clientData: print('Callback: node.remove ({})'.format(node)), nodeType='dependNode')
             self.callbacks.add('node.rename', lambda node, prevName, clientData: print('Callback: node.renamed ({}, {})'.format(node, prevName)), om2.MObject.kNullObj)
-            self.callbacks.add('node.uuid.set', lambda node, prevUuid, clientData: print('Callback: node.uuid.set ({}, {})'.format(node, prevUuid)), om2.MObject.kNullObj)
-            self.callbacks.add('node.dirty', lambda node, clientData: print('Callback: node.dirty ({})'.format(node)), om2.MObject.kNullObj)
-            self.callbacks.add('node.dirty.plug', lambda node, plug, clientData: print('Callback: node.dirty.plug ({})'.format(node, plug)), om2.MObject.kNullObj)
-            self.callbacks.add('node.destroyed', lambda clientData: print('Callback: destroyed'), om2.MObject.kNullObj)
+            self.callbacks.add('node.uuid.changed', lambda node, prevUuid, clientData: print('Callback: node.uuid.changed ({}, {})'.format(node, prevUuid)), om2.MObject.kNullObj)
+            def checkUUID(doAction, node, uuid, clientData):
+                print('Callback: node.uuid.changed ({}, {}, {})'.format(doAction, node, uuid))
+                return om2.MMessage.kDefaultAction
+            self.callbacks.add('node.uuid.changed.check', checkUUID)
             self.callbacks.add('attribute.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.changed ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
             self.callbacks.add('attribute.add', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.add ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
             self.callbacks.add('attribute.remove', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.remove ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
@@ -181,11 +182,16 @@ class TestWindow(VFXWindow):
 
             if mc.objExists('pCube1'):
                 selection = om2.MSelectionList()
+                selection.add('pCube1')
                 selection.add('pCube1.translateX')
+
+                self.callbacks.add('node.dirty', lambda node, clientData: print('Callback: node.dirty ({})'.format(node)), selection.getDependNode(0))
+                self.callbacks.add('node.dirty.plug', lambda node, plug, clientData: print('Callback: node.dirty.plug ({})'.format(node, plug)), selection.getDependNode(0))
+                self.callbacks.add('node.destroyed', lambda clientData: print('Callback: destroyed'), selection.getDependNode(0))
                 def keyableChangeOverride(plug, clientData, msg):
                     print('attribute.keyable.override ({}, {})'.format(plug, msg))
                     return True
-                self.callbacks.add('attribute.keyable.override', keyableChangeOverride, selection.getPlug(0))
+                self.callbacks.add('attribute.keyable.override', keyableChangeOverride, selection.getPlug(1))
 
 
         elif self.application == 'Nuke':
