@@ -734,143 +734,146 @@ class MayaCallbacks(AbstractCallbacks):
         self._callbacks.append(callback)
         return callback
 
-    def registerScene(self, msg, func, clientData=None):
-        """Register an MSceneMessage callback."""
-        callbackID = om2.MSceneMessage.addCallback(msg, func, clientData)
+    def addSceneMessage(self, msg, func, clientData=None):
+        """Add a scene callback.
 
-    def registerSceneCheck(self, msg, func, clientData=None):
-        """Register a scene check callback.
-        Returning False will abort the current operation.
+        Parameters:
+            msg (int): Scene message.
+                kSceneUpdate
+                kBeforeNew
+                kAfterNew
+                kBeforeImport
+                kAfterImport
+                kBeforeOpen
+                kAfterOpen
+                kBeforeExport
+                kAfterExport
+                kBeforeSave
+                kAfterSave
+                kBeforeCreateReference
+                kAfterCreateReference
+                kBeforeRemoveReference
+                kAfterRemoveReference
+                kBeforeImportReference
+                kAfterImportReference
+                kBeforeExportReference
+                kAfterExportReference
+                kBeforeUnloadReference
+                kAfterUnloadReference
+                kBeforeLoadReference
+                kAfterLoadReference
+                kBeforeSoftwareRender
+                kAfterSoftwareRender
+                kBeforeSoftwareFrameRender
+                kAfterSoftwareFrameRender
+                kSoftwareRenderInterrupted
+                kMayaInitialized
+                kMayaExiting
 
-        Example:
-            >>> def beforeSave(clientData=None):
-            ...     return askUser()
-            >>> msg = om2.MSceneMessage.kBeforeSaveCheck
-            >>> self.registerSceneCheckCallback(msg, beforeSave)
+            func (callable): Callback function.
+                Signature: (clientData: Any) -> None
 
-        Messages:
-            kBeforeNewCheck
-            kBeforeImportCheck
-            kBeforeOpenCheck
-            kBeforeExportCheck
-            kBeforeSaveCheck
-            kBeforeCreateReferenceCheck
-            kBeforeLoadReferenceCheck
+            clientData (any): Data to pass to the callback.
         """
-        addCheckCallback
+        register = partial(om2.MSceneMessage.addCallback, msg)
+        unregister = om2.MSceneMessage.removeCallback
+        callback = CallbackProxy(func.__name__, register, unregister,
+                                 func, (), {'clientData': clientData}).register()
+        self._callbacks.append(callback)
+        return callback
 
-    def registerSceneFileCheck(self, msg, func, clientData=None, group=None):
-        """Register a scene check callback that takes an MFileObject argument.
-        By modifying the MFileObject the target file will be changed as well.
-        Returning False will abort the current operation.
+    def addSceneCheckMessage(self, msg, func, clientData=None):
+        """Add a scene callback.
 
-        Example:
-            >>> def beforeOpen(file, clientData=None):
-            ...     if fileObj.resolvedFullName().startswith('F:'):
-            ...         mc.warning('Not allowed to open scenes on F drive')
-            ...         return False
-            ...     return True
-            >>> msg = om2.MSceneMessage.kBeforeOpenCheck
-            >>> self.registerSceneFileCheckCallback(msg, beforeOpen)
+        Parameters:
+            msg (int): Scene check message.
+                om2.MSceneMessage.kBeforeNewCheck
+                om2.MSceneMessage.kBeforeImportCheck
+                om2.MSceneMessage.kBeforeOpenCheck
+                om2.MSceneMessage.kBeforeExportCheck
+                om2.MSceneMessage.kBeforeSaveCheck
+                om2.MSceneMessage.kBeforeCreateReferenceCheck
+                om2.MSceneMessage.kBeforeLoadReferenceCheck
 
-        Messages:
-            kBeforeImportCheck
-            kBeforeOpenCheck
-            kBeforeExportCheck
-            kBeforeCreateReferenceCheck
-            kBeforeLoadReferenceCheck
+            func (callable): Callback function.
+                Signature: (clientData: Any) -> bool
+
+            clientData (any): Data to pass to the callback.
         """
-        addCheckFileCallback
+        register = partial(om2.MSceneMessage.addCheckCallback, msg)
+        unregister = om2.MSceneMessage.removeCallback
+        callback = CallbackProxy(func.__name__, register, unregister,
+                                 func, (), {'clientData': clientData}).register()
+        self._callbacks.append(callback)
+        return callback
 
-    def registerSceneStringArray(self, msg, func, clientData=None, group=None):
-        """Register a callback that takes a string array argument.
-        In the future more array elements may be added, so callbacks
-        should not rely on a fixed length.
+    def addSceneFileCheckMessage(self, msg, func, clientData=None):
+        """Add a scene file check callback.
 
-        Example:
-        >>> def afterPluginLoad(stringArray, clientData=None):
-        ...     path, name = stringArray[:2]
-        ...     print(f'Loaded {name} from {path}')
+        Parameters:
+            msg (int): Scene file check message.
+                om2.MSceneMessage.kBeforeImportCheck
+                om2.MSceneMessage.kBeforeOpenCheck
+                om2.MSceneMessage.kBeforeExportCheck
+                om2.MSceneMessage.kBeforeCreateReferenceCheck
+                om2.MSceneMessage.kBeforeLoadReferenceCheck
 
-        Messages:
-            kBeforePluginLoad (path)
-            kAfterPluginLoad (path, name)
-            kBeforePluginUnload (name)
-            kAfterPluginUnload (name, path)
+            func (callable): Callback function.
+                Signature: (file: MFileObject, clientData: Any) -> bool
+
+            clientData (any): Data to pass to the callback.
         """
-        addStringArrayCallback
+        register = partial(om2.MSceneMessage.addCheckFileCallback, msg)
+        unregister = om2.MSceneMessage.removeCallback
+        callback = CallbackProxy(func.__name__, register, unregister,
+                                 func, (), {'clientData': clientData}).register()
+        self._callbacks.append(callback)
+        return callback
+
+    def addSceneStringArrayMessage(self, msg, func, clientData=None):
+        """Add a scene string array callback.
+
+        Parameters:
+            msg (int): Scene message.
+                kBeforePluginLoad (path)
+                kAfterPluginLoad (path, name)
+                kBeforePluginUnload (name)
+                kAfterPluginUnload (name, path)
+
+            func (callable): Callback function.
+                Signature: (strs: List[str]) -> None
+
+            clientData (any): Data to pass to the callback.
+        """
+        register = partial(om2.MSceneMessage.addCheckFileCallback, msg)
+        unregister = om2.MSceneMessage.removeCallback
+        callback = CallbackProxy(func.__name__, register, unregister,
+                                 func, (), {'clientData': clientData}).register()
+        self._callbacks.append(callback)
+        return callback
+
+    def addEventMessage(self, eventName, func, clientData=None):
+        """Add an event callback.
+
+        Parameters:
+            eventName (str): Name of the event.
+                To view all available events, use
+                `om2.MEventMessage.getEventNames()`.
+
+            func (callable): Callback function.
+                Signature: (clientData: Any) -> None
+
+            clientData (any): Data to pass to the callback.
+        """
+        register = partial(om2.MEventMessage.addEventCallback, eventName)
+        unregister = om2.MMessage.removeCallback
+        callback = CallbackProxy(func.__name__, register, unregister,
+                                 func, (), {'clientData': clientData}).register()
+        self._callbacks.append(callback)
+        return callback
 
     def registerScriptJobEvent(self, msg, func, group=None, runOnce=False):
         mc.scriptJob(runOnce=runOnce, event=[msg, func])
 
     def registerScriptJobCondition(self, msg, func, group=None, runOnce=False):
         mc.scriptJob(runOnce=runOnce, conditionChange=[msg, func])
-
-    def registerTimeChange(self, func, group=None):
-        om2.MDGMessage.addTimeChangeCallback
-
-    def registerForceUpdate(self, func, group=None):
-        om2.MDGMessage.addForceUpdateCallback
-
-    def registerNodeAdded(self, func, nodeType='dependNode', clientData=None):
-        om2.MDGMessage.addNodeAddedCallback
-
-    def registerNodeRemoved(self, func, nodeType='dependNode', clientData=None):
-        """Run a callback when a node is removed.
-
-        Parameters:
-            func: The callback function.
-            nodeType: Type of node to trigger the callback.
-                The default is "dependNode" which matches all node.
-
-        Callback Parameters:
-            node: The node being removed.
-            clientData: User defined data.
-        """
-
-        om2.MDGMessage.addNodeRemovedCallback
-
-    def registerConnection(self, func, group=None):
-        """Run a callback after a connection is made or broken.
-
-        Callback Parameters:
-            srcPlug: Source plug of the connection.
-            destPlug: Destination plug of the connection.
-            made: If a connection was made or broken.
-            clientData: User defined data.
-        """
-        om2.MDGMessage.addConnectionCallback
-
-    def registerPreConnection(self, func, group=None):
-        """Run a callback before a connection is made or broken.
-
-        Callback Parameters:
-            srcPlug: Source plug of the connection.
-            destPlug: Destination plug of the connection.
-            made: If a connection was made or broken.
-            clientData: User defined data.
-        """
-        om2.MDGMessage.addPreConnectionCallback
-
-    def registerNodeMessage(self, msg):
-        """
-
-        Messages:
-        The type of attribute changed/addedOrRemoved messages that has occurred.
-
-            kConnectionMade: a connection has been made to an attribute of this node
-            kConnectionBroken: a connection has been broken for an attribute of this node
-            kAttributeEval: an attribute of this node has been evaluated
-            kAttributeSet: an attribute value of this node has been set
-            kAttributeLocked: an attribute of this node has been locked
-            kAttributeUnlocked: an attribute of this node has been unlocked
-            kAttributeAdded: an attribute has been added to this node
-            kAttributeRemoved: an attribute has been removed from this node
-            kAttributeRenamed: an attribute of this node has been renamed
-            kAttributeKeyable: an attribute of this node has been marked keyable
-            kAttributeUnkeyable: an attribute of this node has been marked unkeyable
-            kIncomingDirection: connection was coming into the node
-            kAttributeArrayAdded: an array attribute has been added to this node
-            kAttributeArrayRemoved: an array attribute has been removed from this node
-            kOtherPlugSet: the otherPlug data has been set
-        """
