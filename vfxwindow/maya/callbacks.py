@@ -60,7 +60,7 @@ class MayaCallbacks(AbstractCallbacks):
             file.save.before.check:
                 Called before a File > Save (or SaveAs) operation.
                 Parameters: (clientData=None)
-                Signature: (file: MFileObject, clientData) -> bool
+                Signature: (clientData) -> bool
 
             file.save.after:
                 Called after a File > Save (or SaveAs) operation.
@@ -401,6 +401,29 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (plug: MPlug, clientData=None)
                 Signature: (plug: MPlug, clientData) -> bool
 
+            undo:
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            redo:
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            frame.changed:
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            selection.changed:
+                Mapped to 'selection.changed.after'.
+
+            selection.changed.before:
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            selection.changed.after:
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
         TODO:
             'scriptjob.event'
             'scriptjob.condition'
@@ -429,6 +452,7 @@ class MayaCallbacks(AbstractCallbacks):
         scriptJobCondition = None
         dgMessage = None
         nodeMessage = None
+        eventMessage = None
         dgMessageWithNode = None
         nodeMessageWithNode = None
 
@@ -641,6 +665,23 @@ class MayaCallbacks(AbstractCallbacks):
                 nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
                 func = filterByMsg(om2.MNodeMessage.kAttributeRenamed)
 
+        elif parts[0] == 'undo':
+            eventMessage = 'Undo'
+
+        elif parts[0] == 'redo':
+            eventMessage = 'Redo'
+
+        elif parts[0] == 'frame':
+            if parts[1] == 'changed':
+                eventMessage = 'timeChanged'
+
+        elif parts[0] == 'selection':
+            if parts[1] == 'changed':
+                if parts[2] == 'before':
+                    eventMessage = 'PreSelectionChangedTriggered'
+                elif parts[2] in ('after', None):
+                    eventMessage = 'SelectionChanged'
+
         if sceneMessage is not None:
             register = partial(om2.MSceneMessage.addCallback, sceneMessage)
             unregister = om2.MSceneMessage.removeCallback
@@ -679,6 +720,9 @@ class MayaCallbacks(AbstractCallbacks):
         elif scriptJobCondition is not None:
             register = lambda func, *args, **kwargs: mc.scriptJob(conditionChange=[scriptJobCondition, func], *args, **kwargs)
             unregister = lambda callbackID: mc.scriptJob(kill=callbackID)
+        elif eventMessage is not None:
+            register = partial(om2.MEventMessage.addEventCallback, eventMessage)
+            unregister = om2.MMessage.removeCallback
         else:
             return super(MayaCallbacks, self).add(name, func, *args, **kwargs)
 
