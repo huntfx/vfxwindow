@@ -9,9 +9,9 @@ from ..abstract.callbacks import AbstractCallbacks, CallbackProxy
 
 class NukeCallbackProxy(CallbackProxy):
 
-    def getUnregisterParam(self):
-        """Get the parameter to pass to the unregister function."""
-        return self.func
+    def forceUnregister(self):
+        """Unregister the callback without any extra checks."""
+        self._unregister(self.func, *self._args, **self._kwargs)
 
 
 class NukeCallbacks(AbstractCallbacks):

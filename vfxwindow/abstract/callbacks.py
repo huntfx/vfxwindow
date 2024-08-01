@@ -57,11 +57,11 @@ class CallbackProxy(object):
     def __repr__(self):
         return '<{}({!r}, {})>'.format(type(self).__name__, self._name, self._func)
 
-    def getUnregisterParam(self):
-        """Get the parameter to pass to the unregister function.
+    def forceUnregister(self):
+        """Unregister the callback without any extra checks.
         This may require overriding.
         """
-        return self._result
+        self._unregister(self._result)
 
     @property
     def registered(self):
@@ -80,7 +80,7 @@ class CallbackProxy(object):
         """Unregister the callback."""
         if self.registered:
             print('Unregistering: {}'.format(self._name))
-            self._unregister(self.getUnregisterParam())
+            self.forceUnregister()
             self._registered = False
         return self
 
