@@ -171,8 +171,8 @@ class SubstancePainterWindow(AbstractWindow):
     def showEvent(self, event):
         """Register callbacks and update UI (if checkForChanges is defined)."""
         if not event.spontaneous():
-            self.callbacks.register()
             self._isHiddenSP = False
+            self.callbacks.register()
             if hasattr(self, 'checkForChanges'):
                 self.checkForChanges()
         return super(SubstancePainterWindow, self).showEvent(event)

@@ -195,8 +195,8 @@ class SubstanceDesignerWindow(AbstractWindow):
     def showEvent(self, event):
         """Register callbacks and update UI (if checkForChanges is defined)."""
         if not event.spontaneous():
-            self.callbacks.register()
             self._isHiddenSD = False
+            self.callbacks.register()
             if hasattr(self, 'checkForChanges'):
                 self.checkForChanges()
         return super(SubstanceDesignerWindow, self).showEvent(event)
