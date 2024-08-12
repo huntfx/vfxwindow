@@ -159,6 +159,7 @@ class TestWindow(VFXWindow):
             self.callbacks['pauseOnNew'].add('connection.after', lambda srcPlug, dstPlug, made, clientData: print('Callback: connection.after ({}, {}, {})'.format(srcPlug, dstPlug, made)))
             self.callbacks['pauseOnNew'].add('frame.changed', lambda time, clientData: print('Callback: frame.changed: ({})'.format(time.value)))
             self.callbacks['pauseOnNew'].add('frame.changed.after', lambda time, clientData: print('Callback: frame.changed.deferred: ({})'.format(time.value)))
+            self.callbacks.add('frame.playing', lambda state, clientdata: print('Callback: frame.playing ({})'.format(state)))
             self.callbacks.add('node.add', lambda node, clientData: print('Callback: node.add ({})'.format(node)), nodeType='dependNode')
             self.callbacks.add('node.remove', lambda node, clientData: print('Callback: node.remove ({})'.format(node)), nodeType='dependNode')
             self.callbacks.add('node.rename', lambda node, prevName, clientData: print('Callback: node.renamed ({}, {})'.format(node, prevName)), om2.MObject.kNullObj)

@@ -341,6 +341,11 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (clientData=None)
                 Signature: (time: MTime, clientData) -> None
 
+            frame.playing:
+                Called when Maya changes playing back state.
+                Parameters: (clientData=None)
+                Signature: (state: bool, clientData) -> None
+
             attribute.changed:
                 Called for all attribute value changed messages.
                 The callback is disabled while Maya is in playback or scrubbing modes.
@@ -420,10 +425,6 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            frame.changed:
-                Parameters: (clientData=None)
-                Signature: (clientData) -> None
-
             selection.changed:
                 Mapped to 'selection.changed.after'.
 
@@ -455,6 +456,7 @@ class MayaCallbacks(AbstractCallbacks):
         eventMessage = None
         dgMessageWithNode = None
         nodeMessageWithNode = None
+        conditionName = None
 
         if parts[0] == 'file':
             if parts[1] == 'new':
@@ -611,9 +613,12 @@ class MayaCallbacks(AbstractCallbacks):
         elif parts[0] == 'frame':
             if parts[1] == 'changed':
                 if parts[2] is None:
+                    # eventMessage = 'timeChanged'
                     dgMessage = om2.MDGMessage.addTimeChangeCallback
                 elif parts[2] == 'after':
                     dgMessage = om2.MDGMessage.addForceUpdateCallback
+            elif parts[1] == 'playing':
+                conditionName = 'playingBack'
 
         elif parts[0] == 'attribute':
             def filterByMsg(allowedFilter):
@@ -674,10 +679,6 @@ class MayaCallbacks(AbstractCallbacks):
         elif parts[0] == 'redo':
             eventMessage = 'Redo'
 
-        elif parts[0] == 'frame':
-            if parts[1] == 'changed':
-                eventMessage = 'timeChanged'
-
         elif parts[0] == 'selection':
             if parts[1] == 'changed':
                 if parts[2] == 'before':
@@ -726,6 +727,9 @@ class MayaCallbacks(AbstractCallbacks):
         elif eventMessage is not None:
             register = partial(om2.MEventMessage.addEventCallback, eventMessage)
             unregister = om2.MMessage.removeCallback
+        elif conditionName is not None:
+            register = partial(om2.MConditionMessage.addConditionCallback, conditionName)
+            unregister = om2.MConditionMessage.removeCallback
         else:
             return super(MayaCallbacks, self).add(name, func, *args, **kwargs)
 
