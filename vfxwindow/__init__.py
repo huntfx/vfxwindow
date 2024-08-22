@@ -16,7 +16,7 @@ TODO:
 from __future__ import absolute_import
 
 __all__ = ['VFXWindow']
-__version__ = '1.9.0'
+__version__ = '1.9.1'
 
 import sys
 from . import application
@@ -26,22 +26,26 @@ if not hasattr(sys, 'argv'):
     sys.argv = []
 
 
-def _setup_qapp():
-    """Attempt to start a QApplication automatically in batch mode.
-    The purpose of this is to override whatever the program uses.
-    This must happen before any libraries are imported, as it's usually
-    at that point when the QApplication is initialised.
+def _setupQApp():
+    """Attempt to start a QApplication.
+
+    Maya:
+        When running in batch mode, if this isn't run first, then it
+        will set up its own QApplication that is not compatible with
+        GUI elements.
+    Blender:
+        It will crash if this is not run.
     """
     from Qt import QtWidgets
     try:
-        app = QtWidgets.QApplication(sys.argv)
+        QtWidgets.QApplication(sys.argv)
     except RuntimeError:
         pass
 
 
 if application.Maya:
     if application.Maya.batch:
-        _setup_qapp()
+        _setupQApp()
         from .maya.gui import MayaBatchWindow as VFXWindow
     else:
         from .maya.gui import MayaWindow as VFXWindow
@@ -56,6 +60,9 @@ elif application.Houdini:
     from .houdini.gui import HoudiniWindow as VFXWindow
 
 elif application.Blender:
+    from .blender.compatibility import bypassWebEngine
+    bypassWebEngine()
+    _setupQApp()
     from .blender.gui import BlenderWindow as VFXWindow
 
 elif application.Unreal:

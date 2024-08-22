@@ -821,8 +821,15 @@ class AbstractWindow(QtWidgets.QMainWindow):
             if parentGeometry is None:
                 try:
                     parentGeometry = base.parent().frameGeometry()
+
                 except AttributeError:
-                    parentGeometry = QtWidgets.QApplication.desktop().screenGeometry()
+                    # PySide2 / PySide6
+                    try:
+                        parentGeometry = QtWidgets.QApplication.primaryScreen().geometry()
+
+                    # PySide / PySide2 (deprecated)
+                    except AttributeError:
+                        parentGeometry = QtWidgets.QApplication.desktop().screenGeometry()
 
             if childGeometry is None:
                 childGeometry = base.frameGeometry()
