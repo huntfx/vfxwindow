@@ -150,7 +150,6 @@ def matchPaletteToFile():
 
     currentPalette = getPaletteColours()
     files = getPaletteList()
-    files = ['Nuke.10']
     for fileName in files:
         filePath = os.path.join(DIR, '{}.{}'.format(fileName, FILE_EXT))
         paletteData = readPalette(filePath)
