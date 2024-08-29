@@ -65,6 +65,9 @@ elif application.Blender:
     _setupQApp()
     from .blender.gui import BlenderWindow as VFXWindow
 
+elif application.Katana:
+    from .katana.gui import KatanaWindow as VFXWindow
+
 elif application.Unreal:
     from .unreal.gui import UnrealWindow as VFXWindow
 

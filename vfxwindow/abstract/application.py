@@ -1,10 +1,6 @@
 """Base classes for applications and versions.
 
 The following applications are not currently implemented:
-Katana:
-    Module: katana
-    [kK]atana\d+(?:\.\d+){0,2}\.(?:bin|exe|app)
-    [kK]atana\.(?:bin|exe|app)
 Mari:
     Module: mari
     [mM]ari\d+(?:\.\d+){0,2}\.(?:bin|exe|app)
@@ -155,7 +151,7 @@ class AbstractVersion(object):
         self.patch = patch
 
         if None in parts:
-            split = version.split('.')
+            split = version.replace('v', '.').split('.')
             if self.major is None:
                 try:
                     self.major = split[0]
