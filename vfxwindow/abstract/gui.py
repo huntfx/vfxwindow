@@ -1,6 +1,6 @@
 """Abstract class to inherit that contains the core functionality."""
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 import inspect
 import os
@@ -826,8 +826,8 @@ class AbstractWindow(QtWidgets.QMainWindow):
                 childGeometry = base.frameGeometry()
 
         self.move(
-            parentGeometry.x() + (parentGeometry.width() - childGeometry.width()) / 2,
-            parentGeometry.y() + (parentGeometry.height() - childGeometry.height()) / 2
+            parentGeometry.x() + (parentGeometry.width() - childGeometry.width()) // 2,
+            parentGeometry.y() + (parentGeometry.height() - childGeometry.height()) // 2
         )
 
     def deferred(self, func, *args, **kwargs):
