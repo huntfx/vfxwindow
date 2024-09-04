@@ -41,7 +41,7 @@ class CallbackProxy(object):
         @wraps(func)
         def runCallback(*args, **kwargs):
             """Run the callback function."""
-            if intercept is not None and not intercept(*args, **kwargs):
+            if intercept is None or not intercept(*args, **kwargs):
                 logger.debug('Running %s...', self.name)
                 func(*args, **kwargs)
 
