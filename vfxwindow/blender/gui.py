@@ -76,8 +76,9 @@ class BlenderWindow(StandaloneWindow):
             cls.clearWindowInstance(cls.ID)
         except AttributeError:
             pass
+        kwargs['init'] = not bpy.app.background
         kwargs['instance'] = True
-        kwargs['exec_'] = False
+        kwargs['exec_'] = bpy.app.background
         return super(BlenderWindow, cls).show(*args, **kwargs)
 
     @hybridmethod
