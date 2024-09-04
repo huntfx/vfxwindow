@@ -443,6 +443,7 @@ class MayaCallbacks(AbstractCallbacks):
             om2.MDGMessage.addNodeChangeUuidCheckCallback
         """
         _func = func
+        intercept = None
         parts = name.split('.') + [None, None, None, None]
 
         sceneMessage = None
@@ -621,57 +622,55 @@ class MayaCallbacks(AbstractCallbacks):
                 conditionName = 'playingBack'
 
         elif parts[0] == 'attribute':
-            def filterByMsg(allowedFilter):
+            def interceptMsg(allowed):
                 """Avoid running a callback when a message doesn't match."""
-                @wraps(_func)
-                def wrapper(msg, plug, otherPlug, clientData):
-                    if msg & allowedFilter:
-                        _func(msg, plug, otherPlug, clientData)
-                return wrapper
+                def intercept(msg, plug, otherPlug, clientData):
+                    return not msg & allowed
+                return intercept
 
             if parts[1] == 'changed':
                 nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
 
             elif parts[1] == 'add':
                 nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
-                func = filterByMsg(om2.MNodeMessage.kAttributeAdded)
+                intercept = interceptMsg(om2.MNodeMessage.kAttributeAdded)
 
             elif parts[1] == 'remove':
                 nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
-                func = filterByMsg(om2.MNodeMessage.kAttributeRemoved)
+                intercept = interceptMsg(om2.MNodeMessage.kAttributeRemoved)
 
             elif parts[1] == 'value':
                 if parts[2] in ('changed', None):
                     nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
-                    func = filterByMsg(om2.MNodeMessage.kAttributeSet)
+                    intercept = interceptMsg(om2.MNodeMessage.kAttributeSet)
 
             elif parts[1] == 'locked':
                 if parts[2] == 'set':
                     nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
-                    func = filterByMsg(om2.MNodeMessage.kAttributeLocked)
+                    intercept = interceptMsg(om2.MNodeMessage.kAttributeLocked)
                 elif parts[2] == 'unset':
                     nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
-                    func = filterByMsg(om2.MNodeMessage.kAttributeUnlocked)
+                    intercept = interceptMsg(om2.MNodeMessage.kAttributeUnlocked)
                 elif parts[2] is None:
                     nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
-                    func = filterByMsg(om2.MNodeMessage.kAttributeLocked | om2.MNodeMessage.kAttributeUnlocked)
+                    intercept = interceptMsg(om2.MNodeMessage.kAttributeLocked | om2.MNodeMessage.kAttributeUnlocked)
 
             elif parts[1] == 'keyable':
                 if parts[2] == 'set':
                     nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
-                    func = filterByMsg(om2.MNodeMessage.kAttributeKeyable)
+                    intercept = interceptMsg(om2.MNodeMessage.kAttributeKeyable)
                 elif parts[2] == 'unset':
                     nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
-                    func = filterByMsg(om2.MNodeMessage.kAttributeUnkeyable)
+                    intercept = interceptMsg(om2.MNodeMessage.kAttributeUnkeyable)
                 elif parts[2] is None:
                     nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
-                    func = filterByMsg(om2.MNodeMessage.kAttributeKeyable | om2.MNodeMessage.kAttributeUnkeyable)
+                    intercept = interceptMsg(om2.MNodeMessage.kAttributeKeyable | om2.MNodeMessage.kAttributeUnkeyable)
                 elif parts[2] == 'override':
                     nodeMessageWithNode = om2.MNodeMessage.addKeyableChangeOverride
 
             elif parts[1] == 'rename':
                 nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
-                func = filterByMsg(om2.MNodeMessage.kAttributeRenamed)
+                intercept = interceptMsg(om2.MNodeMessage.kAttributeRenamed)
 
         elif parts[0] == 'undo':
             eventMessage = 'Undo'
@@ -737,7 +736,7 @@ class MayaCallbacks(AbstractCallbacks):
         if 'nodeType' in kwargs:
             args = list(args) + [kwargs.pop('nodeType')]
 
-        callback = CallbackProxy(name, register, unregister, func, args, kwargs).register()
+        callback = CallbackProxy(name, register, unregister, func, args, kwargs, intercept).register()
         self._callbacks.append(callback)
         return callback
 

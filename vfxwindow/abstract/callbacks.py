@@ -32,10 +32,8 @@ class CallbackProxy(object):
         self._name = name
         self._register = register
         self._unregister = unregister
-        self._func = func
         self._args = args
         self._kwargs = kwargs
-        self._itercept = intercept if intercept is not None else lambda *args, **kwargs: False
 
         self._registered = False
         self._result = None
@@ -43,22 +41,32 @@ class CallbackProxy(object):
         @wraps(func)
         def runCallback(*args, **kwargs):
             """Run the callback function."""
-            if intercept is None or not intercept(*args, **kwargs):
-                logger.debug('Running %s...', name)
+            if intercept is not None and not intercept(*args, **kwargs):
+                logger.debug('Running %s...', self.name)
                 func(*args, **kwargs)
 
         # Copy over custom data (eg. Blender's '_bpy_persistent' attribute)
         for k, v in vars(func).items():
             setattr(runCallback, k, v)
 
-        self.func = runCallback
+        self._func = runCallback
 
     def __bool__(self):
         return self.registered
     __nonzero__ = __bool__
 
     def __repr__(self):
-        return '<{}({!r}, {})>'.format(type(self).__name__, self._name, self._func)
+        return '<{}({!r}, {})>'.format(type(self).__name__, self.name, self.func)
+
+    @property
+    def name(self):
+        """Get the callback name."""
+        return self._name
+
+    @property
+    def func(self):
+        """Get the callback function."""
+        return self._func
 
     def forceUnregister(self):
         """Unregister the callback without any extra checks.
