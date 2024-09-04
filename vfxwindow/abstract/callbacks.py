@@ -1,11 +1,14 @@
 from __future__ import absolute_import
 
+import logging
+import weakref
 from collections import defaultdict
 from contextlib import contextmanager
 from functools import wraps
-import weakref
 
 from ..exceptions import UnknownCallbackError
+
+logger = logging.getLogger(__name__)
 
 
 class CallbackProxy(object):
@@ -41,7 +44,7 @@ class CallbackProxy(object):
         def runCallback(*args, **kwargs):
             """Run the callback function."""
             if intercept is None or not intercept(*args, **kwargs):
-                print('Running {}...'.format(name))
+                logger.debug('Running %s...', name)
                 func(*args, **kwargs)
 
         # Copy over custom data (eg. Blender's '_bpy_persistent' attribute)
@@ -71,7 +74,7 @@ class CallbackProxy(object):
     def register(self):
         """Register the callback."""
         if not self.registered:
-            print('Registering: {} ({}, {})'.format(self._name, self._args, self._kwargs))
+            logger.info('Registering: %s', self._name)
             self._result = self._register(self.func, *self._args, **self._kwargs)
             self._registered = True
         return self
@@ -79,7 +82,7 @@ class CallbackProxy(object):
     def unregister(self):
         """Unregister the callback."""
         if self.registered:
-            print('Unregistering: {}'.format(self._name))
+            logger.info('Unregistering: %s', self._name)
             self.forceUnregister()
             self._registered = False
         return self
@@ -130,6 +133,7 @@ class AbstractCallbacks(object):
         """Register all callbacks.
         This is not needed unless `unregister()` has been called.
         """
+        logger.debug('Registering callbacks...')
         callbacks = [cb.register() for cb in self._callbacks if not cb.registered]
         for group in self._groups.values():
             callbacks.extend(group.register())
@@ -137,6 +141,7 @@ class AbstractCallbacks(object):
 
     def unregister(self):
         """Unregister all callbacks."""
+        logger.debug('Unregistering callbacks...')
         callbacks = [cb.unregister() for cb in self._callbacks if cb.registered]
         for group in self._groups.values():
             callbacks.extend(group.unregister())
@@ -144,6 +149,7 @@ class AbstractCallbacks(object):
 
     def delete(self):
         """Delete all callbacks."""
+        logger.debug('Deleting callbacks...')
         callbacks = [cb.unregister() for cb in self._callbacks]
         for group in self._groups.values():
             callbacks.extend(group.delete())
@@ -155,11 +161,13 @@ class AbstractCallbacks(object):
     @contextmanager
     def pause(self):
         """Temporarily pause all callbacks."""
+        logger.debug('Pausing callbacks...')
         callbacks = self.unregister()
         try:
             yield
         finally:
             for callback in callbacks:
+                logger.debug('Unpausing all callbacks...')
                 callback.register()
 
     @property
