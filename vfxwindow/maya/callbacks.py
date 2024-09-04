@@ -337,6 +337,12 @@ class MayaCallbacks(AbstractCallbacks):
                 Signature: (time: MTime, clientData) -> None
 
             frame.changed.after:
+                Called after the time has finished changing.
+                Scrubbing the timeline will only call this once on mouse release.
+                Parameters: ()
+                Signature: () -> None
+
+            frame.changed.deferred:
                 Called after the time changes and after all DG nodes have been evaluated.
                 Parameters: (clientData=None)
                 Signature: (time: MTime, clientData) -> None
@@ -473,7 +479,6 @@ class MayaCallbacks(AbstractCallbacks):
 
             om2.MDGMessage.addNodeChangeUuidCheckCallback
         """
-        _func = func
         intercept = None
         parts = name.split('.') + [None, None, None, None]
 
@@ -645,10 +650,11 @@ class MayaCallbacks(AbstractCallbacks):
         elif parts[0] == 'frame':
             if parts[1] == 'changed':
                 if parts[2] is None:
-                    # eventMessage = 'timeChanged'
                     dgMessage = om2.MDGMessage.addTimeChangeCallback
-                elif parts[2] == 'after':
+                elif parts[2] == 'deferred':
                     dgMessage = om2.MDGMessage.addForceUpdateCallback
+                elif parts[2] == 'after':
+                    scriptJobEvent= 'timeChanged'
 
             elif parts[1] == 'range':
                 if parts[2] == 'changed':
