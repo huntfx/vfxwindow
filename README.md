@@ -46,6 +46,8 @@ if __name__ == '__main__':
 | Houdini            | ✔️ | ❌ | ❌ | 16-19 | ✔️ | ✔️ | ❔ |
 | Unreal Engine      | ✔️ | ❌ | ❌ | 4.19-4.23, 5.0-5.3 | [❌](# "Tested on UE5.") | ✔️ | ❔ |
 | Blender            | ✔️ | ❌ | ✔️ | 2.8-4.2 | ❔ | ✔️ | ❔ |
+| Blender (Background) | ✔️ | | ❔ | 3.1-4.2 | ❔ | ✔️ | ❔ |
+| Katana             | ✔️ | ❌ | ❌ | 7 | ❔ | [✔️](# "Unable to catch close events when the user presses the X, meaning the position can't be saved and callbacks can't be implemented") | ❔ |
 | 3ds Max            | ✔️ | ❌ | ❌ | 2018-2020 | ❔ | [✔️](# "Tested previously but unable to confirm.") | ❔ |
 | Substance Painter  | ✔️ | [✔️](# "Uses `substance_painter.ui.add_dock_widget`, does not save/restore location of window.") | ❌ | 8.3 | ✔️ | ✔️ | ❔ |
 | Substance Designer | ✔️ | [✔️](# "Uses `sd.getContext().getSDApplication().getQtForPythonUIMgr().newDockWidget`, does not save/restore location of window.") | ❌ | 2019.3, 7.1, 12.3 | ✔️ | ✔️ | ❔ |

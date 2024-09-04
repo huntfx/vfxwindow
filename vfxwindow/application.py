@@ -5,6 +5,7 @@ __all__ = [
     'CryEngine',
     'Fusion',
     'Houdini',
+    'Katana',
     'Max',
     'Maya',
     'Nuke',
@@ -17,6 +18,7 @@ from .blender.application import Application as Blender
 from .cryengine.application import Application as CryEngine
 from .fusion.application import Application as Fusion
 from .houdini.application import Application as Houdini
+from .katana.application import Application as Katana
 from .max.application import Application as Max
 from .maya.application import Application as Maya
 from .nuke.application import Application as Nuke

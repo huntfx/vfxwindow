@@ -31,5 +31,10 @@ class BlenderApplication(AbstractApplication):
 
     VERSION = BlenderVersion
 
+    def gui(self):
+        if bpy is None:
+            return True
+        return not bpy.app.background
+
 
 Application = BlenderApplication()

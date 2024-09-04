@@ -304,13 +304,13 @@ class TestWindow(VFXWindow):
             return
         self.resize(self.wVal.value(), self.hVal.value())
 
-    @QtCore.Slot(QtCore.Qt.CheckState)
+    @QtCore.Slot(int)
     def toggleFloating(self, checkState):
         if self._signalPause:
             return
         self.setFloating(checkState == QtCore.Qt.Checked)
 
-    @QtCore.Slot(QtCore.Qt.CheckState)
+    @QtCore.Slot(int)
     def toggleVisible(self, checkState):
         if self._signalPause:
             return
