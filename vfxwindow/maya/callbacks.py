@@ -13,7 +13,7 @@ class MayaCallbacks(AbstractCallbacks):
         """Register a callback.
 
         Callbacks:
-            'file.new:
+            file.new:
                 Mapped to 'file.new.after'.
 
             file.new.before:
@@ -341,10 +341,33 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (clientData=None)
                 Signature: (time: MTime, clientData) -> None
 
-            frame.playing:
+            playback.state.changed:
                 Called when Maya changes playing back state.
                 Parameters: (clientData=None)
                 Signature: (state: bool, clientData) -> None
+
+            playback.range.changed:
+                Mapped to 'frame.range.changed.after'
+
+            playback.range.changed.before:
+                Called before the time slider range changes.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            playback.range.changed.after:
+                Called after the time slider range changes.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            playback.speed.changed:
+                Called when the playback speed (fps) is updated.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
+
+            playback.mode.changed:
+                Called when the playback mode (loop/play once) is updated.
+                Parameters: (clientData=None)
+                Signature: (clientData) -> None
 
             attribute.changed:
                 Called for all attribute value changed messages.
@@ -618,8 +641,26 @@ class MayaCallbacks(AbstractCallbacks):
                     dgMessage = om2.MDGMessage.addTimeChangeCallback
                 elif parts[2] == 'after':
                     dgMessage = om2.MDGMessage.addForceUpdateCallback
-            elif parts[1] == 'playing':
-                conditionName = 'playingBack'
+
+        elif parts[0] == 'playback':
+            if parts[1] == 'state':
+                if parts[2] == 'changed':
+                    conditionName = 'playingBack'
+
+            elif parts[1] == 'range':
+                if parts[2] == 'changed':
+                    if parts[3] == 'before':
+                        eventMessage = 'playbackRangeAboutToChange'
+                    elif parts[3] in ('after', None):
+                        eventMessage = 'playbackRangeChanged'
+
+            elif parts[1] == 'speed':
+                if parts[2] == 'changed':
+                    eventMessage = 'playbackSpeedChanged'
+
+            elif parts[1] == 'mode':
+                if parts[2] == 'changed':
+                    eventMessage = 'playbackModeChanged'
 
         elif parts[0] == 'attribute':
             def interceptMsg(allowed):
