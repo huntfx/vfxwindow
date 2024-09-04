@@ -170,17 +170,17 @@ class MayaCallbacks(AbstractCallbacks):
             reference.import:
                 Mapped to 'reference.import.after'.
 
-            reference.import.before':
+            reference.import.before:
                 Called before a File > ImportReference operation.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            reference.import.after':
+            reference.import.after:
                 Called after a File > ImportReference operation.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
-            reference.export':
+            reference.export:
                 Mapped to 'reference.export.after')
 
             reference.export.before:

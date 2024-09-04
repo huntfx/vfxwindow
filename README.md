@@ -12,24 +12,72 @@ This is perfectly stable, but there is still plenty that needs improvement. Any 
 
 ### Basic Example:
 ```python
+from Qt import QtWidgets
+from vfxwindow import VFXWindow
+
 class MyWindow(VFXWindow):
-    WindowID = 'unique_window_id'
+    """Test window to show off some features."""
+
+    WindowID = 'vfx.window.test'
     WindowName = 'My Window'
+    WindowDockable = True
 
     def __init__(self, parent=None, **kwargs):
         super(MyWindow, self).__init__(parent, **kwargs)
-        # Setup window here
+        # Setup widgets/build UI here as you normally would
+        self.setCentralWidget(QtWidgets.QWidget())
 
-        # Setup callbacks, but wait until the program is ready
-        self.deferred(self.newScene)
+        # Setup callbacks
+        self.callbacks.add('file.new', self.afterSceneChange)
+        self.callbacks.add('file.load', self.afterSceneChange)
+        if self.application == 'Maya':  # Maya supports before/after callbacks
+            self.callbacks.add('file.new.before', self.beforeSceneChange)
+            self.callbacks.add('file.load.before', self.beforeSceneChange)
+        elif self.application in ('Nuke', 'Substance'):  # Nuke and Painter/Designer support close
+            self.callbacks.add('file.close', self.beforeSceneChange)
 
-    def newScene(self, *args):
-        """Example: Delete and reapply callbacks after loading a new scene."""
-        self.removeCallbacks('sceneNewCallbacks')
+        # Wait until the program is ready before triggering the new scene method
+        self.deferred(self.afterSceneChange)
+
+    def afterSceneChange(self, *args):
+        """Create the scene specific callbacks.
+        These are being created in a callback "group".
+        Subgroups are also supported.
+
+        Even though the callback is the same, the signatures can differ.
+        See '/vfxwindow/<app>/callbacks.py' for the relevant signatures.
+        """
         if self.application == 'Maya':
-            self.addCallbackScene('kAfterNew', self.newScene, group='sceneNewCallbacks')
-        elif self.application == 'Nuke':
-            self.addCallbackOnCreate(self.newScene, nodeClass='Root', group='sceneNewCallbacks')
+            self.callbacks['scene'].add('node.add', self.mayaNodeAdded, nodeType='dependNode')
+        if self.application == 'Nuke':
+            self.callbacks['scene'].add('node.add', self.nukeNodeAdded)
+
+    def beforeSceneChange(self, *args):
+        """Delete the scene specific callbacks."""
+        self.callbacks['scene'].delete()
+
+    def mayaNodeAdded(self, node, clientData):
+        """Print out the node that was added in Maya."""
+        import maya.api.OpenMaya as om2
+        print('Node was added: {}'.format(om2.MFnDependencyNode(node).name()))
+
+    def nukeNodeAdded(self):
+        """Print out the node that was added in Nuke."""
+        import nuke
+        node = nuke.thisNode()
+        print('Node was added: {}'.format(node.name() or 'Root'))
+
+    def checkForChanges(self):
+        """Update the UI if it is has been in a "paused" state.
+
+        This is needed for Nuke and Substance Designer/Painter, because
+        there's no way to detect if the window is closed or just hidden.
+        For safety all callbacks will get paused, and upon unpausing,
+        this method will be run to allow the window to correctly update.
+        """
+        self.beforeSceneChange()
+        self.afterSceneChange()
+
 
 if __name__ == '__main__':
     MyWindow.show()
