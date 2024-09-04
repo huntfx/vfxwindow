@@ -341,23 +341,31 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (clientData=None)
                 Signature: (time: MTime, clientData) -> None
 
-            playback.state.changed:
-                Called when Maya changes playing back state.
+            frame.range.changed:
+                Called when the animation range is changed.
+                This does not trigger when editing the time slider range.
                 Parameters: (clientData=None)
-                Signature: (state: bool, clientData) -> None
+                Signature: (clientData) -> None
 
             playback.range.changed:
-                Mapped to 'frame.range.changed.after'
+                Mapped to 'playback.range.changed.after'
 
             playback.range.changed.before:
                 Called before the time slider range changes.
+                This does not trigger when editing the animation range.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
 
             playback.range.changed.after:
                 Called after the time slider range changes.
+                This does not trigger when editing the animation range.
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
+
+            playback.state.changed:
+                Called when Maya changes playing back state.
+                Parameters: (clientData=None)
+                Signature: (state: bool, clientData) -> None
 
             playback.speed.changed:
                 Called when the playback speed (fps) is updated.
@@ -641,6 +649,10 @@ class MayaCallbacks(AbstractCallbacks):
                     dgMessage = om2.MDGMessage.addTimeChangeCallback
                 elif parts[2] == 'after':
                     dgMessage = om2.MDGMessage.addForceUpdateCallback
+
+            elif parts[1] == 'range':
+                if parts[2] == 'changed':
+                    eventMessage = 'playbackRangeSliderChanged'
 
         elif parts[0] == 'playback':
             if parts[1] == 'state':

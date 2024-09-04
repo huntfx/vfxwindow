@@ -160,6 +160,7 @@ class TestWindow(VFXWindow):
             self.callbacks['pauseOnNew'].add('frame.changed', lambda time, clientData: print('Callback: frame.changed: ({})'.format(time.value)))
             self.callbacks['pauseOnNew'].add('frame.changed.after', lambda time, clientData: print('Callback: frame.changed.deferred: ({})'.format(time.value)))
             self.callbacks.add('playback.state.changed', lambda state, clientdata: print('Callback: playback.state.changed ({})'.format(state)))
+            self.callbacks.add('frame.range.changed', lambda clientdata: print('Callback: frame.range.changed'))
             self.callbacks.add('playback.range.changed', lambda clientdata: print('Callback: playback.range.changed'))
             self.callbacks.add('playback.range.changed.before', lambda clientdata: print('Callback: playback.range.changed.before'))
             self.callbacks.add('playback.range.changed.after', lambda clientdata: print('Callback: playback.range.changed.after'))
