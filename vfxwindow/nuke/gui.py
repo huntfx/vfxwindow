@@ -228,17 +228,6 @@ class NukeWindow(NukeCommon, AbstractWindow):
             after re-registering the callbacks.
     """
 
-    _CALLBACKS = {
-        'onUserCreate': ('addOnUserCreate', 'removeOnUserCreate'),
-        'onCreate': ('addOnCreate', 'removeOnCreate'),
-        'onScriptLoad': ('addOnScriptLoad', 'removeOnScriptLoad'),
-        'onScriptSave': ('addOnScriptSave', 'removeOnScriptSave'),
-        'onScriptClose': ('addOnScriptClose', 'removeOnScriptClose'),
-        'onDestroy': ('addOnDestroy', 'removeOnDestroy'),
-        'knobChanged': ('addKnobChanged', 'removeKnobChanged'),
-        'updateUI': ('addUpdateUI', 'removeUpdateUI'),
-    }
-
     def __init__(self, parent=None, dockable=True, **kwargs):
         """Create the Nuke window.
         By default dockable must be True as Nuke provides no control
@@ -451,195 +440,6 @@ class NukeWindow(NukeCommon, AbstractWindow):
             return self._parentOverride(usePane=True).width()
         return super(NukeWindow, self).height()
 
-    def _registerNukeCallbacks(self):
-        """Register all legacy callbacks."""
-        numEvents = 0
-        inst = self.windowInstance()
-        if inst is None:
-            return 0
-
-        for group in inst['callback'].keys():
-            for callbackName, (callbackAdd, callbackRemove) in self._CALLBACKS.items():
-                for func in inst['callback'][group][callbackName]:
-                    for nodeClass in inst['callback'][group][callbackName][func]:
-                        if nodeClass is None:
-                            getattr(nuke, callbackAdd)(func)
-                        else:
-                            getattr(nuke, callbackAdd)(func, nodeClass=nodeClass)
-                        numEvents += 1
-        return numEvents
-
-    def _unregisterNukeCallbacks(self):
-        """Unregister all legacy callbacks."""
-        inst = self.windowInstance()
-        if inst is None:
-            return 0
-
-        numEvents = 0
-        for group in inst['callback'].keys():
-            for callbackName, (callbackAdd, callbackRemove) in self._CALLBACKS.items():
-                for func in inst['callback'][group][callbackName]:
-                    for nodeClass in inst['callback'][group][callbackName][func]:
-                        if nodeClass is None:
-                            getattr(nuke, callbackRemove)(func)
-                        else:
-                            getattr(nuke, callbackRemove)(func, nodeClass=nodeClass)
-                        numEvents += 1
-        return numEvents
-
-    def removeCallback(self, func, group=None, nodeClass=None):
-        """Remove an individual callback."""
-        windowInstance = self.windowInstance()
-        if group is None:
-            groups = list(windowInstance['callback'].keys())
-        else:
-            if group not in windowInstance['callback']:
-                groups = []
-            groups = [group]
-
-        numEvents = 0
-        for group in groups:
-            for callbackName, (callbackAdd, callbackRemove) in self._CALLBACKS.items():
-                if func in windowInstance['callback'][group][callbackName]:
-                    for nodeClass in windowInstance['callback'][group][callbackName][func]:
-                        if nodeClass is None:
-                            if nodeClass is None:
-                                getattr(nuke, callbackRemove)(func)
-                            else:
-                                getattr(nuke, callbackRemove)(func, nodeClass=nodeClass)
-                        elif nodeClass == nodeClass:
-                            getattr(nuke, callbackRemove)(func, nodeClass=nodeClass)
-                        else:
-                            continue
-                        numEvents += 1
-                        del windowInstance['callback'][group][callbackName][func][nodeClass]
-        return numEvents
-
-    @hybridmethod
-    def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
-        """Remove a callback group or all callbacks."""
-        # Handle classmethod
-        if self is cls:
-            if windowInstance is None and windowID is not None:
-                windowInstance = cls.windowInstance(windowID)
-            if windowInstance is None:
-                raise ValueError('windowInstance or windowID parameter is required for classmethod')
-        # Handle normal method
-        elif windowInstance is None:
-            windowInstance = self.windowInstance()
-
-        # Select all groups if specific one not provided
-        if group is None:
-            groups = list(windowInstance['callback'].keys())
-        else:
-            if group not in windowInstance['callback']:
-                groups = []
-            else:
-                groups = [group]
-
-        # Iterate through each callback to remove certain groups
-        numEvents = 0
-        for group in groups:
-            for callbackName, (callbackAdd, callbackRemove) in self._CALLBACKS.items():
-                for func in windowInstance['callback'][group][callbackName]:
-                    for nodeClass in windowInstance['callback'][group][callbackName][func]:
-                        if nodeClass is None:
-                            getattr(nuke, callbackRemove)(func)
-                        else:
-                            getattr(nuke, callbackRemove)(func, nodeClass=nodeClass)
-                        numEvents += 1
-            del windowInstance['callback'][group]
-        return numEvents
-
-    def _addNukeCallbackGroup(self, group):
-        windowInstance = self.windowInstance()
-        if group in windowInstance['callback']:
-            return
-        windowInstance['callback'][group] = defaultdict(lambda: defaultdict(set))
-
-    def addCallbackOnUserCreate(self, func, nodeClass=None, group=None):
-        """Executed whenever a node is created by the user.
-        Not called when loading existing scripts, pasting nodes, or undoing a delete.
-        """
-        self._addNukeCallbackGroup(group)
-        self.windowInstance()['callback'][group]['onUserCreate'][func].add(nodeClass)
-        if not self._isHiddenNk:
-            if nodeClass is None:
-                nuke.addOnUserCreate(func)
-            else:
-                nuke.addOnUserCreate(func, nodeClass=nodeClass)
-
-    def addCallbackOnCreate(self, func, nodeClass=None, group=None):
-        """Executed when any node is created.
-        Examples include loading a script (includes new file), pasting a node, selecting a menu item, or undoing a delete.
-        """
-        self._addNukeCallbackGroup(group)
-        self.windowInstance()['callback'][group]['onCreate'][func].add(nodeClass)
-        if not self._isHiddenNk:
-            if nodeClass is None:
-                nuke.addOnCreate(func)
-            else:
-                nuke.addOnCreate(func, nodeClass=nodeClass)
-
-    def addCallbackOnScriptLoad(self, func, nodeClass=None, group=None):
-        """Executed when a script is loaded.
-        This will be called by onCreate (for root), and straight after onCreate.
-        """
-        self._addNukeCallbackGroup(group)
-        self.windowInstance()['callback'][group]['onScriptLoad'][func].add(nodeClass)
-        if not self._isHiddenNk:
-            if nodeClass is None:
-                nuke.addOnScriptLoad(func)
-            else:
-                nuke.addOnScriptLoad(func, nodeClass=nodeClass)
-
-    def addCallbackOnScriptSave(self, func, nodeClass=None, group=None):
-        """Executed when the user tries to save a script."""
-        self._addNukeCallbackGroup(group)
-        self.windowInstance()['callback'][group]['onScriptSave'][func].add(nodeClass)
-        if not self._isHiddenNk:
-            if nodeClass is None:
-                nuke.addOnScriptSave(func)
-            else:
-                nuke.addOnScriptSave(func, nodeClass=nodeClass)
-
-    def addCallbackOnScriptClose(self, func, nodeClass=None, group=None):
-        """Executed when Nuke is exited or the script is closed."""
-        self._addNukeCallbackGroup(group)
-        self.windowInstance()['callback'][group]['onScriptClose'][func].add(nodeClass)
-        if not self._isHiddenNk:
-            if nodeClass is None:
-                nuke.addOnScriptClose(func)
-            else:
-                nuke.addOnScriptClose(func, nodeClass=nodeClass)
-
-    def addCallbackOnDestroy(self, func, nodeClass=None, group=None):
-        self._addNukeCallbackGroup(group)
-        self.windowInstance()['callback'][group]['onDestroy'][func].add(nodeClass)
-        if not self._isHiddenNk:
-            if nodeClass is None:
-                nuke.addOnDestroy(func)
-            else:
-                nuke.addOnDestroy(func, nodeClass=nodeClass)
-
-    def addCallbackKnobChanged(self, func, nodeClass=None, group=None):
-        self._addNukeCallbackGroup(group)
-        self.windowInstance()['callback'][group]['knobChanged'][func].add(nodeClass)
-        if not self._isHiddenNk:
-            if nodeClass is None:
-                nuke.addKnobChanged(func)
-            else:
-                nuke.addKnobChanged(func, nodeClass=nodeClass)
-
-    def addCallbackUpdateUI(self, func, nodeClass=None, group=None):
-        self._addNukeCallbackGroup(group)
-        self.windowInstance()['callback'][group]['updateUI'][func].add(nodeClass)
-        if not self._isHiddenNk:
-            if nodeClass is None:
-                nuke.addUpdateUI(func)
-            else:
-                nuke.addUpdateUI(func, nodeClass=nodeClass)
-
     @classmethod
     def clearWindowInstance(cls, windowID):
         """Close the last class instance."""
@@ -649,7 +449,6 @@ class NukeWindow(NukeCommon, AbstractWindow):
             return
         if previousInstance is None:
             return
-        cls.removeCallbacks(windowInstance=previousInstance)
         previousInstance['window'].callbacks.unregister()
 
         #Shut down the window
@@ -692,7 +491,6 @@ class NukeWindow(NukeCommon, AbstractWindow):
         """Unregister callbacks and save window location."""
         if not event.spontaneous() and not self.isClosed():
             self._isHiddenNk = True
-            self._unregisterNukeCallbacks()
             self.callbacks.unregister()
             self.saveWindowPosition()
         return super(NukeWindow, self).hideEvent(event)
@@ -702,7 +500,6 @@ class NukeWindow(NukeCommon, AbstractWindow):
         if not event.spontaneous():
             self._isHiddenNk = False
             self.callbacks.register()
-            self._registerNukeCallbacks()
             if hasattr(self, 'checkForChanges'):
                 self.checkForChanges()
         return super(NukeWindow, self).showEvent(event)

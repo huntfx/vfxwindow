@@ -1,7 +1,6 @@
 """Set the window class to be specific to whichever program is loaded.
 
 TODO:
-    Substance callbacks
     Add dialog code for each application
     Revise setDefault* methods
 

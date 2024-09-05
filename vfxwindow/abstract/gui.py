@@ -848,7 +848,3 @@ class AbstractWindow(QtWidgets.QMainWindow):
         For most cases the value will only ever be True.
         """
         return True
-
-    @hybridmethod
-    def removeCallbacks(cls, self, *args, **kwargs):
-        pass
