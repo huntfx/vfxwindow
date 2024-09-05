@@ -9,7 +9,6 @@ TODO:
     Remove docked in favour of floating
     Changed dialog to isDialog
     Remove processEvents
-    Remove signalExists
 """
 
 from __future__ import absolute_import

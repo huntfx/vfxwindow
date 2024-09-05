@@ -204,10 +204,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """
         QtWidgets.QApplication.processEvents()
 
-    def signalExists(self, group):
-        """How many signals exist for the given group."""
-        return len(self.signal(group) or [])
-
     def signalConnect(self, signal, func, type=QtCore.Qt.AutoConnection, group=None):
         """Add a new signal for the current group.
 
