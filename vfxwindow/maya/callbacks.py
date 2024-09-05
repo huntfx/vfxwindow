@@ -181,7 +181,7 @@ class MayaCallbacks(AbstractCallbacks):
                 Signature: (clientData) -> None
 
             reference.export:
-                Mapped to 'reference.export.after')
+                Mapped to 'reference.export.after'
 
             reference.export.before:
                 Called before a File > ExportReference operation.
@@ -302,7 +302,7 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (node: MObject, clientData=None)
                 Signature: (node: MObject, plug: MPlug, clientData) -> None
 
-            node.rename:
+            node.name.changed:
                 Called for name changed messages.
                 Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
@@ -402,8 +402,11 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (node: MObject, clientData=None)
                 Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
 
-            attribute.value:
-                Mapped to 'attribute.value.changed'
+            attribute.name.changed:
+                Called when an attribute name is changed.
+                Use a null MObject to listen for all nodes.
+                Parameters: (node: MObject, clientData=None)
+                Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
 
             attribute.value.changed:
                 Called when an attribute value is changed.
@@ -411,19 +414,19 @@ class MayaCallbacks(AbstractCallbacks):
                 Parameters: (node: MObject, clientData=None)
                 Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
 
-            attribute.locked:
+            attribute.lock.changed:
                 Called when an attribute is locked or unlocked.
                 Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
                 Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
 
-            attribute.locked.set:
+            attribute.lock.set:
                 Called when an attribute is locked.
                 Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
                 Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
 
-            attribute.locked.unset:
+            attribute.lock.unset:
                 Called when an attribute is unlocked.
                 Use a null MObject to listen for all nodes.
                 Parameters: (node: MObject, clientData=None)
@@ -631,8 +634,9 @@ class MayaCallbacks(AbstractCallbacks):
                 # elif parts[2] in ('after', None):
                 #     dgMessage = om2.MDGMessage.addNodeRemovedCallback
                 dgMessage = om2.MDGMessage.addNodeRemovedCallback
-            elif parts[1] == 'rename':
-                nodeMessageWithNode = om2.MNodeMessage.addNameChangedCallback
+            elif parts[1] == 'name':
+                if parts[2] == 'changed':
+                    nodeMessageWithNode = om2.MNodeMessage.addNameChangedCallback
             elif parts[1] == 'uuid':
                 if parts[2] == 'changed':
                     if parts[3] == 'check':
@@ -699,18 +703,18 @@ class MayaCallbacks(AbstractCallbacks):
                 intercept = interceptMsg(om2.MNodeMessage.kAttributeRemoved)
 
             elif parts[1] == 'value':
-                if parts[2] in ('changed', None):
+                if parts[2] == 'changed':
                     nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
                     intercept = interceptMsg(om2.MNodeMessage.kAttributeSet)
 
-            elif parts[1] == 'locked':
+            elif parts[1] == 'lock':
                 if parts[2] == 'set':
                     nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
                     intercept = interceptMsg(om2.MNodeMessage.kAttributeLocked)
                 elif parts[2] == 'unset':
                     nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
                     intercept = interceptMsg(om2.MNodeMessage.kAttributeUnlocked)
-                elif parts[2] is None:
+                elif parts[2] == 'changed':
                     nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
                     intercept = interceptMsg(om2.MNodeMessage.kAttributeLocked | om2.MNodeMessage.kAttributeUnlocked)
 
@@ -727,9 +731,10 @@ class MayaCallbacks(AbstractCallbacks):
                 elif parts[2] == 'override':
                     nodeMessageWithNode = om2.MNodeMessage.addKeyableChangeOverride
 
-            elif parts[1] == 'rename':
-                nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
-                intercept = interceptMsg(om2.MNodeMessage.kAttributeRenamed)
+            elif parts[1] == 'name':
+                if parts[2] == 'changed':
+                    nodeMessageWithNode = om2.MNodeMessage.addAttributeChangedCallback
+                    intercept = interceptMsg(om2.MNodeMessage.kAttributeRenamed)
 
         elif parts[0] == 'undo':
             eventMessage = 'Undo'
