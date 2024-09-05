@@ -5,7 +5,7 @@ from . import VFXWindow
 class TestWindow(VFXWindow):
     WindowID = 'vfxwindow.debug'
     WindowName = 'VFXWindow Debug'
-    WindowDockable = True
+    WindowDock = 'docked'
 
     def __init__(self, **kwargs):
         self._signalPause = False
@@ -119,7 +119,7 @@ class TestWindow(VFXWindow):
 
 
 def main():
-    return TestWindow.show()
+    return TestWindow.launch()
 
 
 if __name__ == '__main__':

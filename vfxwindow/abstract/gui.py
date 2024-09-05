@@ -470,6 +470,17 @@ class AbstractWindow(QtWidgets.QMainWindow):
         return new
 
     @classmethod
+    def launch(cls, *args, **kwargs):
+        """Launch the window."""
+        # Close down any existing windows and open a new one
+        cls.clearWindowInstance(cls.WindowID)
+        new = cls(*args, **kwargs)
+        super(AbstractWindow, new).show()
+        new.loadWindowPosition()
+        new.deferred(new.windowReady.emit)
+        return new
+
+    @classmethod
     def dialog(cls, parent=None, *args, **kwargs):
         """Create the window as a dialog.
         Methods of .dialogAccept and .dialogReject will be added.
@@ -615,7 +626,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         In the case of a dialog, it will be deleted by now, so ignore.
         """
         inst = cls._WINDOW_INSTANCES.pop(windowID, None)
-        if inst is not None and not inst['window'].isDialog():
+        if inst and not inst['window'].isDialog():
             try:
                 inst['window'].clearedInstance.emit()
             except RuntimeError:

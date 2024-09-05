@@ -123,7 +123,7 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
     # Setup Maya's window
     if dock:
         defaultDock = mel.eval('getUIComponentDockControl("Attribute Editor", false)')
-        if isinstance(dock, (bool, int)):
+        if isinstance(dock, bool):
             dock = defaultDock
         try:
             mc.workspaceControl(WindowClass.WindowID, retain=True, label=getattr(WindowClass, 'WindowName', 'New Window'), tabToControl=[dock, -1])
@@ -996,6 +996,70 @@ class MayaWindow(MayaCommon, AbstractWindow):
             cls.WindowDockable = True
             win.setDockable(True, override=True)
         return win
+
+    @classmethod
+    def launch(cls, *args, **kwargs):
+        """Launch the window."""
+        # Close down any existing windows and open a new one
+        try:
+            cls.clearWindowInstance(cls.WindowID)
+        except AttributeError:
+            pass
+
+        # Load settings
+        settings = getWindowSettings(cls.WindowID)
+        mayaSettings = settings.get(Application, {})
+        dockSettings = mayaSettings.get('dock', {})
+
+        dockState = getattr(cls, 'WindowDock', None)
+
+        # Load from legacy WindowDockable attribute (To be removed in 2.0)
+        if dockState is None:
+            dockState = getattr(cls, 'WindowDockable', None)
+
+        # Validate options
+        if dockState not in (None, True, False, 'floating', 'docked'):
+            raise ValueError('invalid WindowDock value, must be boolean, "floating" or "docked"')
+
+        # Load from settings if not set as attribute
+        if dockState is None:
+            dockState = mayaSettings.get('docked', True)
+
+        # Load the window normally
+        if dockState is False:
+            return super(MayaWindow, cls).show(*args, **kwargs)
+
+        # If dockable/floating not set, prefdockSettingser floating
+        if dockState is True:
+            if dockSettings.get('floating'):
+                dockState = 'floating'
+            else:
+                dockState = 'docked'
+
+        # Override docked mode if launched in batch mode
+        # TODO: Is this still needed? I added it 5 years ago
+        # Perhaps it's to save the correct window settings?
+        if dockState and Application.batch:
+            dockState = cls.WindowDockable = False
+            try:
+                win = super(MayaWindow, cls).show(*args, **kwargs)
+            finally:
+                cls.WindowDockable = True
+            win.setDockable(True, override=True)
+            return win
+
+        # Get the last area the window was attached to
+        if dockState == 'floating':
+            dockArea = False
+        elif Application.version < 2017:
+            dockArea = dockSettings.get('area', True)
+        else:
+            dockArea = dockSettings.get('control', True)
+
+        # Launch the window with the correct wrapper
+        if Application.version < 2017:
+            return dockControlWrap(cls, dockArea,  *args, **kwargs)
+        return workspaceControlWrap(cls, dockArea, True, *args, **kwargs)
 
     @classmethod
     def dialog(cls, parent=None, *args, **kwargs):
