@@ -8,7 +8,6 @@ TODO:
     Change setDocked to setFloating
     Remove docked in favour of floating
     Changed dialog to isDialog
-    Remove processEvents
 """
 
 from __future__ import absolute_import

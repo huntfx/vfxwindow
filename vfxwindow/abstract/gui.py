@@ -198,12 +198,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """
         return self.application is None
 
-    def processEvents(self):
-        """Wrapper over the inbult processEvents method.
-        This forces the GUI to update in the middle of calculations.
-        """
-        QtWidgets.QApplication.processEvents()
-
     def signalConnect(self, signal, func, type=QtCore.Qt.AutoConnection, group=None):
         """Add a new signal for the current group.
 
