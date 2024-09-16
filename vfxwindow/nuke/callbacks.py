@@ -98,19 +98,13 @@ class NukeCallbacks(AbstractCallbacks):
                 Parameters: (nodeClass: Optional[str] = None)
                 Signature: () -> None
 
-            ui.update:
-                Called when any changes are made to each node.
-                This is low priority so Nuke may have already started
-                calculating the Viewer image.
-                Parameters: (nodeClass: Optional[str] = None)
-                Signature: () -> None
-
         Unimplemented:
             autolabel
             filenameFilter
             validateFilename
             autoSaveRestoreFilter
             autoSaveDeleteFilter
+            updateUI
         """
         parts = name.split('.') + [None, None, None]
 
@@ -176,11 +170,6 @@ class NukeCallbacks(AbstractCallbacks):
                     if parts[3] in ('after', None):
                         register = nuke.addAfterBackgroundFrameRender
                         unregister = nuke.removeAfterBackgroundFrameRender
-
-        elif parts[0] == 'ui':
-            if parts[1] == 'update':
-                register = nuke.addUpdateUI
-                unregister = nuke.removeUpdateUI
 
         if register is None:
             return super(NukeCallbacks, self).add(name, func, *args, **kwargs)

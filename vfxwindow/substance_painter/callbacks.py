@@ -116,9 +116,9 @@ class SubstancePainterCallbacks(AbstractCallbacks):
 
         elif parts[0] == 'export':
             if parts[1] == 'textures':
-                if parts[2] == 'before':
+                if parts[2] == 'start':
                     event = sp.event.ExportTexturesAboutToStart
-                elif parts[2] in ('after', None):
+                elif parts[2] in ('end', None):
                     event = sp.event.ExportTexturesEnded
 
         elif parts[0] == 'shelf':

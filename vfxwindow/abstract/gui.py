@@ -336,7 +336,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Load the previous position or centre the window.
         The loading must be done in an override.
         """
-        if self.isInstance():
+        if self.isInstance() or self.docked():
             return
 
         if self.__initialPosOverride is not None:
@@ -670,7 +670,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """Return if the window is floating.
         As this is a base window only, it will always be floating.
         """
-        return not self.isInstance()
+        return True
 
     def move(self, x, y=None):
         if self.isInstance():

@@ -43,6 +43,9 @@ class BlenderCallbacks(AbstractCallbacks):
                 Called after failing to load a blend file.
                 Signature: (path: str, None) -> None
 
+            file.save:
+                Mapped to 'file.save.after'
+
             file.save.before:
                 Called before saving a blend file.
                 Signature: (path: str, None) -> None
@@ -56,25 +59,25 @@ class BlenderCallbacks(AbstractCallbacks):
                 Signature: (path: str, None) -> None
 
             render:
-                Mapped to 'render.after'.
+                Mapped to 'render.end'.
+
+            render.start:
+                Called on initialisation of a render job.
+                Signature: (scene: bpy.types.Scene, None) -> None
+
+            render.end:
+                Called on completion of render job.
+                Signature: (scene: bpy.types.Scene, None) -> None
 
             render.cancel:
                 Called after cancelling a render job.
                 Signature: (scene: bpy.types.Scene, None) -> None
 
-            render.after:
-                Called on completion of render job.
-                Signature: (scene: bpy.types.Scene, None) -> None
-
-            render.before:
-                Called on initialisation of a render job.
-                Signature: (scene: bpy.types.Scene, None) -> None
-
-            render.frame.before
+            render.frame.start
                 Called before render.
                 Signature: (scene: bpy.types.Scene, None) -> None
 
-            render.frame.after:
+            render.frame.end:
                 Called after render.
                 Signature: (scene: bpy.types.Scene, None) -> None
 
@@ -115,11 +118,11 @@ class BlenderCallbacks(AbstractCallbacks):
                 after the data has been evaluated for the new frame.
                 Signature: (scene: bpy.types.Scene, depsgraph: bpy.types.Depsgraph) -> None
 
-            frame.playback.before:
+            playback.start:
                 Called when starting animation playback.
                 Signature: (scene: bpy.types.Scene, depsgraph: bpy.types.Depsgraph) -> None
 
-            frame.playback.after:
+            playback.end:
                 Called when ending animation playback.
                 Signature: (scene: bpy.types.Scene, depsgraph: bpy.types.Depsgraph) -> None
 
@@ -191,26 +194,27 @@ class BlenderCallbacks(AbstractCallbacks):
                     handler = bpy.app.handlers.frame_change_pre
                 elif parts[2] in ('after', None):
                     handler = bpy.app.handlers.frame_change_post
-            elif parts[1] == 'playback':
-                if parts[2] == 'before':
-                    handler = bpy.app.handlers.animation_playback_pre
-                elif parts[2] in ('after', None):
-                    handler = bpy.app.handlers.animation_playback_post
+
+        elif parts[0] == 'playback':
+            if parts[1] == 'start':
+                handler = bpy.app.handlers.animation_playback_pre
+            elif parts[1] in ('end', None):
+                handler = bpy.app.handlers.animation_playback_post
 
         elif parts[0] == 'render':
             if parts[1] == 'cancel':
                 handler = bpy.app.handlers.render_cancel
-            elif parts[1] == 'before':
+            elif parts[1] == 'start':
                 handler = bpy.app.handlers.render_init
-            elif parts[1] in ('after', None):
+            elif parts[1] in ('end', None):
                 handler = bpy.app.handlers.render_complete
             elif parts[1] == 'stats':
                 handler = bpy.app.handlers.render_stats
 
             elif parts[1] == 'frame':
-                if parts[2] == 'before':
+                if parts[2] == 'start':
                     handler = bpy.app.handlers.render_pre
-                elif parts[2] in ('after', None):
+                elif parts[2] in ('end', None):
                     handler = bpy.app.handlers.render_post
                 elif parts[2] == 'write':
                     handler = bpy.app.handlers.render_write
