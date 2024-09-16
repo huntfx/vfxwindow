@@ -1023,13 +1023,16 @@ class MayaWindow(MayaCommon, AbstractWindow):
 
         # Load from settings if not set as attribute
         if dockState is None:
-            dockState = mayaSettings.get('docked', True)
+            dockState = mayaSettings.get('docked')
 
         # Load the window normally
-        if dockState is False:
-            return super(MayaWindow, cls).show(*args, **kwargs)
+        if not dockState:
+            kwargs['dockable'] = False
+            win = cls(*args, **kwargs)
+            win.show()
+            return win
 
-        # If dockable/floating not set, prefdockSettingser floating
+        # If dockable/floating not set, prefer floating
         if dockState is True:
             if dockSettings.get('floating'):
                 dockState = 'floating'
@@ -1039,13 +1042,15 @@ class MayaWindow(MayaCommon, AbstractWindow):
         # Override docked mode if launched in batch mode
         # TODO: Is this still needed? I added it 5 years ago
         # Perhaps it's to save the correct window settings?
-        if dockState and Application.batch:
-            dockState = cls.WindowDockable = False
+        if Application.batch:
+            cls.WindowDockable = False
+            kwargs['dockable'] = False
             try:
-                win = super(MayaWindow, cls).show(*args, **kwargs)
+                win = cls(*args, **kwargs)
+                win.show()
+                win.setDockable(True, override=True)
             finally:
                 cls.WindowDockable = True
-            win.setDockable(True, override=True)
             return win
 
         # Get the last area the window was attached to

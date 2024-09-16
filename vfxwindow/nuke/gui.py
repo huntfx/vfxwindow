@@ -56,13 +56,15 @@ def _removeMargins(widget):
 
 class Pane(object):
     @classmethod
-    def get(cls, value=None):
+    def get(cls, value=None, default=None):
         if value is not None:
-            return nuke.getPaneFor(value)
-        return cls.auto()
+            pane = nuke.getPaneFor(value)
+            if pane is None:
+                return default
+        return cls.auto(default)
 
     @classmethod
-    def auto(cls):
+    def auto(cls, default=None):
         """Automatically select a pane to attach to.
         If there are somehow no panels that exist then None will be returned.
         """
@@ -70,6 +72,7 @@ class Pane(object):
             pane = pane_func.__get__(cls, None)()
             if pane is not None:
                 return pane
+        return default
 
     @classmethod
     def find(cls, windowID):
@@ -780,6 +783,90 @@ class NukeWindow(NukeCommon, AbstractWindow):
             cls.WindowDockable = True
             win.setDockable(True, override=True)
         return win
+
+    @classmethod
+    def launch(cls, *args, **kwargs):
+        """Launch the window."""
+        # Close down any instances of the window
+        try:
+            cls.clearWindowInstance(cls.WindowID)
+        except AttributeError:
+            settings = {}
+        else:
+            settings = getWindowSettings(cls.WindowID)
+
+        # Load settings
+        settings = getWindowSettings(cls.WindowID)
+        nukeSettings = settings.get(Application, {})
+        dockSettings = nukeSettings.get('dock', {})
+
+        dockState = getattr(cls, 'WindowDock', None)
+
+        # Load from legacy WindowDockable attribute (To be removed in 2.0)
+        if dockState is None:
+            dockState = getattr(cls, 'WindowDockable', None)
+
+        # Validate options
+        if dockState not in (None, True, False, 'floating', 'docked'):
+            raise ValueError('invalid WindowDock value, must be boolean, "floating" or "docked"')
+
+        # Load from settings if not set as attribute
+        if dockState is None:
+            dockState = nukeSettings.get('docked', True)
+
+        # Load the window normally
+        if not dockState:
+            kwargs['dockable'] = False
+            win = cls(*args, **kwargs)
+            win.show()
+            return win
+
+        # For now, floating windows are not supported, so it must be docked
+        dockState = 'docked'
+
+        # Find the module in the global scope
+        moduleNamespace = searchGlobals(cls)
+
+        # If it can't be found, then it can't be docked
+        if moduleNamespace is None:
+            cls.WindowDockable = False
+            kwargs['dockable'] = False
+            try:
+                win = cls(*args, **kwargs)
+                win.show()
+                win.setDockable(True, override=True)
+            finally:
+                cls.WindowDockable = True
+            return win
+
+        # Get the pane the window was last attached to
+        pane = Pane.get(dockSettings.get('panel'), Pane.auto())
+
+        # Set WindowID if needed but disable saving
+        class WindowClass(cls):
+            if not hasattr(cls, 'WindowID'):
+                WindowID = uuid.uuid4().hex
+                def enableSaveWindowPosition(self, enable):
+                    return super(WindowClass, self).enableSaveWindowPosition(False)
+
+        # Register as a Nuke widget
+        panel = panels.registerWidgetAsPanel(
+            widget=moduleNamespace,
+            name=getattr(WindowClass, 'WindowName', 'New Window'),
+            id=WindowClass.WindowID,
+            create=True,
+        )
+        panel.addToPane(pane)
+
+        panelObject = panel.customKnob.getObject()
+        if panelObject is None:
+            return None
+
+        # Get the created window
+        widget = panelObject.widget
+        _removeMargins(widget)
+        widget.deferred(widget.windowReady.emit)
+        return widget
 
     @classmethod
     def dialog(cls, parent=None, *args, **kwargs):
