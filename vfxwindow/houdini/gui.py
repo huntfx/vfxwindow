@@ -64,10 +64,6 @@ class HoudiniWindow(AbstractWindow):
         self.clearWindowInstance(self.WindowID)
         return super(HoudiniWindow, self).closeEvent(event)
 
-    def displayMessage(self, message):
-        """Show a popup message."""
-        hou.ui.displayMessage(message)
-
     def windowPalette(self):
         currentPalette = super(HoudiniWindow, self).windowPalette()
         if currentPalette is None:

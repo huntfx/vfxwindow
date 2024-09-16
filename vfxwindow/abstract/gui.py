@@ -355,66 +355,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
             icon = QtGui.QIcon(icon)
         super(AbstractWindow, self).setWindowIcon(icon)
 
-    def displayMessage(self, title, message, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None, checkBox=None):
-        """Display a popup box.
-
-        The setCheckBox command was added in Qt 5.2.
-        Even if it is not available, its state will still be returned.
-
-        Parameters:
-            title (str): Title of the window.
-            message (str): Short sentence with a question or statement.
-            details (str): Add extra information if required.
-            buttons (list of str): Define which buttons to use, must be a QMessageBox StandardButton.
-                It is required as a string for compatibility with other programs.
-            defaultButton (str): Define which button is selected by default.
-            cancelButton (str): Define which button acts as the no/cancel option.
-            checkBox (QtWidgets.QCheckBox): Add a checkbox (Qt 5.2+ only).
-
-        Returns:
-            if checkBox:
-                (buttonClicked (str), checked (bool))
-            else:
-                buttonClicked (str)
-        """
-        msg = QtWidgets.QMessageBox()
-        msg.setWindowTitle(title)
-        msg.setText(message)
-        if details is not None:
-            msg.setInformativeText(details)
-
-        # Store a list of buttons so we can figure out what was pressed
-        buttonDict = {}
-        for button in buttons:
-            buttonDict[getattr(QtWidgets.QMessageBox, button)] = button
-
-        # Set the buttons
-        standardButtons = 0
-        for button in buttonDict:
-            standardButtons |= button
-        msg.setStandardButtons(standardButtons)
-        if defaultButton is None:
-            msg.setDefaultButton(getattr(QtWidgets.QMessageBox, buttons[-1]))
-        else:
-            msg.setDefaultButton(getattr(QtWidgets.QMessageBox, defaultButton))
-        if cancelButton is not None:
-            msg.setEscapeButton(getattr(QtWidgets.QMessageBox, cancelButton))
-
-        if checkBox is not None:
-            if not isinstance(checkBox, QtWidgets.QCheckBox):
-                checkBox = QtWidgets.QCheckBox(checkBox)
-            try:
-                msg.setCheckBox(checkBox)
-            except AttributeError:
-                pass
-
-        # Get the string of the button that was clicked
-        result = buttonDict[msg.exec_()]
-
-        if checkBox is not None:
-            return (result, checkBox.isChecked())
-        return result
-
     def about(self, text=None):
         """Make an "about" popup message.
         If no text is provided, this will first attempt to read the
@@ -428,15 +368,13 @@ class AbstractWindow(QtWidgets.QMainWindow):
             text = inspect.cleandoc(docstring)
 
         try:
-            self.displayMessage(
-                title='About {}'.format(self.WindowName),
-                message=text,
-            )
+            title = 'About {}'.format(self.WindowName)
         except AttributeError:
-            self.displayMessage(
-                title='About',
-                message=text,
-            )
+            title = 'About'
+        msg = QtWidgets.QMessageBox(self)
+        msg.setWindowTitle(title)
+        msg.setText(text)
+        msg.exec_()
 
     @hybridmethod
     def show(cls, self, *args, **kwargs):
