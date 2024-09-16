@@ -134,9 +134,9 @@ def workspaceControlWrap(windowClass, dock=True, resetFloating=True, *args, **kw
         mc.workspaceControl(WindowClass.WindowID, retain=True, label=getattr(WindowClass, 'WindowName', 'New Window'), floating=True)
 
     # Setup main window and parent to Maya
-    workspaceControlWin = getMainWindow(WindowClass.WindowID)
+    workspaceControlWin = kwargs['parent'] = getMainWindow(WindowClass.WindowID)
     workspaceControlWin.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-    windowInstance = WindowClass(parent=workspaceControlWin, dockable=True, *args, **kwargs)
+    windowInstance = WindowClass(dockable=True, *args, **kwargs)
     forceMenuBar(windowInstance)
 
     # Attach callbacks
