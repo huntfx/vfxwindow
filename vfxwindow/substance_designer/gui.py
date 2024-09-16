@@ -89,13 +89,6 @@ class SubstanceDesignerWindow(AbstractWindow):
         """Get the current application."""
         return Application
 
-    def y(self):
-        """Apply y offset for dialogs."""
-        y = super(SubstanceDesignerWindow, self).y()
-        if self.isDialog():
-            return y - 30
-        return y
-
     def move(self, x, y=None):
         if self.docked() and not self.floating():
             return
@@ -140,7 +133,7 @@ class SubstanceDesignerWindow(AbstractWindow):
             if 'dock' not in settings:
                 settings['dock'] = {}
 
-        # Save standalone / dialog settings
+        # Save standalone settings
         else:
             key = self._getSettingsKey()
             if key not in settings:
@@ -170,11 +163,6 @@ class SubstanceDesignerWindow(AbstractWindow):
             x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
             self.resize(width, height)
             self.move(x, y)
-
-    def centreWindow(self, *args, **kwargs):
-        """The dialog is already centered so skip."""
-        if not self.isDialog():
-            return super(SubstanceDesignerWindow, self).centreWindow(*args, **kwargs)
 
     def closeEvent(self, event):
         """Catch close events.
@@ -280,10 +268,3 @@ class SubstanceDesignerWindow(AbstractWindow):
             return dockWrap(cls, *args, **kwargs)
 
         return super(SubstanceDesignerWindow, cls).show(*args, **kwargs)
-
-    @classmethod
-    def dialog(cls, parent=None, *args, **kwargs):
-        """Create the window as a dialog."""
-        if parent is None:
-            parent = getMainWindow()
-        return super(SubstanceDesignerWindow, cls).dialog(parent=parent, *args, **kwargs)

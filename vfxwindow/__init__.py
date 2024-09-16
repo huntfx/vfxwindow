@@ -1,13 +1,11 @@
 """Set the window class to be specific to whichever program is loaded.
 
 TODO:
-    Add dialog code for each application
     Revise setDefault* methods
 
     # Potential breaking changes
     Change setDocked to setFloating
     Remove docked in favour of floating
-    Changed dialog to isDialog
 """
 
 from __future__ import absolute_import

@@ -108,13 +108,6 @@ class HoudiniWindow(AbstractWindow):
             self.move(x, y)
 
     @classmethod
-    def dialog(cls, parent=None, *args, **kwargs):
-        """Create the window as a dialog."""
-        if parent is None:
-            parent = getMainWindow()
-        return super(HoudiniWindow, cls).dialog(parent=parent, *args, **kwargs)
-
-    @classmethod
     def clearWindowInstance(self, windowID):
         """Close the last class instance."""
         previousInstance = super(HoudiniWindow, self).clearWindowInstance(windowID)

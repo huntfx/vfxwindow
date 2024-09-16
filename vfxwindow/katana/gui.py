@@ -103,13 +103,6 @@ class KatanaWindow(AbstractWindow):
             pass
         return super(KatanaWindow, cls).show(*args, **kwargs)
 
-    @classmethod
-    def dialog(cls, parent=None, *args, **kwargs):
-        """Create the window as a dialog."""
-        if parent is None:
-            parent = getMainWindow()
-        return super(KatanaWindow, cls).dialog(parent=parent, *args, **kwargs)
-
     def closeEvent(self, event):
         """Save the position before closing."""
         print('CLOSEEVENT')

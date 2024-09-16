@@ -188,13 +188,8 @@ class MayaCommon(object):
         return Application
 
     def deferred(self, func, *args, **kwargs):
-        """Execute a deferred command.
-        If the window is a dialog, then execute now as Maya will pause.
-        """
-        if self.isDialog():
-            return func()
-        else:
-            mc.evalDeferred(func, *args, **kwargs)
+        """Execute a deferred command."""
+        mc.evalDeferred(func, *args, **kwargs)
 
 
 class MayaWindow(MayaCommon, AbstractWindow):
@@ -639,7 +634,6 @@ class MayaWindow(MayaCommon, AbstractWindow):
             return super(MayaWindow, self).show()
 
         # Close down any instances of the window
-        # If a dialog was opened, then the reference will no longer exist
         try:
             cls.clearWindowInstance(cls.WindowID)
         except AttributeError:
@@ -702,46 +696,6 @@ class MayaWindow(MayaCommon, AbstractWindow):
             cls.WindowDockable = True
             win.setDockable(True, override=True)
         return win
-
-    @classmethod
-    def dialog(cls, parent=None, *args, **kwargs):
-        """Create the window as a dialog.
-        For Maya versions after 2017, mc.layoutDialog is used.
-        """
-        # This is quite buggy and can lock up Maya, so disable for now
-        # The issue is likely related to what `setParent` returns.
-        if False and Application.version >= 2017:
-            # Note: Due to Python 2 limitations, *args and **kwargs can't be unpacked with the
-            # title keyword present, so don't try to clean up the code by enabling unpacking again.
-            def uiScript(cls, clsArgs=(), clsKwargs={}):
-                form = mc.setParent(query=True)
-                parent = getMainWindow(form)
-                parent.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-
-                windowInstance = cls(parent, *clsArgs, **clsKwargs)
-                windowInstance.windowReady.emit()
-                return windowInstance
-
-            # Set WindowID if needed but disable saving
-            # TODO: Override output to match AbstractWindow.dialog
-            # cmds.layoutDialog(dismiss=str(data)) to self.dialogAccept(data)
-            class WindowClass(windowClass):
-                if not hasattr(windowClass, 'WindowID'):
-                    WindowID = uuid.uuid4().hex
-                    def enableSaveWindowPosition(self, enable):
-                        return super(WindowClass, self).enableSaveWindowPosition(False)
-
-            try:
-                return mc.layoutDialog(
-                    ui=partial(uiScript, WindowClass, clsArgs=args, clsKwargs=kwargs),
-                    title=getattr(cls, 'WindowTitle', 'New Window'),
-                )
-            finally:
-                cls.clearWindowInstance(cls.WindowID)
-
-        if parent is None:
-            parent = getMainWindow()
-        return super(MayaWindow, cls).dialog(parent=parent, *args, **kwargs)
 
 
 class MayaBatchWindow(MayaCommon, StandaloneWindow):
@@ -807,10 +761,3 @@ class MayaBatchWindow(MayaCommon, StandaloneWindow):
         kwargs['instance'] = True
         kwargs['exec_'] = True
         return super(MayaBatchWindow, cls).show(*args, **kwargs)
-
-    @classmethod
-    def dialog(cls, parent=None, *args, **kwargs):
-        """Create the window as a dialog."""
-        if parent is None:
-            parent = getMainWindow()
-        return super(NukeWindow, cls).dialog(parent=parent, *args, **kwargs)

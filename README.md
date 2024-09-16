@@ -115,7 +115,6 @@ if __name__ == '__main__':
  - Set palette to that of another program
  - Auto close if opening a duplicate window
  - Close down all windows at once
- - Create dialog windows automatically attached to the application (and return data)
 
 ### Running with Non-Python Applications
 Certain Windows applications have dispatch based COM interface, which will allow a link between Python and the application. See [photoshop-scripting-python](https://github.com/lohriialo/photoshop-scripting-python) for an example on how to connect to an application.

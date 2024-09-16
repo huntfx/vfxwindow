@@ -83,10 +83,3 @@ class FusionWindow(StandaloneWindow):
             pass
         kwargs['exec_'] = True
         return super(FusionWindow, cls).show(*args, **kwargs)
-
-    @classmethod
-    def dialog(cls, parent=None, *args, **kwargs):
-        """Create the window as a dialog."""
-        if parent is None:
-            parent = getMainWindow()
-        return super(FusionWindow, cls).dialog(parent=parent, *args, **kwargs)

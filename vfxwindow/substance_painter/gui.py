@@ -124,7 +124,7 @@ class SubstancePainterWindow(AbstractWindow):
             if 'dock' not in settings:
                 settings['dock'] = {}
 
-        # Save standalone / dialog settings
+        # Save standalone settings
         else:
             key = self._getSettingsKey()
             if key not in settings:
@@ -154,11 +154,6 @@ class SubstancePainterWindow(AbstractWindow):
             x, y = setCoordinatesToScreen(x, y, width, height, padding=5)
             self.resize(width, height)
             self.move(x, y)
-
-    def centreWindow(self, *args, **kwargs):
-        """The dialog is already centered so skip."""
-        if not self.isDialog():
-            return super(SubstancePainterWindow, self).centreWindow(*args, **kwargs)
 
     def hideEvent(self, event):
         """Unregister callbacks and save window location."""
@@ -262,10 +257,3 @@ class SubstancePainterWindow(AbstractWindow):
             return dockWrap(cls, *args, **kwargs)
 
         return super(SubstancePainterWindow, cls).show(*args, **kwargs)
-
-    @classmethod
-    def dialog(cls, parent=None, *args, **kwargs):
-        """Create the window as a dialog."""
-        if parent is None:
-            parent = getMainWindow()
-        return super(SubstancePainterWindow, cls).dialog(parent=parent, *args, **kwargs)

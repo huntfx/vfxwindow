@@ -588,13 +588,6 @@ class NukeWindow(NukeCommon, AbstractWindow):
             win.setDockable(True, override=True)
         return win
 
-    @classmethod
-    def dialog(cls, parent=None, *args, **kwargs):
-        """Create the window as a dialog."""
-        if parent is None:
-            parent = getMainWindow()
-        return super(NukeWindow, cls).dialog(parent=parent, *args, **kwargs)
-
     def updateValue(self):
         """Placeholder method to prevent exceptions when loading docked windows in Nuke 14+.
 
@@ -666,10 +659,3 @@ class NukeBatchWindow(NukeCommon, StandaloneWindow):
         kwargs['instance'] = True
         kwargs['exec_'] = True
         return super(NukeBatchWindow, cls).show(*args, **kwargs)
-
-    @classmethod
-    def dialog(cls, parent=None, *args, **kwargs):
-        """Create the window as a dialog."""
-        if parent is None:
-            parent = getMainWindow()
-        return super(NukeWindow, cls).dialog(parent=parent, *args, **kwargs)
