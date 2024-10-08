@@ -33,7 +33,7 @@ def getMainWindow():
     Source: https://github.com/fredrikaverpil/pyvfx-boilerplate/blob/master/boilerplate.py
     """
     for obj in QtWidgets.QApplication.topLevelWidgets():
-        if obj.inherits('QMainWindow') and obj.metaObject().className() == 'Foundry::UI::DockMainWindow':
+        if isinstance(obj, QtWidgets.QMainWindow) and obj.metaObject().className() == 'Foundry::UI::DockMainWindow':
             return obj
 
 
