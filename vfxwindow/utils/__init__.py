@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import __main__
 import inspect
 import json
 import os
@@ -46,9 +47,12 @@ def searchGlobals(cls, globalsDict=None, visited=None):
     """Search from the top level globals for a particular object.
     Every time a module is found, search that too.
     """
-    # Read the globals from the module at the top of the stack
     if globalsDict is None:
-        globalsDict = inspect.stack()[-1][0].f_globals
+        # Read the globals from `__main__`
+        # Originally this used `inspect.stack()[-1][0].f_globals`, but
+        # anything launched in Nuke's startup would not be under the
+        # main stack and would cause this to fail.
+        globalsDict = __main__.__dict__
 
     # Initially mark every builtin module as visisted
     if visited is None:
