@@ -5,14 +5,14 @@ from __future__ import absolute_import
 import sys
 from Qt import QtWidgets, IsPySide, IsPyQt4, IsPySide2, IsPyQt5
 
-from .. import application as _app
+from ..application import Blender, RenderDoc
 from ..abstract.gui import AbstractWindow
 from ..utils import setCoordinatesToScreen, hybridmethod
 
 # Skip the multiprocessing import for certain apps
-# Blender 4 becomes unstable and starts crashing
+# Blender 4.2 becomes unstable and starts crashing
 # RenderDoc fails with `ModuleNotFoundError: No module named '_socket'`
-if (_app.Blender and _app.Blender.version > 4) or _app.RenderDoc:
+if (Blender and Blender.version > 4) or RenderDoc:
     Process = object
 else:
     from multiprocessing import Process
