@@ -54,18 +54,11 @@ class AbstractWindow(QtWidgets.QMainWindow):
     clearedInstance = QtCore.Signal()
     windowReady = QtCore.Signal()
 
-    CallbackClass = None
-
     _WINDOW_INSTANCES = {}
 
     def __init__(self, parent=None, **kwargs):
         super(AbstractWindow, self).__init__(parent, **kwargs)
-
-        callbackClass = type(self).CallbackClass
-        if callbackClass is not None:
-            self.callbacks = callbackClass(self)
-        else:
-            self.callbacks = AbstractCallbacks(self)
+        self.callbacks = self._createCallbackHandler()
 
         # Setup window attributes and saving
         self.enableSaveWindowPosition(True)
@@ -99,6 +92,12 @@ class AbstractWindow(QtWidgets.QMainWindow):
 
         self.windowReady.connect(lambda: setattr(self, '_windowLoaded', True))
         self.windowReady.connect(self.raise_)
+
+    def _createCallbackHandler(self):
+        """Create the callback handler.
+        This is assigned to `self.callbacks`.
+        """
+        return AbstractCallbacks(self)
 
     @property
     def application(self):

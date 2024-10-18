@@ -214,7 +214,9 @@ def toMObject(node):
 
 class MayaCommon(object):
 
-    CallbackClass = MayaCallbacks
+    def _createCallbackHandler(self):
+        """Create the callback handler."""
+        return MayaCallbacks(self)
 
     @property
     def application(self):

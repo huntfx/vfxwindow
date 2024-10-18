@@ -16,8 +16,6 @@ from ..standalone.gui import StandaloneWindow
 class BlenderWindow(StandaloneWindow):
     """Window to use for Blender."""
 
-    CallbackClass = BlenderCallbacks
-
     def saveWindowPosition(self):
         """Save the window location."""
         if self.application in self.windowSettings:
@@ -35,6 +33,10 @@ class BlenderWindow(StandaloneWindow):
         settings[key]['y'] = self.y()
 
         super(BlenderWindow, self).saveWindowPosition()
+
+    def _createCallbackHandler(self):
+        """Create the callback handler."""
+        return BlenderCallbacks(self)
 
     @property
     def application(self):

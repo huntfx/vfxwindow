@@ -61,8 +61,6 @@ def dockWrap(windowClass, *args, **kwargs):
 class SubstancePainterWindow(AbstractWindow):
     """Window to use for Substance Painter."""
 
-    CallbackClass = SubstancePainterCallbacks
-
     def __init__(self, parent=None, dockable=False, **kwargs):
         if parent is None:
             parent = getMainWindow()
@@ -70,6 +68,10 @@ class SubstancePainterWindow(AbstractWindow):
 
         self._isHiddenSP = False
         self.setDockable(dockable, override=True)
+
+    def _createCallbackHandler(self):
+        """Create the callback handler."""
+        return SubstancePainterCallbacks(self)
 
     @property
     def application(self):

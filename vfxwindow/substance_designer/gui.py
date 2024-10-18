@@ -72,8 +72,6 @@ def dockWrap(windowClass, *args, **kwargs):
 class SubstanceDesignerWindow(AbstractWindow):
     """Window to use for Substance Designer."""
 
-    CallbackClass = SubstanceDesignerCallbacks
-
     def __init__(self, parent=None, dockable=False, **kwargs):
         if dockable:
             self._sdParent, parent = parent, None
@@ -83,6 +81,10 @@ class SubstanceDesignerWindow(AbstractWindow):
 
         self._isHiddenSD = False
         self.setDockable(dockable, override=True)
+
+    def _createCallbackHandler(self):
+        """Create the callback handler."""
+        return SubstanceDesignerCallbacks(self)
 
     @property
     def application(self):
