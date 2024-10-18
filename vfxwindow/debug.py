@@ -82,6 +82,7 @@ class TestWindow(VFXWindow):
         # Add test callbacks
         if self.application == 'Maya':
             import maya.cmds as mc
+            import maya.OpenMaya as om
             import maya.api.OpenMaya as om2
             self.callbacks.add('file.new', lambda clientData: print('Callback: file.new'))
             self.callbacks.add('file.new.before', lambda clientData: print('Callback: file.new.before'))
@@ -200,6 +201,12 @@ class TestWindow(VFXWindow):
                     return True
                 self.callbacks.add('attribute.keyable.override', keyableChangeOverride, selection.getPlug(1))
 
+                legacySelection = om.MSelectionList()
+                legacySelection.add('pCube1')
+                legacySelection.add('pCube1.translateX')
+                obj = om.MObject()
+                legacySelection.getDependNode(0, obj)
+                self.callbacks['legacy'].add('attribute.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.changed (legacy) ({}, {}, {})'.format(msg, plug, otherPlug)), obj)
 
         elif self.application == 'Nuke':
             import nuke

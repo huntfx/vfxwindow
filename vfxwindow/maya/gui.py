@@ -8,8 +8,9 @@ from Qt import QtWidgets, QtCompat, QtCore
 
 import maya.mel as mel
 import maya.cmds as mc
-import maya.api.OpenMaya as om
+import maya.OpenMaya as om
 import maya.OpenMayaUI as omUI
+import maya.api.OpenMaya as om2
 
 from .application import Application
 from .callbacks import MayaCallbacks
@@ -21,23 +22,23 @@ from ..utils.gui import forceMenuBar
 
 # Map each function required for each callback
 SCENE_CALLBACKS = {
-    None: om.MSceneMessage.addCallback,  # Default option
-    om.MSceneMessage.kBeforeNewCheck: om.MSceneMessage.addCheckCallback,
-    om.MSceneMessage.kBeforeImportCheck: om.MSceneMessage.addCheckCallback,
-    om.MSceneMessage.kBeforeOpenCheck: om.MSceneMessage.addCheckCallback,
-    om.MSceneMessage.kBeforeExportCheck: om.MSceneMessage.addCheckCallback,
-    om.MSceneMessage.kBeforeSaveCheck: om.MSceneMessage.addCheckCallback,
-    om.MSceneMessage.kBeforeCreateReferenceCheck: om.MSceneMessage.addCheckCallback,
-    om.MSceneMessage.kBeforeLoadReferenceCheck: om.MSceneMessage.addCheckCallback,
-    om.MSceneMessage.kBeforeImportCheck: om.MSceneMessage.addCheckFileCallback,
-    om.MSceneMessage.kBeforeOpenCheck: om.MSceneMessage.addCheckFileCallback,
-    om.MSceneMessage.kBeforeExportCheck: om.MSceneMessage.addCheckFileCallback,
-    om.MSceneMessage.kBeforeCreateReferenceCheck: om.MSceneMessage.addCheckFileCallback,
-    om.MSceneMessage.kBeforeLoadReferenceCheck: om.MSceneMessage.addCheckFileCallback,
-    om.MSceneMessage.kBeforePluginLoad: om.MSceneMessage.addStringArrayCallback,
-    om.MSceneMessage.kAfterPluginLoad: om.MSceneMessage.addStringArrayCallback,
-    om.MSceneMessage.kBeforePluginUnload: om.MSceneMessage.addStringArrayCallback,
-    om.MSceneMessage.kAfterPluginUnload: om.MSceneMessage.addStringArrayCallback,
+    None: om2.MSceneMessage.addCallback,  # Default option
+    om2.MSceneMessage.kBeforeNewCheck: om2.MSceneMessage.addCheckCallback,
+    om2.MSceneMessage.kBeforeImportCheck: om2.MSceneMessage.addCheckCallback,
+    om2.MSceneMessage.kBeforeOpenCheck: om2.MSceneMessage.addCheckCallback,
+    om2.MSceneMessage.kBeforeExportCheck: om2.MSceneMessage.addCheckCallback,
+    om2.MSceneMessage.kBeforeSaveCheck: om2.MSceneMessage.addCheckCallback,
+    om2.MSceneMessage.kBeforeCreateReferenceCheck: om2.MSceneMessage.addCheckCallback,
+    om2.MSceneMessage.kBeforeLoadReferenceCheck: om2.MSceneMessage.addCheckCallback,
+    om2.MSceneMessage.kBeforeImportCheck: om2.MSceneMessage.addCheckFileCallback,
+    om2.MSceneMessage.kBeforeOpenCheck: om2.MSceneMessage.addCheckFileCallback,
+    om2.MSceneMessage.kBeforeExportCheck: om2.MSceneMessage.addCheckFileCallback,
+    om2.MSceneMessage.kBeforeCreateReferenceCheck: om2.MSceneMessage.addCheckFileCallback,
+    om2.MSceneMessage.kBeforeLoadReferenceCheck: om2.MSceneMessage.addCheckFileCallback,
+    om2.MSceneMessage.kBeforePluginLoad: om2.MSceneMessage.addStringArrayCallback,
+    om2.MSceneMessage.kAfterPluginLoad: om2.MSceneMessage.addStringArrayCallback,
+    om2.MSceneMessage.kBeforePluginUnload: om2.MSceneMessage.addStringArrayCallback,
+    om2.MSceneMessage.kAfterPluginUnload: om2.MSceneMessage.addStringArrayCallback,
 }
 
 
@@ -202,9 +203,9 @@ def dockControlWrap(windowClass, dock=True, *args, **kwargs):
 
 def toMObject(node):
     """Convert a node to an MObject."""
-    if isinstance(node, om.MObject):
+    if isinstance(node, om2.MObject):
         return node
-    selected = om.MSelectionList()
+    selected = om2.MSelectionList()
     try:
         selected.add(str(node))
     except RuntimeError:
@@ -215,8 +216,12 @@ def toMObject(node):
 class MayaCommon(object):
 
     def _createCallbackHandler(self):
-        """Create the callback handler."""
-        return MayaCallbacks(self)
+        """Create the callback handler.
+        For convenience, the "legacy" API group has been created.
+        """
+        callbacks = MayaCallbacks(self)
+        callbacks['legacy'].api = om
+        return callbacks
 
     @property
     def application(self):
@@ -645,21 +650,21 @@ class MayaWindow(MayaCommon, AbstractWindow):
         for group in groups:
             for callbackID in windowInstance['callback'][group]['event']:
                 try:
-                    om.MMessage.removeCallback(callbackID)
+                    om2.MMessage.removeCallback(callbackID)
                 except RuntimeError:
                     pass
                 else:
                     numEvents += 1
             for callbackID in windowInstance['callback'][group]['node']:
                 try:
-                    om.MNodeMessage.removeCallback(callbackID)
+                    om2.MNodeMessage.removeCallback(callbackID)
                 except RuntimeError:
                     pass
                 else:
                     numEvents += 1
             for callbackID in windowInstance['callback'][group]['scene']:
                 try:
-                    om.MSceneMessage.removeCallback(callbackID)
+                    om2.MSceneMessage.removeCallback(callbackID)
                 except RuntimeError:
                     pass
                 else:
@@ -699,10 +704,10 @@ class MayaWindow(MayaCommon, AbstractWindow):
             clientData
 
         See Also:
-            om.MEventMessage.getEventNames()
+            om2.MEventMessage.getEventNames()
         """
         self._addMayaCallbackGroup(group)
-        self.windowInstance()['callback'][group]['event'].append(om.MEventMessage.addEventCallback(callback, func, clientData))
+        self.windowInstance()['callback'][group]['event'].append(om2.MEventMessage.addEventCallback(callback, func, clientData))
 
     def addCallbackNode(self, callback, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback.
@@ -740,7 +745,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             message that is sent during those modes.
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om.MNodeMessage.addAttributeChangedCallback, node, func, clientData, group=group)
+        self.addCallbackNode(om2.MNodeMessage.addAttributeChangedCallback, node, func, clientData, group=group)
 
     def addCallbackAttributeAddOrRemove(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when an attribute is added.
@@ -750,14 +755,14 @@ class MayaWindow(MayaCommon, AbstractWindow):
             added and attribute removed messages will trigger the callback.
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om.MNodeMessage.addAttributeAddedOrRemovedCallback, node, func, clientData, group=group)
+        self.addCallbackNode(om2.MNodeMessage.addAttributeAddedOrRemovedCallback, node, func, clientData, group=group)
 
     def addCallbackNodeRename(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when a node is renamed.
 
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om.MNodeMessage.addNameChangedCallback, node, func, clientData, group=group)
+        self.addCallbackNode(om2.MNodeMessage.addNameChangedCallback, node, func, clientData, group=group)
 
     def addCallbackNodeDirty(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for node dirty messages.
@@ -765,7 +770,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         See MayaWindow.addCallbackNode for details.
         """
 
-        self.addCallbackNode(om.MNodeMessage.addNodeDirtyCallback, node, func, clientData, group=group)
+        self.addCallbackNode(om2.MNodeMessage.addNodeDirtyCallback, node, func, clientData, group=group)
 
     def addCallbackNodeDirtyPlug(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for node dirty messages.
@@ -775,14 +780,14 @@ class MayaWindow(MayaCommon, AbstractWindow):
             Only provides dirty information on input plugs.
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om.MNodeMessage.addNodeDirtyPlugCallback, node, func, clientData, group=group)
+        self.addCallbackNode(om2.MNodeMessage.addNodeDirtyPlugCallback, node, func, clientData, group=group)
 
     def addCallbackUuidChange(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when a node UUID is changed.
 
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om.MNodeMessage.addUuidChangedCallback, node, func, clientData, group=group)
+        self.addCallbackNode(om2.MNodeMessage.addUuidChangedCallback, node, func, clientData, group=group)
 
     def addCallbackKeyableChange(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when the keyable state of a node is changed.
@@ -800,7 +805,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             callback to the same attribute.
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om.MNodeMessage.addKeyableChangeOverride, node, func, clientData, group=group)
+        self.addCallbackNode(om2.MNodeMessage.addKeyableChangeOverride, node, func, clientData, group=group)
 
     def addCallbackNodeRemove(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when a node is deleted.
@@ -814,7 +819,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             Note that this callback method should not perform any DG operations.
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om.MNodeMessage.addNodePreRemovalCallback, node, func, clientData, group=group)
+        self.addCallbackNode(om2.MNodeMessage.addNodePreRemovalCallback, node, func, clientData, group=group)
 
     def addCallbackScene(self, callback, func, clientData=None, group=None):
         """Add a scene callback.
@@ -832,7 +837,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         """
         self._addMayaCallbackGroup(group)
         if not isinstance(callback, int):
-            callback = getattr(om.MSceneMessage, callback)
+            callback = getattr(om2.MSceneMessage, callback)
 
         apiFunction = SCENE_CALLBACKS.get(callback, SCENE_CALLBACKS[None])
         self.windowInstance()['callback'][group]['scene'].append(apiFunction(callback, func, clientData))
@@ -848,35 +853,35 @@ class MayaWindow(MayaCommon, AbstractWindow):
     def addCallbackNodeTypeAdd(self, func, nodeType='dependNode', clientData=None, group=None):
         """Add an MDGMessage callback for whenever a new node is added to the dependency graph."""
         self._addMayaCallbackGroup(group)
-        self.windowInstance()['callback'][group]['event'].append(om.MDGMessage.addNodeAddedCallback(func, nodeType, clientData))
+        self.windowInstance()['callback'][group]['event'].append(om2.MDGMessage.addNodeAddedCallback(func, nodeType, clientData))
 
     def addCallbackNodeTypeRemove(self, func, nodeType='dependNode', clientData=None, group=None):
         """Add an MDGMessage callback for whenever a new node is removed from the dependency graph.
         This is used instead of addNodeDestroyedCallback since nodes are not instantly destroyed.
         """
         self._addMayaCallbackGroup(group)
-        self.windowInstance()['callback'][group]['event'].append(om.MDGMessage.addNodeRemovedCallback(func, nodeType, clientData))
+        self.windowInstance()['callback'][group]['event'].append(om2.MDGMessage.addNodeRemovedCallback(func, nodeType, clientData))
 
     def addCallbackTimeChange(self, func, clientData=None, group=None):
         """Add an MDGMessage callback for whenever the time changes in the dependency graph."""
 
         self._addMayaCallbackGroup(group)
-        self.windowInstance()['callback'][group]['event'].append(om.MDGMessage.addTimeChangeCallback(func, clientData))
+        self.windowInstance()['callback'][group]['event'].append(om2.MDGMessage.addTimeChangeCallback(func, clientData))
 
     def addCallbackForceUpdate(self, func, clientData=None, group=None):
         """Add an MDGMessage callback for after the time changes and after all nodes have been evaluated in the dependency graph."""
         self._addMayaCallbackGroup(group)
-        self.windowInstance()['callback'][group]['event'].append(om.MDGMessage.addForceUpdateCallback(func, clientData))
+        self.windowInstance()['callback'][group]['event'].append(om2.MDGMessage.addForceUpdateCallback(func, clientData))
 
     def addCallbackConnectionAfter(self, func, clientData=None, group=None):
         """Add an MDGMessage callback for after a connection is made or broken in the dependency graph."""
         self._addMayaCallbackGroup(group)
-        self.windowInstance()['callback'][group]['event'].append(om.MDGMessage.addConnectionCallback(func, clientData))
+        self.windowInstance()['callback'][group]['event'].append(om2.MDGMessage.addConnectionCallback(func, clientData))
 
     def addCallbackConnectionBefore(self, func, clientData=None, group=None):
         """Add an MDGMessage callback for before a connection is made or broken in the dependency graph."""
         self._addMayaCallbackGroup(group)
-        self.windowInstance()['callback'][group]['event'].append(om.MDGMessage.addPreConnectionCallback(func, clientData)(func, clientData))
+        self.windowInstance()['callback'][group]['event'].append(om2.MDGMessage.addPreConnectionCallback(func, clientData)(func, clientData))
 
     @classmethod
     def clearWindowInstance(cls, windowID, deleteWindow=True):

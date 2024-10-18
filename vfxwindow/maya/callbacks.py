@@ -9,6 +9,26 @@ from ..abstract.callbacks import AbstractCallbacks, CallbackProxy
 
 
 class MayaCallbacks(AbstractCallbacks):
+    """Maya callback class.
+
+    API versions:
+        By default this uses `maya.api.OpenMaya`.
+        To use `maya.OpenMaya`, change the `api` attribute, preferably
+        with a group to not affect anything else.
+        >>> import maya.OpenMaya as om
+        >>> callbacks['legacy'].api = om
+        >>> callbacks['legacy'].add(...)
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(MayaCallbacks, self).__init__(*args, **kwargs)
+        self.api = om2
+
+    def _new(self):
+        new = super(MayaCallbacks, self)._new()
+        new.api = self.api
+        return new
+
     def add(self, name, func, *args, **kwargs):
         """Register a callback.
 
@@ -498,6 +518,7 @@ class MayaCallbacks(AbstractCallbacks):
         nodeMessageWithNode = None
         conditionName = None
 
+        om2 = self.api  # Being lazy with coding here
         if parts[0] == 'file':
             if parts[1] == 'new':
                 if parts[2] == 'before':
