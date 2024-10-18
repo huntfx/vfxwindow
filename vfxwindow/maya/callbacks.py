@@ -341,7 +341,7 @@ class MayaCallbacks(AbstractCallbacks):
                     doAction: Whether the UUID will be applied.
                     uuid: The UUID that may be applied to the node.
                         The callback may modify this parameter.
-                    Action: Enum defined in `om2.MMessage`.
+                    Action: Enum defined in `MMessage`.
                         kDefaultAction: Do not change if the UUID is used or not.
                         kDoNotDoAction: Do not use the new UUID.
                         kDoAction: Use the new UUID.
@@ -495,12 +495,6 @@ class MayaCallbacks(AbstractCallbacks):
             selection.changed.after:
                 Parameters: (clientData=None)
                 Signature: (clientData) -> None
-
-        TODO:
-            'scriptjob.event'
-            'scriptjob.condition'
-
-            om2.MDGMessage.addNodeChangeUuidCheckCallback
         """
         intercept = None
         parts = name.split('.') + [None, None, None, None]
@@ -784,14 +778,14 @@ class MayaCallbacks(AbstractCallbacks):
             unregister = om2.MSceneMessage.removeCallback
         elif dgMessage is not None:
             register = dgMessage
-            unregister = om2.MMessage.removeCallback
+            unregister = om2.MDGMessage.removeCallback
         elif dgMessageWithNode is not None:
             try:
                 register = partial(dgMessageWithNode, args[0])
             except IndexError:
                 raise ValueError('missing required argument')
             args = args[1:]
-            unregister = om2.MMessage.removeCallback
+            unregister = om2.MDGMessage.removeCallback
         elif nodeMessage is not None:
             register = nodeMessage
             unregister = om2.MNodeMessage.removeCallback
@@ -810,7 +804,7 @@ class MayaCallbacks(AbstractCallbacks):
             unregister = lambda callbackID: mc.scriptJob(kill=callbackID)
         elif eventMessage is not None:
             register = partial(om2.MEventMessage.addEventCallback, eventMessage)
-            unregister = om2.MMessage.removeCallback
+            unregister = om2.MEventMessage.removeCallback
         elif conditionName is not None:
             register = partial(om2.MConditionMessage.addConditionCallback, conditionName)
             unregister = om2.MConditionMessage.removeCallback
@@ -866,8 +860,8 @@ class MayaCallbacks(AbstractCallbacks):
 
             clientData (any): Data to pass to the callback.
         """
-        register = partial(om2.MSceneMessage.addCallback, msg)
-        unregister = om2.MSceneMessage.removeCallback
+        register = partial(self.api.MSceneMessage.addCallback, msg)
+        unregister = self.api.MSceneMessage.removeCallback
         callback = CallbackProxy(func.__name__, register, unregister,
                                  func, (), {'clientData': clientData}).register()
         self._callbacks.append(callback)
@@ -878,21 +872,21 @@ class MayaCallbacks(AbstractCallbacks):
 
         Parameters:
             msg (int): Scene check message.
-                om2.MSceneMessage.kBeforeNewCheck
-                om2.MSceneMessage.kBeforeImportCheck
-                om2.MSceneMessage.kBeforeOpenCheck
-                om2.MSceneMessage.kBeforeExportCheck
-                om2.MSceneMessage.kBeforeSaveCheck
-                om2.MSceneMessage.kBeforeCreateReferenceCheck
-                om2.MSceneMessage.kBeforeLoadReferenceCheck
+                kBeforeNewCheck
+                kBeforeImportCheck
+                kBeforeOpenCheck
+                kBeforeExportCheck
+                kBeforeSaveCheck
+                kBeforeCreateReferenceCheck
+                kBeforeLoadReferenceCheck
 
             func (callable): Callback function.
                 Signature: (clientData: Any) -> bool
 
             clientData (any): Data to pass to the callback.
         """
-        register = partial(om2.MSceneMessage.addCheckCallback, msg)
-        unregister = om2.MSceneMessage.removeCallback
+        register = partial(self.api.MSceneMessage.addCheckCallback, msg)
+        unregister = self.api.MSceneMessage.removeCallback
         callback = CallbackProxy(func.__name__, register, unregister,
                                  func, (), {'clientData': clientData}).register()
         self._callbacks.append(callback)
@@ -903,19 +897,19 @@ class MayaCallbacks(AbstractCallbacks):
 
         Parameters:
             msg (int): Scene file check message.
-                om2.MSceneMessage.kBeforeImportCheck
-                om2.MSceneMessage.kBeforeOpenCheck
-                om2.MSceneMessage.kBeforeExportCheck
-                om2.MSceneMessage.kBeforeCreateReferenceCheck
-                om2.MSceneMessage.kBeforeLoadReferenceCheck
+                kBeforeImportCheck
+                kBeforeOpenCheck
+                kBeforeExportCheck
+                kBeforeCreateReferenceCheck
+                kBeforeLoadReferenceCheck
 
             func (callable): Callback function.
                 Signature: (file: MFileObject, clientData: Any) -> bool
 
             clientData (any): Data to pass to the callback.
         """
-        register = partial(om2.MSceneMessage.addCheckFileCallback, msg)
-        unregister = om2.MSceneMessage.removeCallback
+        register = partial(self.api.MSceneMessage.addCheckFileCallback, msg)
+        unregister = self.api.MSceneMessage.removeCallback
         callback = CallbackProxy(func.__name__, register, unregister,
                                  func, (), {'clientData': clientData}).register()
         self._callbacks.append(callback)
@@ -936,35 +930,102 @@ class MayaCallbacks(AbstractCallbacks):
 
             clientData (any): Data to pass to the callback.
         """
-        register = partial(om2.MSceneMessage.addCheckFileCallback, msg)
-        unregister = om2.MSceneMessage.removeCallback
+        register = partial(self.api.MSceneMessage.addCheckFileCallback, msg)
+        unregister = self.api.MSceneMessage.removeCallback
         callback = CallbackProxy(func.__name__, register, unregister,
                                  func, (), {'clientData': clientData}).register()
         self._callbacks.append(callback)
         return callback
 
-    def addEventMessage(self, eventName, func, clientData=None):
+    def addEventMessage(self, event, func, clientData=None):
         """Add an event callback.
 
         Parameters:
-            eventName (str): Name of the event.
-                To view all available events, use
-                `om2.MEventMessage.getEventNames()`.
+            event (str): Name of the event.
+                View all events with `MEventMessage.getEventNames()`.
 
             func (callable): Callback function.
                 Signature: (clientData: Any) -> None
 
             clientData (any): Data to pass to the callback.
         """
-        register = partial(om2.MEventMessage.addEventCallback, eventName)
-        unregister = om2.MMessage.removeCallback
+        register = partial(self.api.MEventMessage.addEventCallback, event)
+        unregister = self.api.MMessage.removeCallback
         callback = CallbackProxy(func.__name__, register, unregister,
                                  func, (), {'clientData': clientData}).register()
         self._callbacks.append(callback)
         return callback
 
-    def registerScriptJobEvent(self, msg, func, group=None, runOnce=False):
-        mc.scriptJob(runOnce=runOnce, event=[msg, func])
+    def addConditionMessage(self, condition, func, clientData=None):
+        """Add a condition change callback.
 
-    def registerScriptJobCondition(self, msg, func, group=None, runOnce=False):
-        mc.scriptJob(runOnce=runOnce, conditionChange=[msg, func])
+        Parameters:
+            condition (str): Name of the condition.
+                View all conditions with `MConditionMessage.getConditionNames()`.
+
+            func (callable): Callback function.
+                Signature: (clientData: Any) -> None
+
+            clientData (any): Data to pass to the callback.
+        """
+        register = partial(self.api.MConditionMessage.addConditionCallback, condition)
+        unregister = self.api.MMessage.removeCallback
+        callback = CallbackProxy(func.__name__, register, unregister,
+                                 func, (), {'clientData': clientData}).register()
+        self._callbacks.append(callback)
+        return callback
+
+    def addMessage(self, register, func, *args, **kwargs):
+        """Add a message callback.
+
+        Parameters:
+            register (callable): Function to add a callback.
+                Must be an instance of `MMessage` and return an ID.
+                Classes like `MNodeMessage` and `MDGMessage` can be run
+                through this.
+
+            func (callable): Callback function.
+                Signature: (clientData: Any) -> None
+
+            args/kwargs: Extra data to pass after the function.
+                If anything needs to be passed before the function, such
+                as a node, then use `partial(register, node)` as the
+                registry function.
+        """
+        unregister = self.api.MMessage.removeCallback
+        callback = CallbackProxy(func.__name__, register, unregister,
+                                 func, args, kwargs).register()
+        self._callbacks.append(callback)
+        return callback
+
+    def addScriptJobEvent(self, event, func):
+        """Add a new scriptJob event callback.
+
+        Parameters:
+            condition (str): Name of the condition.
+                View all events with `mc.scriptJob(listEvents=True)`.
+
+            func (callable): Callback function.
+                Signature: () -> None
+        """
+        register = lambda func, *args, **kwargs: mc.scriptJob(event=[event, func], *args, **kwargs)
+        unregister = lambda callbackID: mc.scriptJob(kill=callbackID)
+        callback = CallbackProxy(func.__name__, register, unregister, func, (), {}).register()
+        self._callbacks.append(callback)
+        return callback
+
+    def addScriptJobCondition(self, condition, func):
+        """Add a new scriptJob condition change callback.
+
+        Parameters:
+            condition (str): Name of the condition.
+                View all conditions with `mc.scriptJob(listConditions=True)`.
+
+            func (callable): Callback function.
+                Signature: () -> None
+        """
+        register = lambda func, *args, **kwargs: mc.scriptJob(conditionChange=[condition, func], *args, **kwargs)
+        unregister = lambda callbackID: mc.scriptJob(kill=callbackID)
+        callback = CallbackProxy(func.__name__, register, unregister, func, (), {}).register()
+        self._callbacks.append(callback)
+        return callback
