@@ -148,7 +148,6 @@ class TestWindow(VFXWindow):
             self.callbacks.add('reference.export', lambda clientData: print('Callback: reference.export'))
             self.callbacks.add('reference.export.before', lambda clientData: print('Callback: reference.export.before'))
             self.callbacks.add('reference.export.after', lambda clientData: print('Callback: reference.export.after'))
-            self.callbacks.add('render', lambda clientData: print('Callback: render'))
             self.callbacks.add('render.software', lambda clientData: print('Callback: render.software'))
             self.callbacks.add('render.software.before', lambda clientData: print('Callback: render.software.before'))
             self.callbacks.add('render.software.after', lambda clientData: print('Callback: render.software.after'))
@@ -168,8 +167,8 @@ class TestWindow(VFXWindow):
             self.callbacks['pauseOnNew'].add('connection.before', lambda srcPlug, dstPlug, made, clientData: print('Callback: connection.before ({}, {}, {})'.format(srcPlug, dstPlug, made)))
             self.callbacks['pauseOnNew'].add('connection.after', lambda srcPlug, dstPlug, made, clientData: print('Callback: connection.after ({}, {}, {})'.format(srcPlug, dstPlug, made)))
             self.callbacks['pauseOnNew'].add('frame.changed', lambda time, clientData: print('Callback: frame.changed ({})'.format(time.value)))
-            self.callbacks['pauseOnNew'].add('frame.changed.after', lambda: print('Callback: frame.changed.after'))
-            self.callbacks['pauseOnNew'].add('frame.changed.deferred', lambda time, clientData: print('Callback: frame.changed.deferred ({})'.format(time.value)))
+            self.callbacks['pauseOnNew'].add('frame.changed.after', lambda time, clientData: print('Callback: frame.changed.after ({})'.format(time.value)))
+            self.callbacks['pauseOnNew'].add('frame.changed.deferred', lambda: print('Callback: frame.changed.deferred'))
             self.callbacks.add('playback.state.changed', lambda state, clientdata: print('Callback: playback.state.changed ({})'.format(state)))
             self.callbacks.add('frame.range.changed', lambda clientdata: print('Callback: frame.range.changed'))
             self.callbacks.add('playback.range.changed', lambda clientdata: print('Callback: playback.range.changed'))
@@ -182,7 +181,7 @@ class TestWindow(VFXWindow):
             self.callbacks.add('node.name.changed', lambda node, prevName, clientData: print('Callback: node.name.changed ({}, {})'.format(node, prevName)), om2.MObject.kNullObj)
             self.callbacks.add('node.uuid.changed', lambda node, prevUuid, clientData: print('Callback: node.uuid.changed ({}, {})'.format(node, prevUuid)), om2.MObject.kNullObj)
             def checkUUID(doAction, node, uuid, clientData):
-                print('Callback: node.uuid.changed ({}, {}, {})'.format(doAction, node, uuid))
+                print('Callback: node.uuid.changed.check ({}, {}, {})'.format(doAction, node, uuid))
                 return om2.MMessage.kDefaultAction
             self.callbacks.add('node.uuid.changed.check', checkUUID)
             self.callbacks.add('attribute.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.changed ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
@@ -193,7 +192,7 @@ class TestWindow(VFXWindow):
             self.callbacks.add('attribute.lock.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.lock.changed ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
             self.callbacks.add('attribute.lock.set', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.lock.set ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
             self.callbacks.add('attribute.lock.unset', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.lock.unset ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
-            self.callbacks.add('attribute.keyable', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.keyable ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.keyable.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.keyable.changed ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
             self.callbacks.add('attribute.keyable.set', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.keyable.set ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
             self.callbacks.add('attribute.keyable.unset', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.keyable.unset ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
 
@@ -202,9 +201,6 @@ class TestWindow(VFXWindow):
                 selection.add('pCube1')
                 selection.add('pCube1.translateX')
 
-                self.callbacks.add('node.dirty', lambda node, clientData: print('Callback: node.dirty ({})'.format(node)), selection.getDependNode(0))
-                self.callbacks.add('node.dirty.plug', lambda node, plug, clientData: print('Callback: node.dirty.plug ({})'.format(node, plug)), selection.getDependNode(0))
-                self.callbacks.add('node.destroyed', lambda clientData: print('Callback: destroyed'), selection.getDependNode(0))
                 def keyableChangeOverride(plug, clientData, msg):
                     print('attribute.keyable.override ({}, {})'.format(plug, msg))
                     return True
