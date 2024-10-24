@@ -203,8 +203,11 @@ class Pane(object):
 
 
 class NukeCommon(object):
+    """Common methods to apply to both window types."""
 
-    CallbackClass = NukeCallbacks
+    def _createCallbackHandler(self):
+        """Create the callback handler."""
+        return NukeCallbacks(self)
 
     @property
     def application(self):
