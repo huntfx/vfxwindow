@@ -1,7 +1,16 @@
 from __future__ import absolute_import, print_function
 
+import logging
+
 from Qt import QtCore, QtWidgets
+
 from . import VFXWindow
+from .abstract import callbacks
+
+
+# View all logs
+logging.basicConfig()
+callbacks.logger.setLevel(logging.DEBUG)
 
 
 class TestWindow(VFXWindow):
