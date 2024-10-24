@@ -930,7 +930,7 @@ class MayaCallbacks(AbstractCallbacks):
 
             clientData (any): Data to pass to the callback.
         """
-        register = partial(self.api.MSceneMessage.addCheckFileCallback, msg)
+        register = partial(self.api.MSceneMessage.addStringArrayCallback, msg)
         unregister = self.api.MSceneMessage.removeCallback
         callback = CallbackProxy(func.__name__, register, unregister,
                                  func, (), {'clientData': clientData}).register()
