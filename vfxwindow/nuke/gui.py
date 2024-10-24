@@ -54,6 +54,12 @@ def _removeMargins(widget):
         parent.layout().setContentsMargins(0, 0, 0, 0)
 
 
+def _checkContextSupported():
+    """Determine if the current context is supported."""
+    if Application.loaded and not QtWidgets.QApplication.topLevelWidgets():
+        raise NotImplementedApplicationError('Nuke GUI not supported in terminal mode, launch nuke with the --tg flag instead.')
+
+
 class Pane(object):
     @classmethod
     def get(cls, value=None):
@@ -241,6 +247,8 @@ class NukeWindow(NukeCommon, AbstractWindow):
         By default dockable must be True as Nuke provides no control
         over it when creating a panel.
         """
+        _checkContextSupported()
+
         if parent is None:
             parent = getMainWindow()
         super(NukeWindow, self).__init__(parent, **kwargs)
@@ -801,6 +809,10 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
 class NukeBatchWindow(NukeCommon, StandaloneWindow):
     """Variant of the Standalone window for Nuke in batch mode."""
+
+    def __init__(self, *args, **kwargs):
+        _checkContextSupported()
+        super(NukeBatchWindow, self).__init__(*args, **kwargs)
 
     def setWindowPalette(self, program, version=None, style=True, force=False):
         if force:
