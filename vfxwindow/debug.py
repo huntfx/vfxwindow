@@ -283,7 +283,7 @@ class TestWindow(VFXWindow):
             self.callbacks.add('file.close.after', lambda filePath, succeed: print('file.close.after (filePath={!r}, succeed={!r})'.format(filePath, succeed)))
             self.callbacks.add('ui.graph.created', lambda graphViewID: print('graph.created (graphViewID={!r})'.format(graphViewID)))
             self.callbacks.add('ui.explorer.created', lambda explorerID, uiMgr: print('explorer.created (explorerID={!r}, uiMgr={!r})'.format(explorerID, uiMgr)))
-            self.callbacks.add('ui.explorer.selection.changed', lambda explorerID, uiMgr, action, originalExplorerID: print('explorer.selection.changed (explorerID={!r}, uiMgr={!r}, action={!r}, originalExplorerID={!r})'.format(explorerID, uiMgr, action, originalExplorerID)))
+            self.callbacks.add('ui.explorer.selection.changed', lambda explorerID: print('explorer.selection.changed (explorerID={!r})'.format(explorerID)))
 
         elif self.application == 'Substance Painter':
             self.callbacks.add('file.load', lambda evt: print('file.load'))
