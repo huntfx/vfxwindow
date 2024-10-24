@@ -35,13 +35,6 @@ class NukeApplication(AbstractApplication):
 
     VERSION = NukeVersion
 
-    def __init__(self):
-        super(NukeApplication, self).__init__()
-
-        # Check Qt is supported
-        if self.loaded and not QtWidgets.QApplication.topLevelWidgets():
-            raise NotImplementedApplicationError('Nuke GUI not supported in terminal mode, launch nuke with the --tg flag instead.')
-
     @property
     def gui(self):
         """Determine if Nuke is in GUI mode."""

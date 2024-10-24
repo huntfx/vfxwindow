@@ -3,14 +3,23 @@
 from __future__ import absolute_import
 
 import sys
-try:
-    from multiprocessing import Process
-except ImportError:
-    Process = object
 from Qt import QtWidgets, IsPySide, IsPyQt4, IsPySide2, IsPyQt5
 
+from ..application import Blender, RenderDoc
 from ..abstract.gui import AbstractWindow
 from ..utils import setCoordinatesToScreen, hybridmethod
+
+# Skip the multiprocessing import for certain apps
+# RenderDoc fails with `ModuleNotFoundError: No module named '_socket'`
+if RenderDoc:
+    Process = object
+# Somewhere between Blender 3.6 and 4.2 it became unstable and would crash
+# The exact version isn't known, but the fix was done after 4.2.3 was already released
+# https://projects.blender.org/blender/blender/commit/9a252c2e73b9303d4c2c493c7a80a75a4b1629bc
+elif Blender and Blender.version == 4 and Blender.version <= '4.2.3':
+    Process = object
+else:
+    from multiprocessing import Process
 
 
 class _MultiAppLaunch(Process):

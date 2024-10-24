@@ -34,7 +34,7 @@ def getMainWindow():
     Source: https://github.com/fredrikaverpil/pyvfx-boilerplate/blob/master/boilerplate.py
     """
     for obj in QtWidgets.QApplication.topLevelWidgets():
-        if obj.inherits('QMainWindow') and obj.metaObject().className() == 'Foundry::UI::DockMainWindow':
+        if isinstance(obj, QtWidgets.QMainWindow) and obj.metaObject().className() == 'Foundry::UI::DockMainWindow':
             return obj
 
 
@@ -53,6 +53,12 @@ def _removeMargins(widget):
     """
     for parent in (widget.parentWidget().parentWidget(), widget.parentWidget().parentWidget().parentWidget().parentWidget()):
         parent.layout().setContentsMargins(0, 0, 0, 0)
+
+
+def _checkContextSupported():
+    """Determine if the current context is supported."""
+    if Application.loaded and not QtWidgets.QApplication.topLevelWidgets():
+        raise NotImplementedApplicationError('Nuke GUI not supported in terminal mode, launch nuke with the --tg flag instead.')
 
 
 class Pane(object):
@@ -244,6 +250,8 @@ class NukeWindow(NukeCommon, AbstractWindow):
         By default dockable must be True as Nuke provides no control
         over it when creating a panel.
         """
+        _checkContextSupported()
+
         if parent is None:
             parent = getMainWindow()
         super(NukeWindow, self).__init__(parent, **kwargs)
@@ -811,6 +819,10 @@ class NukeWindow(NukeCommon, AbstractWindow):
 
 class NukeBatchWindow(NukeCommon, StandaloneWindow):
     """Variant of the Standalone window for Nuke in batch mode."""
+
+    def __init__(self, *args, **kwargs):
+        _checkContextSupported()
+        super(NukeBatchWindow, self).__init__(*args, **kwargs)
 
     def setWindowPalette(self, program, version=None, style=True, force=False):
         if force:

@@ -12,6 +12,14 @@ class MayaVersion(AbstractVersion):
     """Maya version data for comparisons."""
 
     def __init__(self):
+        # If running a script on the farm, `maya.cmds` may not be populated
+        # Initialize if so - it won't uninitialize after or it will crash
+        try:
+            mc.about
+        except AttributeError:
+            import maya.standalone
+            maya.standalone.initialize(name='python')
+
         super(MayaVersion, self).__init__(major=mc.about(majorVersion=True),  # '2020'
                                           minor=mc.about(minorVersion=True),  # '4'
                                           patch=mc.about(patchVersion=True))  # '0'
