@@ -16,6 +16,7 @@ from nukescripts import panels, utils
 
 from .application import Application
 from ..abstract.gui import AbstractWindow
+from ..exceptions import NotImplementedApplicationError
 from ..standalone.gui import StandaloneWindow
 from ..utils import hybridmethod, setCoordinatesToScreen, searchGlobals, getWindowSettings
 
