@@ -54,7 +54,7 @@ class SubstancePainterCallbacks(AbstractCallbacks):
 
         export.textures.after:
             Signature: (evt: Event(message: str, status: sp.export.ExportStatus,
-                                    textures: Dict[Tuple[str, str], List[str]])) -> None
+                                   textures: Dict[Tuple[str, str], List[str]])) -> None
                 message: Human readable status message.
                 textures: List of texture files written to disk.
                     Grouped by stack (Texture Set name, stack name).

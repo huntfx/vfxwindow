@@ -15,7 +15,7 @@ class SubstanceDesignerCallbacks(AbstractCallbacks):
 
         file.load.after:
             Called after a file is loaded.
-            Signature: (filePath: str, succeed: bool, updated, bool) -> None
+            Signature: (filePath: str, succeed: bool, updated: bool) -> None
 
         file.save.before:
             Called before when a file is saved.
