@@ -188,6 +188,7 @@ class BlenderCallbacks(AbstractCallbacks):
             'playback.before': bpy.app.handlers.animation_playback_pre,
             'playback.after': bpy.app.handlers.animation_playback_post,
             'render.before': bpy.app.handlers.render_init,
+            'render.after': (bpy.app.handlers.render_complete, bpy.app.handlers.render_cancel),
             'render.complete': bpy.app.handlers.render_complete,
             'render.cancel': bpy.app.handlers.render_cancel,
             'render.stats': bpy.app.handlers.render_stats,
@@ -200,15 +201,14 @@ class BlenderCallbacks(AbstractCallbacks):
             'redo.after': bpy.app.handlers.redo_post,
         }
         for alias, handler in handlers.items():
-            if alias.endswith('.after'):
-                self.aliases[alias.rsplit('.', 1)[0]] = self.aliases[alias] = (handler.append, handler.remove)
+            if isinstance(handler, tuple):
+                register = lambda func, handlers=handler: [handler.append(func) for handler in handlers]
+                unregister = lambda func, handlers=handler: [handler.remove(func) for handler in handlers]
             else:
-                self.aliases[alias] = (handler.append, handler.remove)
+                register = handler.append
+                unregister = handler.remove
 
-        def registerAfterRender(func):
-            bpy.app.handlers.render_complete.append(func)
-            bpy.app.handlers.render_cancel.append(func)
-        def unregisterAfterRender(func):
-            bpy.app.handlers.render_complete.append(func)
-            bpy.app.handlers.render_cancel.append(func)
-        self.aliases['render'] = self.aliases['render.after'] = (registerAfterRender, unregisterAfterRender)
+            if alias.endswith('.after'):
+                self.aliases[alias.rsplit('.', 1)[0]] = self.aliases[alias] = (register, unregister)
+            else:
+                self.aliases[alias] = (register, unregister)
