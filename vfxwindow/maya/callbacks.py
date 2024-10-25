@@ -108,22 +108,22 @@ class MayaCallbacks(AbstractCallbacks):
             Signature: (clientData) -> None
 
         reference:
-            Mapped to 'reference.create.after'.
+            Mapped to 'reference.add.after'.
 
-        reference.create:
-            Mapped to 'reference.create.after'.
+        reference.add:
+            Mapped to 'reference.add.after'.
 
-        reference.create.before:
+        reference.add.before:
             Called before a File > CreateReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.create.before.check:
+        reference.add.before.check:
             Called prior to a File > CreateReference operation, allows user to cancel action.
             Parameters: (clientData=None)
             Signature: (file: MFileObject, clientData) -> bool
 
-        reference.create.after
+        reference.add.after
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
@@ -589,15 +589,15 @@ class MayaCallbacks(AbstractCallbacks):
 
         def refCreateBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeCreateReference, func, clientData)
-        self.aliases['reference.create.before'] = (refCreateBefore, unregMsg)
+        self.aliases['reference.add.before'] = (refCreateBefore, unregMsg)
 
         def refCreateBeforeCheck(func, clientData=None):
             return self.api.MSceneMessage.addCheckFileCallback(self.api.MSceneMessage.kBeforeCreateReferenceCheck, func, clientData)
-        self.aliases['reference.create.before.check'] = (refCreateBeforeCheck, unregMsg)
+        self.aliases['reference.add.before.check'] = (refCreateBeforeCheck, unregMsg)
 
         def refCreateAfter(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterCreateReference, func, clientData)
-        self.aliases['reference'] = self.aliases['reference.create'] = self.aliases['reference.create.after'] = (refCreateAfter, unregMsg)
+        self.aliases['reference'] = self.aliases['reference.add'] = self.aliases['reference.add.after'] = (refCreateAfter, unregMsg)
 
         def refRemoveBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeRemoveReference, func, clientData)

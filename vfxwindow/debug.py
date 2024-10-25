@@ -122,13 +122,13 @@ class TestWindow(VFXWindow):
             self.callbacks.add('import.before.check', beforeImportCheck)
             self.callbacks.add('import.after', lambda clientData: print('Callback: import.after'))
             self.callbacks.add('reference', lambda clientData: print('Callback: reference'))
-            self.callbacks.add('reference.create', lambda clientData: print('Callback: reference.create'))
-            self.callbacks.add('reference.create.before', lambda clientData: print('Callback: reference.create.before'))
+            self.callbacks.add('reference.add', lambda clientData: print('Callback: reference.add'))
+            self.callbacks.add('reference.add.before', lambda clientData: print('Callback: reference.add.before'))
             def beforeRefCreateCheck(fileObj, clientData):
-                print('Callback: reference.create.before.check ({})'.format(fileObj.resolvedFullName()))
+                print('Callback: reference.add.before.check ({})'.format(fileObj.resolvedFullName()))
                 return True
-            self.callbacks.add('reference.create.before.check', beforeRefCreateCheck)
-            self.callbacks.add('reference.create.after', lambda clientData: print('Callback: reference.create.after'))
+            self.callbacks.add('reference.add.before.check', beforeRefCreateCheck)
+            self.callbacks.add('reference.add.after', lambda clientData: print('Callback: reference.add.after'))
             self.callbacks.add('reference.remove', lambda clientData: print('Callback: reference.remove'))
             self.callbacks.add('reference.remove.before', lambda clientData: print('Callback: reference.remove.before'))
             self.callbacks.add('reference.remove.after', lambda clientData: print('Callback: reference.remove.after'))
@@ -277,8 +277,8 @@ class TestWindow(VFXWindow):
             self.callbacks.add('file.close', lambda filePath, succeed: print('file.close (filePath={!r}, succeed={!r})'.format(filePath, succeed)))
             self.callbacks.add('file.close.before', lambda filePath: print('file.close.before (filePath={!r})'.format(filePath)))
             self.callbacks.add('file.close.after', lambda filePath, succeed: print('file.close.after (filePath={!r}, succeed={!r})'.format(filePath, succeed)))
-            self.callbacks.add('ui.graph.created', lambda graphViewID: print('graph.created (graphViewID={!r})'.format(graphViewID)))
-            self.callbacks.add('ui.explorer.created', lambda explorerID: print('explorer.created (explorerID={!r})'.format(explorerID)))
+            self.callbacks.add('ui.graph.add', lambda graphViewID: print('graph.add (graphViewID={!r})'.format(graphViewID)))
+            self.callbacks.add('ui.explorer.add', lambda explorerID: print('explorer.add (explorerID={!r})'.format(explorerID)))
             self.callbacks.add('ui.explorer.selection.changed', lambda explorerID: print('explorer.selection.changed (explorerID={!r})'.format(explorerID)))
 
         elif self.application == 'Substance Painter':
