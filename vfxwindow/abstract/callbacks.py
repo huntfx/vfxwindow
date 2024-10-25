@@ -279,6 +279,8 @@ class CallbackAliases(object):
 class AbstractCallbacks(object):
     """Base class for callbacks."""
 
+    CallbackProxy = CallbackProxy
+
     def __init__(self, gui, _aliases=None):
         if isinstance(gui, weakref.ReferenceType):
             self._gui = gui
@@ -330,8 +332,8 @@ class AbstractCallbacks(object):
     def add(self, alias, func, *args, **kwargs):
         """Add a pre-defined callback."""
         data = self.aliases[alias]
-        callback = CallbackProxy(alias, register=data.register, unregister=data.unregister,
-                                 func=func, args=args, kwargs=kwargs, intercept=data.intercept)
+        callback = self.CallbackProxy(alias, register=data.register, unregister=data.unregister,
+                                      func=func, args=args, kwargs=kwargs, intercept=data.intercept)
         if self.registerAvailable:
             callback.register()
         self._callbacks.append(callback)

@@ -15,174 +15,117 @@ class NukeCallbackProxy(CallbackProxy):
 
 
 class NukeCallbacks(AbstractCallbacks):
-    def add(self, name, func, *args, **kwargs):
-        """Register a callback.
+    """Nuke callbacks.
 
-        Callbacks:
-            file.new: Called whenever a new script is made.
-                Signature: () -> None
+    Callbacks:
+        file.new: Called whenever a new script is made.
+            Signature: () -> None
 
-            file.load:
-                Called whenever a script is loaded.
-                This is run immediately after `onCreate` for the root.
-                Signature: () -> None
+        file.load:
+            Called whenever a script is loaded.
+            This is run immediately after `onCreate` for the root.
+            Signature: () -> None
 
-            file.save:
-                Called when the user tries to save a script.
-                Signature: () -> None
+        file.save:
+            Called when the user tries to save a script.
+            Signature: () -> None
 
-            file.close:
-                This is run immediately before `onDestroy` for the root.
-                Signature: () -> None
+        file.close:
+            This is run immediately before `onDestroy` for the root.
+            Signature: () -> None
 
-            node.add:
-                Called when any node is created.
-                Parameters: (nodeClass: Optional[str] = None)
-                Signature: () -> None
+        node.add:
+            Called when any node is created.
+            Parameters: (nodeClass: Optional[str] = None)
+            Signature: () -> None
 
-            node.add.user:
-                Called when any node is created by the user in the GUI.
-                Parameters: (nodeClass: Optional[str] = None)
-                Signature: () -> None
+        node.add.user:
+            Called when any node is created by the user in the GUI.
+            Parameters: (nodeClass: Optional[str] = None)
+            Signature: () -> None
 
-            node.remove:
-                Called when any node is deleted.
-                This includes undo, closing a script or exiting Nuke.
-                It is not run for preferences, Python knobs or crashes.
-                Parameters: (nodeClass: Optional[str] = None)
-                Signature: () -> None
+        node.remove:
+            Called when any node is deleted.
+            This includes undo, closing a script or exiting Nuke.
+            It is not run for preferences, Python knobs or crashes.
+            Parameters: (nodeClass: Optional[str] = None)
+            Signature: () -> None
 
-            render:
-                Mapped to 'render.after'
+        render:
+            Mapped to 'render.after'
 
-            render.before:
-                Called prior to starting rendering.
-                Any error causes the render to abort.
-                Signature: () -> None
+        render.before:
+            Called prior to starting rendering.
+            Any error causes the render to abort.
+            Signature: () -> None
 
-            render.after:
-                Called after rendering of all frames is finished.
-                Any error causes the render to abort.
-                Signature: () -> None
+        render.after:
+            Called after rendering of all frames is finished.
+            Any error causes the render to abort.
+            Signature: () -> None
 
-            render.frame:
-                Mapped to 'render.frame.after'
+        render.frame:
+            Mapped to 'render.frame.after'
 
-            render.frame.before:
-                Called prior to starting rendering of each frame.
-                Any error causes the render to abort.
-                Signature: () -> None
+        render.frame.before:
+            Called prior to starting rendering of each frame.
+            Any error causes the render to abort.
+            Signature: () -> None
 
-            render.frame.after:
-                Called after each frame has finished rendering.
-                Any error causes the render to abort.
-                Signature: () -> None
+        render.frame.after:
+            Called after each frame has finished rendering.
+            Any error causes the render to abort.
+            Signature: () -> None
 
-            render.background:
-                Mapped to 'render.background.after'
+        render.background:
+            Mapped to 'render.background.after'
 
-            render.background.after:
-                Called after any background renders.
-                Signature: (context={'id': ...}) -> None
+        render.background.after:
+            Called after any background renders.
+            Signature: (context={'id': ...}) -> None
 
-            render.background.frame:
-                Mapped to 'render.background.frame.after'
+        render.background.frame:
+            Mapped to 'render.background.frame.after'
 
-            render.background.frame.after:
-                Called after each frame of a background render.
-                Signature: (context={'id': ..., 'frame': int, numFrames: int, frameProgress: int}) -> None
+        render.background.frame.after:
+            Called after each frame of a background render.
+            Signature: (context={'id': ..., 'frame': int, numFrames: int, frameProgress: int}) -> None
 
-            knob.changed:
-                Called when the user changes the value of any knob.
-                Only triggers when the control panel is open.
-                Parameters: (nodeClass: Optional[str] = None)
-                Signature: () -> None
+        knob.changed:
+            Called when the user changes the value of any knob.
+            Only triggers when the control panel is open.
+            Parameters: (nodeClass: Optional[str] = None)
+            Signature: () -> None
 
-        Unimplemented:
-            autolabel
-            filenameFilter
-            validateFilename
-            autoSaveRestoreFilter
-            autoSaveDeleteFilter
-            updateUI
-        """
-        parts = name.split('.') + [None, None, None]
+    Unimplemented:
+        autolabel
+        filenameFilter
+        validateFilename
+        autoSaveRestoreFilter
+        autoSaveDeleteFilter
+        updateUI
+    """
 
-        register = unregister = intercept = None
-        if parts[0] == 'file':
-            if parts[1] == 'new':
-                register = partial(nuke.addOnCreate, nodeClass='Root')
-                unregister = partial(nuke.removeOnCreate, nodeClass='Root')
-                intercept = lambda *args, **kwargs: nuke.thisNode().Class() == 'Root'
+    CallbackProxy = NukeCallbackProxy
 
-            elif parts[1] == 'load':
-                register = nuke.addOnScriptLoad
-                unregister = nuke.removeOnScriptLoad
+    def _setupAliases(self):
+        """Setup Nuke callback aliases."""
+        self.aliases['file.new'] = (partial(nuke.addOnCreate, nodeClass='Root'), partial(nuke.removeOnCreate, nodeClass='Root'))
+        self.aliases['file.load'] = (nuke.addOnScriptLoad, nuke.removeOnScriptLoad)
+        self.aliases['file.save'] = (nuke.addOnScriptSave, nuke.removeOnScriptSave)
+        self.aliases['file.close'] = (nuke.addOnScriptClose, nuke.removeOnScriptClose)
+        self.aliases['node.add'] = (nuke.addOnCreate, nuke.removeOnCreate)
+        self.aliases['node.add.user'] = (nuke.addOnUserCreate, nuke.removeOnUserCreate)
+        self.aliases['node.remove'] = (nuke.addOnDestroy, nuke.removeOnDestroy)
+        self.aliases['knob.changed'] = (nuke.addKnobChanged, nuke.removeKnobChanged)
+        self.aliases['render.before'] = (nuke.addBeforeRender, nuke.removeBeforeRender)
+        self.aliases['render'] = self.aliases['render.after'] = (nuke.addAfterRender, nuke.removeAfterRender)
+        self.aliases['render.frame.before'] = (nuke.addBeforeFrameRender, nuke.removeBeforeFrameRender)
+        self.aliases['render.frame'] = self.aliases['render.frame.after'] = (nuke.addAfterFrameRender, nuke.removeAfterFrameRender)
+        self.aliases['render.background.after'] = (nuke.addAfterBackgroundRender, nuke.removeAfterBackgroundRender)
+        self.aliases['render.background.frame.after'] = (nuke.addAfterBackgroundFrameRender, nuke.removeAfterBackgroundFrameRender)
 
-            elif parts[1] == 'save':
-                register = nuke.addOnScriptSave
-                unregister = nuke.removeOnScriptSave
-
-            elif parts[1] == 'close':
-                register = nuke.addOnScriptClose
-                unregister = nuke.removeOnScriptClose
-
-        elif parts[0] == 'node':
-            if parts[1] == 'add':
-                if parts[2] == 'user':
-                    register = nuke.addOnUserCreate
-                    unregister = nuke.removeOnUserCreate
-                elif parts[2] is None:
-                    register = nuke.addOnCreate
-                    unregister = nuke.removeOnCreate
-
-            elif parts[1] == 'remove':
-                register = nuke.addOnDestroy
-                unregister = nuke.removeOnDestroy
-
-        elif parts[0] == 'knob':
-            if parts[1] == 'changed':
-                register = nuke.addKnobChanged
-                unregister = nuke.removeKnobChanged
-
-        elif parts[0] == 'render':
-            if parts[1] == 'before':
-                register = nuke.addBeforeRender
-                unregister = nuke.removeBeforeRender
-            elif parts[1] in ('after', None):
-                register = nuke.addAfterRender
-                unregister = nuke.removeAfterRender
-
-            elif parts[1] == 'frame':
-                if parts[2] == 'before':
-                    register = nuke.addBeforeFrameRender
-                    unregister = nuke.removeBeforeFrameRender
-                elif parts[2] in ('after', None):
-                    register = nuke.addAfterFrameRender
-                    unregister = nuke.removeAfterFrameRender
-
-            elif parts[1] == 'background':
-                if parts[2] in ('after', None):
-                    register = nuke.addAfterBackgroundRender
-                    unregister = nuke.removeAfterBackgroundRender
-
-                elif parts[2] == 'frame':
-                    if parts[3] in ('after', None):
-                        register = nuke.addAfterBackgroundFrameRender
-                        unregister = nuke.removeAfterBackgroundFrameRender
-
-        if register is None:
-            return super(NukeCallbacks, self).add(name, func, *args, **kwargs)
-
-        # The nodeClass argument causes an error if not set
-        if 'nodeClass' in kwargs and kwargs['nodeClass'] is None:
-            del kwargs['nodeClass']
-
-        callback = NukeCallbackProxy(name, register, unregister, func, args, kwargs, intercept)
-
-        # Only register if the Nuke window is loaded
-        if self.gui is not None and not self.gui._isHiddenNk:
-            callback.register()
-
-        self._callbacks.append(callback)
-        return callback
+    @property
+    def registerAvailable(self):
+        """Only register if the GUI is loaded."""
+        return self.gui is not None and not self.gui._isHiddenNk
