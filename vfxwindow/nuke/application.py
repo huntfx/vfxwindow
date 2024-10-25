@@ -1,14 +1,11 @@
 from __future__ import absolute_import
 
-from Qt import QtWidgets
-
 try:
     import nuke
 except ImportError:
     nuke = None
 
 from ..abstract.application import AbstractApplication, AbstractVersion
-from ..exceptions import NotImplementedApplicationError
 
 
 class NukeVersion(AbstractVersion):
