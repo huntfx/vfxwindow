@@ -60,11 +60,11 @@ class BlenderCallbacks(AbstractCallbacks):
         render:
             Mapped to 'render.end'.
 
-        render.start:
+        render.before:
             Called on initialisation of a render job.
             Signature: (scene: bpy.types.Scene, None) -> None
 
-        render.end:
+        render.complete:
             Called on completion of render job.
             Signature: (scene: bpy.types.Scene, None) -> None
 
@@ -72,11 +72,15 @@ class BlenderCallbacks(AbstractCallbacks):
             Called after cancelling a render job.
             Signature: (scene: bpy.types.Scene, None) -> None
 
-        render.frame.start
+        render.after:
+            Called on completion or cancellation of render job.
+            Signature: (scene: bpy.types.Scene, None) -> None
+
+        render.frame.before
             Called before render.
             Signature: (scene: bpy.types.Scene, None) -> None
 
-        render.frame.end:
+        render.frame.after:
             Called after render.
             Signature: (scene: bpy.types.Scene, None) -> None
 
@@ -183,12 +187,12 @@ class BlenderCallbacks(AbstractCallbacks):
             'frame.changed.after': bpy.app.handlers.frame_change_post,
             'playback.before': bpy.app.handlers.animation_playback_pre,
             'playback.after': bpy.app.handlers.animation_playback_post,
-            'render.start': bpy.app.handlers.render_init,
-            'render.end': bpy.app.handlers.render_complete,
+            'render.before': bpy.app.handlers.render_init,
+            'render.complete': bpy.app.handlers.render_complete,
             'render.cancel': bpy.app.handlers.render_cancel,
             'render.stats': bpy.app.handlers.render_stats,
-            'render.frame.start': bpy.app.handlers.render_pre,
-            'render.frame.end': bpy.app.handlers.render_post,
+            'render.frame.before': bpy.app.handlers.render_pre,
+            'render.frame.after': bpy.app.handlers.render_post,
             'render.frame.write': bpy.app.handlers.render_write,
             'undo.before': bpy.app.handlers.undo_pre,
             'undo.after': bpy.app.handlers.undo_post,
@@ -196,7 +200,15 @@ class BlenderCallbacks(AbstractCallbacks):
             'redo.after': bpy.app.handlers.redo_post,
         }
         for alias, handler in handlers.items():
-            if alias.endswith('.after') or alias.endswith('.end'):
+            if alias.endswith('.after'):
                 self.aliases[alias.rsplit('.', 1)[0]] = self.aliases[alias] = (handler.append, handler.remove)
             else:
                 self.aliases[alias] = (handler.append, handler.remove)
+
+        def registerAfterRender(func):
+            bpy.app.handlers.render_complete.append(func)
+            bpy.app.handlers.render_cancel.append(func)
+        def unregisterAfterRender(func):
+            bpy.app.handlers.render_complete.append(func)
+            bpy.app.handlers.render_cancel.append(func)
+        self.aliases['render'] = self.aliases['render.after'] = (registerAfterRender, unregisterAfterRender)
