@@ -1,22 +1,19 @@
 """Set the window class to be specific to whichever program is loaded.
 
-TODO:
-    Substance callbacks
-    Add dialog code for each application
-    Revise setDefault* methods
-
-    # Potential breaking changes
-    Change setDocked to setFloating
-    Remove docked in favour of floating
-    Changed dialog to isDialog
-    Remove processEvents
-    Remove signalExists
+Changes for 2.0:
+    - Remove legacy callback methods (currently marked as deprecated)
+    - Remove `processEvents` (currently marked as deprecated)
+    - Remove `displayMessage` (currently marked as deprecated)
+    - Change `setDocked` to `setFloating`, remove docked in favour of floating
+    - Revise `setDefault` methods
+    - Revise signal handling
+    - Change `show` override to `launch`
 """
 
 from __future__ import absolute_import
 
 __all__ = ['VFXWindow']
-__version__ = '1.9.1'
+__version__ = '1.10.0'
 
 import os
 import sys
