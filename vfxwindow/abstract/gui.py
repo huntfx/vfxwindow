@@ -196,6 +196,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
         """
         return self.application is None
 
+    @deprecate
     def processEvents(self):
         """Wrapper over the inbult processEvents method.
         This forces the GUI to update in the middle of calculations.
@@ -375,6 +376,7 @@ class AbstractWindow(QtWidgets.QMainWindow):
             icon = QtGui.QIcon(icon)
         super(AbstractWindow, self).setWindowIcon(icon)
 
+    @deprecate
     def displayMessage(self, title, message, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None, checkBox=None):
         """Display a popup box.
 

@@ -9,7 +9,7 @@ from Qt import QtCore
 
 from .application import Application
 from ..abstract.gui import AbstractWindow
-from ..utils import setCoordinatesToScreen
+from ..utils import setCoordinatesToScreen, deprecate
 
 
 def getMainWindow():
@@ -64,6 +64,7 @@ class HoudiniWindow(AbstractWindow):
         self.clearWindowInstance(self.WindowID)
         return super(HoudiniWindow, self).closeEvent(event)
 
+    @deprecate
     def displayMessage(self, message):
         """Show a popup message."""
         hou.ui.displayMessage(message)

@@ -585,6 +585,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             self.resize(width, height)
             self.move(x, y)
 
+    @deprecate
     def displayMessage(self, title, message, details=None, buttons=('Ok',), defaultButton=None, cancelButton=None, checkBox=None):
         """This is basically Maya's copy of a QMessageBox."""
         if checkBox is None:
