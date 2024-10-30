@@ -864,7 +864,7 @@ class MayaCallbacks(AbstractCallbacks):
         self.aliases['attribute.keyable.override'] = (attributeKeyableOverride, unregMsg)
 
         def attributeNameChangeIntercept(msg, plug, otherPlug, clientData):
-            return not msg & self.api.MNodeMessage.kAttributeUnkeyable
+            return not msg & self.api.MNodeMessage.kAttributeRenamed
         self.aliases['attribute.name.changed'] = (attributeChange, unregMsg, attributeNameChangeIntercept)
 
         def undo(func, clientData=None):
