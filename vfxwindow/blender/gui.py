@@ -9,7 +9,7 @@ import bpy
 
 from .application import Application
 from .callbacks import BlenderCallbacks
-from ..utils import setCoordinatesToScreen, hybridmethod
+from ..utils import setCoordinatesToScreen, hybridmethod, deprecate
 from ..standalone.gui import StandaloneWindow
 
 
@@ -97,12 +97,7 @@ class BlenderWindow(StandaloneWindow):
         return inst
 
     @hybridmethod
-    def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
-        """Remove all the registered callbacks.
-        If group is not set, then all will be removed.
-
-        Either windowInstance or windowID is needed if calling without a class instance.
-        """
+    def _removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
         # Handle classmethod
         if self is cls:
             if windowInstance is None and windowID is not None:
@@ -131,6 +126,16 @@ class BlenderWindow(StandaloneWindow):
             del windowInstance['callback'][group]
         return numEvents
 
+    @hybridmethod
+    @deprecate
+    def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
+        """Remove all the registered callbacks.
+        If group is not set, then all will be removed.
+
+        Either windowInstance or windowID is needed if calling without a class instance.
+        """
+        self._removeCallbacks(group, windowInstance, windowID)
+
     def _addBlenderCallbackGroup(self, group):
         """Add a callback group."""
         windowInstance = self.windowInstance()
@@ -157,66 +162,82 @@ class BlenderWindow(StandaloneWindow):
         getattr(bpy.app.handlers, handler).append(func)
         self.windowInstance()['callback'][group][handler].append(func)
 
+    @deprecate
     def addCallbackFrameChangeAfter(self, func, persistent=True, group=None):
         """After frame change for playback and rendering."""
         self._addApplicationHandler('frame_change_post', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackFrameChangeBefore(self, func, persistent=True, group=None):
         """Before frame change for playback and rendering."""
         self._addApplicationHandler('frame_change_pre', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackGameAfter(self, func, persistent=True, group=None):
         """On ending the game engine."""
         self._addApplicationHandler('game_post', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackGameBefore(self, func, persistent=True, group=None):
         """On starting the game engine."""
         self._addApplicationHandler('game_pre', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackLoadSceneAfter(self, func, persistent=True, group=None):
         """After loading a new blend file."""
         self._addApplicationHandler('load_post', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackLoadSceneBefore(self, func, persistent=True, group=None):
         """After loading a new blend file."""
         self._addApplicationHandler('load_pre', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackRenderCancel(self, func, persistent=True, group=None):
         """On canceling a render job."""
         self._addApplicationHandler('render_cancel', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackRenderComplete(self, func, persistent=True, group=None):
         """On completion of render job."""
         self._addApplicationHandler('render_complete', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackRenderInit(self, func, persistent=True, group=None):
         """On initialisation of a render job."""
         self._addApplicationHandler('render_init', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackRenderAfter(self, func, persistent=True, group=None):
         """After rendering."""
         self._addApplicationHandler('render_post', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackRenderBefore(self, func, persistent=True, group=None):
         """Before rendering."""
         self._addApplicationHandler('render_pre', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackRenderStats(self, func, persistent=True, group=None):
         """On printing render statistics."""
         self._addApplicationHandler('render_stats', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackRenderWrite(self, func, persistent=True, group=None):
         """After writing a rendered frame."""
         self._addApplicationHandler('render_write', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackSaveSceneAfter(self, func, persistent=True, group=None):
         """After saving a blend file."""
         self._addApplicationHandler('save_post', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackSaveSceneBefore(self, func, persistent=True, group=None):
         """Before saving blend file."""
         self._addApplicationHandler('save_pre', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackSceneUpdateAfter(self, func, persistent=True, group=None):
         """After each scene data update.
         It does not necessarily imply that anything has changed.
@@ -224,6 +245,7 @@ class BlenderWindow(StandaloneWindow):
         """
         self._addApplicationHandler('scene_update_post', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackSceneUpdateBefore(self, func, persistent=True, group=None):
         """After each scene data update.
         It does not necessarily imply that anything has changed.
@@ -231,34 +253,41 @@ class BlenderWindow(StandaloneWindow):
         """
         self._addApplicationHandler('scene_update_pre', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackVersionUpdate(self, func, persistent=True, group=None):
         """On ending the versioning code."""
         self._addApplicationHandler('version_update', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackDepsgraphUpdateAfter(self, func, persistent=True, group=None):
         """After depsgraph update.
         Added in Blender 2.80.
         """
         self._addApplicationHandler('depsgraph_update_post', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackDepsgraphUpdateBefore(self, func, persistent=True, group=None):
         """Before depsgraph update.
         Added in Blender 2.80.
         """
         self._addApplicationHandler('depsgraph_update_pre', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackUndoAfter(self, func, persistent=True, group=None):
         """After loading an undo step."""
         self._addApplicationHandler('undo_post', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackUndoBefore(self, func, persistent=True, group=None):
         """Before loading an undo step."""
         self._addApplicationHandler('undo_pre', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackRedoAfter(self, func, persistent=True, group=None):
         """After loading a redo step."""
         self._addApplicationHandler('redo_post', func, persistent=persistent, group=group)
 
+    @deprecate
     def addCallbackRedoBefore(self, func, persistent=True, group=None):
         """Before loading a redo step."""
         self._addApplicationHandler('redo_pre', func, persistent=persistent, group=group)

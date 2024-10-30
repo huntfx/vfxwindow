@@ -7,6 +7,7 @@ import os
 import site
 import sys
 import tempfile
+import warnings
 from functools import wraps
 from types import ModuleType
 
@@ -15,6 +16,8 @@ if os.name == 'nt':
 else:
     def setCoordinatesToScreen(x, y, *args, **kwargs):
         return (x, y)
+
+from ..exceptions import VFXWinDeprecationWarning
 
 
 SITE_PACKAGES = site.getsitepackages()
@@ -136,3 +139,23 @@ def saveWindowSettings(windowID, data, path=None):
     except IOError:
         return False
     return True
+
+
+def deprecate(fn):
+    """Mark a class method as deprecated."""
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        msg = '"{}" is deprecated and will be removed in 2.0'.format(fn.__name__)
+        warnings.warn(msg, VFXWinDeprecationWarning, stacklevel=2)
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+def _setupDeprecationWarnings():
+    """Setup visibility of deprecation warnings.
+    By default they are hidden in Python.
+
+    Setting the `VFXWIN_SHOW_DEPRECATION_WARNINGS` environment variable
+    will run this on import.
+    """
+    warnings.simplefilter('always', VFXWinDeprecationWarning)

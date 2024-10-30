@@ -17,7 +17,7 @@ import sd
 from .application import Application
 from .callbacks import SubstanceDesignerCallbacks
 from ..abstract.gui import AbstractWindow
-from ..utils import setCoordinatesToScreen, hybridmethod, getWindowSettings
+from ..utils import setCoordinatesToScreen, hybridmethod, getWindowSettings, deprecate
 
 
 APPLICATION = sd.getContext().getSDApplication()
@@ -298,54 +298,63 @@ class SubstanceDesignerWindow(AbstractWindow):
             return
         windowInstance['callback'][group] = defaultdict(list)
 
+    @deprecate
     def addCallbackBeforeFileLoaded(self, func, group=None):
         """Register a callback to be called after a file is loaded."""
         self._addSubstanceDesignerCallbackGroup(group)
         callbackID = APPLICATION.registerBeforeFileLoadedCallback(func)
         self.windowInstance()['callback'][group][APPLICATION.unregisterCallback].append(callbackID)
 
+    @deprecate
     def addCallbackAfterFileLoaded(self, func, group=None):
         """Register a callback to be called after a file is loaded."""
         self._addSubstanceDesignerCallbackGroup(group)
         callbackID = APPLICATION.registerAfterFileLoadedCallback(func)
         self.windowInstance()['callback'][group][APPLICATION.unregisterCallback].append(callbackID)
 
+    @deprecate
     def addCallbackBeforeFileSaved(self, func, group=None):
         """Register a callback to be called before a file is saved."""
         self._addSubstanceDesignerCallbackGroup(group)
         callbackID = APPLICATION.registerBeforeFileSavedCallback(func)
         self.windowInstance()['callback'][group][APPLICATION.unregisterCallback].append(callbackID)
 
+    @deprecate
     def addCallbackAfterFileSaved(self, func, group=None):
         """Register a callback to be called after a file is saved."""
         self._addSubstanceDesignerCallbackGroup(group)
         callbackID = APPLICATION.registerAfterFileSavedCallback(func)
         self.windowInstance()['callback'][group][APPLICATION.unregisterCallback].append(callbackID)
 
+    @deprecate
     def addCallbackBeforeFileClosed(self, func, group=None):
         """Register a callback to be called before a file is closed."""
         self._addSubstanceDesignerCallbackGroup(group)
         callbackID = APPLICATION.registerBeforeFileClosedCallback(func)
         self.windowInstance()['callback'][group][APPLICATION.unregisterCallback].append(callbackID)
 
+    @deprecate
     def addCallbackAfterFileClosed(self, func, group=None):
         """Register a callback to be called after a file is closed."""
         self._addSubstanceDesignerCallbackGroup(group)
         callbackID = APPLICATION.registerAfterFileClosedCallback(func)
         self.windowInstance()['callback'][group][APPLICATION.unregisterCallback].append(callbackID)
 
+    @deprecate
     def addCallbackGraphViewCreated(self, func, group=None):
         """Register a callback to be called when a new graph view is created."""
         self._addSubstanceDesignerCallbackGroup(group)
         callbackID = MANAGER.registerGraphViewCreatedCallback(func)
         self.windowInstance()['callback'][group][MANAGER.unregisterCallback].append(callbackID)
 
+    @deprecate
     def addCallbackExplorerCreated(self, func, group=None):
         """Register a callback to be called when a new explorer is created."""
         self.registerExplorerCreatedCallback(group)
         callbackID = MANAGER.registerGraphViewCreatedCallback(func)
         self.windowInstance()['callback'][group][MANAGER.unregisterCallback].append(callbackID)
 
+    @deprecate
     def addCallbackExplorerSelectionChanged(self, func, group=None):
         """Register a callback to be called when the explorer selection changed."""
         self._addSubstanceDesignerCallbackGroup(group)
@@ -353,12 +362,7 @@ class SubstanceDesignerWindow(AbstractWindow):
         self.windowInstance()['callback'][group][MANAGER.unregisterCallback].append(callbackID)
 
     @hybridmethod
-    def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
-        """Remove all the registered callbacks.
-        If group is not set, then all will be removed.
-
-        Either windowInstance or windowID is needed if calling without a class instance.
-        """
+    def _removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
         # Handle classmethod
         if self is cls:
             if windowInstance is None and windowID is not None:
@@ -383,3 +387,13 @@ class SubstanceDesignerWindow(AbstractWindow):
                 unregisterFn(callbackID)
                 numEvents += 1
         return numEvents
+
+    @hybridmethod
+    @deprecate
+    def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
+        """Remove all the registered callbacks.
+        If group is not set, then all will be removed.
+
+        Either windowInstance or windowID is needed if calling without a class instance.
+        """
+        self._removeCallbacks(group, windowInstance, windowID)

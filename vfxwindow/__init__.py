@@ -18,8 +18,12 @@ from __future__ import absolute_import
 __all__ = ['VFXWindow']
 __version__ = '1.9.1'
 
+import os
 import sys
+import warnings
+
 from . import application
+from .exceptions import VFXWinDeprecationWarning
 
 # Ensure sys.argv exists
 if not hasattr(sys, 'argv'):
@@ -91,3 +95,7 @@ elif application.RenderDoc:
 
 else:
     from .standalone.gui import StandaloneWindow as VFXWindow
+
+
+if os.environ.get('VFXWIN_DEPRECATION_WARNING') == '1':
+    warnings.simplefilter('always', VFXWinDeprecationWarning)

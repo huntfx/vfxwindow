@@ -19,7 +19,7 @@ from .callbacks import NukeCallbacks
 from ..abstract.gui import AbstractWindow
 from ..exceptions import NotImplementedApplicationError
 from ..standalone.gui import StandaloneWindow
-from ..utils import hybridmethod, setCoordinatesToScreen, searchGlobals, getWindowSettings
+from ..utils import hybridmethod, setCoordinatesToScreen, searchGlobals, getWindowSettings, deprecate
 
 
 class RuntimeDraggingError(RuntimeError):
@@ -528,8 +528,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
         return numEvents
 
     @hybridmethod
-    def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
-        """Remove a callback group or all callbacks."""
+    def _removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
         # Handle classmethod
         if self is cls:
             if windowInstance is None and windowID is not None:
@@ -563,12 +562,23 @@ class NukeWindow(NukeCommon, AbstractWindow):
             del windowInstance['callback'][group]
         return numEvents
 
+    @hybridmethod
+    @deprecate
+    def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
+        """Remove all the registered callbacks.
+        If group is not set, then all will be removed.
+
+        Either windowInstance or windowID is needed if calling without a class instance.
+        """
+        self._removeCallbacks(group, windowInstance, windowID)
+
     def _addNukeCallbackGroup(self, group):
         windowInstance = self.windowInstance()
         if group in windowInstance['callback']:
             return
         windowInstance['callback'][group] = defaultdict(lambda: defaultdict(set))
 
+    @deprecate
     def addCallbackOnUserCreate(self, func, nodeClass=None, group=None):
         """Executed whenever a node is created by the user.
         Not called when loading existing scripts, pasting nodes, or undoing a delete.
@@ -581,6 +591,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             else:
                 nuke.addOnUserCreate(func, nodeClass=nodeClass)
 
+    @deprecate
     def addCallbackOnCreate(self, func, nodeClass=None, group=None):
         """Executed when any node is created.
         Examples include loading a script (includes new file), pasting a node, selecting a menu item, or undoing a delete.
@@ -593,6 +604,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             else:
                 nuke.addOnCreate(func, nodeClass=nodeClass)
 
+    @deprecate
     def addCallbackOnScriptLoad(self, func, nodeClass=None, group=None):
         """Executed when a script is loaded.
         This will be called by onCreate (for root), and straight after onCreate.
@@ -605,6 +617,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             else:
                 nuke.addOnScriptLoad(func, nodeClass=nodeClass)
 
+    @deprecate
     def addCallbackOnScriptSave(self, func, nodeClass=None, group=None):
         """Executed when the user tries to save a script."""
         self._addNukeCallbackGroup(group)
@@ -615,6 +628,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             else:
                 nuke.addOnScriptSave(func, nodeClass=nodeClass)
 
+    @deprecate
     def addCallbackOnScriptClose(self, func, nodeClass=None, group=None):
         """Executed when Nuke is exited or the script is closed."""
         self._addNukeCallbackGroup(group)
@@ -625,6 +639,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             else:
                 nuke.addOnScriptClose(func, nodeClass=nodeClass)
 
+    @deprecate
     def addCallbackOnDestroy(self, func, nodeClass=None, group=None):
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['onDestroy'][func].add(nodeClass)
@@ -634,6 +649,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             else:
                 nuke.addOnDestroy(func, nodeClass=nodeClass)
 
+    @deprecate
     def addCallbackKnobChanged(self, func, nodeClass=None, group=None):
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['knobChanged'][func].add(nodeClass)
@@ -643,6 +659,7 @@ class NukeWindow(NukeCommon, AbstractWindow):
             else:
                 nuke.addKnobChanged(func, nodeClass=nodeClass)
 
+    @deprecate
     def addCallbackUpdateUI(self, func, nodeClass=None, group=None):
         self._addNukeCallbackGroup(group)
         self.windowInstance()['callback'][group]['updateUI'][func].add(nodeClass)

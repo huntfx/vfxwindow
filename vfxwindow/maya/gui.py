@@ -16,7 +16,7 @@ from .application import Application
 from .callbacks import MayaCallbacks
 from ..abstract.gui import AbstractWindow
 from ..standalone.gui import StandaloneWindow
-from ..utils import hybridmethod, setCoordinatesToScreen, getWindowSettings
+from ..utils import hybridmethod, setCoordinatesToScreen, getWindowSettings, deprecate
 from ..utils.gui import forceMenuBar
 
 
@@ -621,12 +621,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         return super(MayaWindow, self).setCentralWidget(widget)
 
     @hybridmethod
-    def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
-        """Remove all the registered callbacks.
-        If group is not set, then all will be removed.
-
-        Either windowInstance or windowID is needed if calling without a class instance.
-        """
+    def _removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
         # Handle classmethod
         if self is cls:
             if windowInstance is None and windowID is not None:
@@ -679,6 +674,16 @@ class MayaWindow(MayaCommon, AbstractWindow):
             del windowInstance['callback'][group]
         return numEvents
 
+    @hybridmethod
+    @deprecate
+    def removeCallbacks(cls, self, group=None, windowInstance=None, windowID=None):
+        """Remove all the registered callbacks.
+        If group is not set, then all will be removed.
+
+        Either windowInstance or windowID is needed if calling without a class instance.
+        """
+        self._removeCallbacks(group, windowInstance, windowID)
+
     def _addMayaCallbackGroup(self, group):
         windowInstance = self.windowInstance()
         if group in windowInstance['callback']:
@@ -690,6 +695,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
             'job': [],
         }
 
+    @deprecate
     def addCallbackEvent(self, callback, func, clientData=None, group=None):
         """Add an event callback.
         Some of the common ones are timeChanged, SelectionChanged, Undo and Redo.
@@ -709,6 +715,16 @@ class MayaWindow(MayaCommon, AbstractWindow):
         self._addMayaCallbackGroup(group)
         self.windowInstance()['callback'][group]['event'].append(om2.MEventMessage.addEventCallback(callback, func, clientData))
 
+    def _addCallbackNode(self, callback, node, func, clientData=None, group=None):
+        """Add an MNodeMessage callback.
+        For internal use to skip the deprecation warning.
+        """
+        mobj = toMObject(node)
+        if mobj is not None:
+            self._addMayaCallbackGroup(group)
+            self.windowInstance()['callback'][group]['node'].append(callback(mobj, func, clientData))
+
+    @deprecate
     def addCallbackNode(self, callback, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback.
         The callback must be an MNodeMessage function.
@@ -729,11 +745,9 @@ class MayaWindow(MayaCommon, AbstractWindow):
         See Also:
             https://help.autodesk.com/view/MAYAUL/2016/ENU/?guid=__py_ref_class_open_maya_1_1_m_node_message_html
         """
-        mobj = toMObject(node)
-        if mobj is not None:
-            self._addMayaCallbackGroup(group)
-            self.windowInstance()['callback'][group]['node'].append(callback(mobj, func, clientData))
+        return self._addCallbackNode(callback, node, func, clientData, group)
 
+    @deprecate
     def addCallbackAttributeChange(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when an attribute changes.
 
@@ -745,8 +759,9 @@ class MayaWindow(MayaCommon, AbstractWindow):
             message that is sent during those modes.
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om2.MNodeMessage.addAttributeChangedCallback, node, func, clientData, group=group)
+        self._addCallbackNode(om2.MNodeMessage.addAttributeChangedCallback, node, func, clientData, group=group)
 
+    @deprecate
     def addCallbackAttributeAddOrRemove(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when an attribute is added.
 
@@ -755,23 +770,26 @@ class MayaWindow(MayaCommon, AbstractWindow):
             added and attribute removed messages will trigger the callback.
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om2.MNodeMessage.addAttributeAddedOrRemovedCallback, node, func, clientData, group=group)
+        self._addCallbackNode(om2.MNodeMessage.addAttributeAddedOrRemovedCallback, node, func, clientData, group=group)
 
+    @deprecate
     def addCallbackNodeRename(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when a node is renamed.
 
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om2.MNodeMessage.addNameChangedCallback, node, func, clientData, group=group)
+        self._addCallbackNode(om2.MNodeMessage.addNameChangedCallback, node, func, clientData, group=group)
 
+    @deprecate
     def addCallbackNodeDirty(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for node dirty messages.
 
         See MayaWindow.addCallbackNode for details.
         """
 
-        self.addCallbackNode(om2.MNodeMessage.addNodeDirtyCallback, node, func, clientData, group=group)
+        self._addCallbackNode(om2.MNodeMessage.addNodeDirtyCallback, node, func, clientData, group=group)
 
+    @deprecate
     def addCallbackNodeDirtyPlug(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for node dirty messages.
 
@@ -780,15 +798,17 @@ class MayaWindow(MayaCommon, AbstractWindow):
             Only provides dirty information on input plugs.
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om2.MNodeMessage.addNodeDirtyPlugCallback, node, func, clientData, group=group)
+        self._addCallbackNode(om2.MNodeMessage.addNodeDirtyPlugCallback, node, func, clientData, group=group)
 
+    @deprecate
     def addCallbackUuidChange(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when a node UUID is changed.
 
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om2.MNodeMessage.addUuidChangedCallback, node, func, clientData, group=group)
+        self._addCallbackNode(om2.MNodeMessage.addUuidChangedCallback, node, func, clientData, group=group)
 
+    @deprecate
     def addCallbackKeyableChange(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when the keyable state of a node is changed.
 
@@ -805,8 +825,9 @@ class MayaWindow(MayaCommon, AbstractWindow):
             callback to the same attribute.
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om2.MNodeMessage.addKeyableChangeOverride, node, func, clientData, group=group)
+        self._addCallbackNode(om2.MNodeMessage.addKeyableChangeOverride, node, func, clientData, group=group)
 
+    @deprecate
     def addCallbackNodeRemove(self, node, func, clientData=None, group=None):
         """Add an MNodeMessage callback for when a node is deleted.
         This uses addNodePreRemovalCallback instead of addNodeAboutToDeleteCallback as it shouldn't
@@ -819,8 +840,9 @@ class MayaWindow(MayaCommon, AbstractWindow):
             Note that this callback method should not perform any DG operations.
         See MayaWindow.addCallbackNode for details.
         """
-        self.addCallbackNode(om2.MNodeMessage.addNodePreRemovalCallback, node, func, clientData, group=group)
+        self._addCallbackNode(om2.MNodeMessage.addNodePreRemovalCallback, node, func, clientData, group=group)
 
+    @deprecate
     def addCallbackScene(self, callback, func, clientData=None, group=None):
         """Add a scene callback.
 
@@ -842,19 +864,23 @@ class MayaWindow(MayaCommon, AbstractWindow):
         apiFunction = SCENE_CALLBACKS.get(callback, SCENE_CALLBACKS[None])
         self.windowInstance()['callback'][group]['scene'].append(apiFunction(callback, func, clientData))
 
+    @deprecate
     def addCallbackJobEvent(self, callback, func, group=None, runOnce=False):
         self._addMayaCallbackGroup(group)
         self.windowInstance()['callback'][group]['job'].append(mc.scriptJob(runOnce=runOnce, event=[callback, func]))
 
+    @deprecate
     def addCallbackJobCondition(self, callback, func, group=None, runOnce=False):
         self._addMayaCallbackGroup(group)
         self.windowInstance()['callback'][group]['job'].append(mc.scriptJob(runOnce=runOnce, conditionChange=[callback, func]))
 
+    @deprecate
     def addCallbackNodeTypeAdd(self, func, nodeType='dependNode', clientData=None, group=None):
         """Add an MDGMessage callback for whenever a new node is added to the dependency graph."""
         self._addMayaCallbackGroup(group)
         self.windowInstance()['callback'][group]['event'].append(om2.MDGMessage.addNodeAddedCallback(func, nodeType, clientData))
 
+    @deprecate
     def addCallbackNodeTypeRemove(self, func, nodeType='dependNode', clientData=None, group=None):
         """Add an MDGMessage callback for whenever a new node is removed from the dependency graph.
         This is used instead of addNodeDestroyedCallback since nodes are not instantly destroyed.
@@ -862,22 +888,26 @@ class MayaWindow(MayaCommon, AbstractWindow):
         self._addMayaCallbackGroup(group)
         self.windowInstance()['callback'][group]['event'].append(om2.MDGMessage.addNodeRemovedCallback(func, nodeType, clientData))
 
+    @deprecate
     def addCallbackTimeChange(self, func, clientData=None, group=None):
         """Add an MDGMessage callback for whenever the time changes in the dependency graph."""
 
         self._addMayaCallbackGroup(group)
         self.windowInstance()['callback'][group]['event'].append(om2.MDGMessage.addTimeChangeCallback(func, clientData))
 
+    @deprecate
     def addCallbackForceUpdate(self, func, clientData=None, group=None):
         """Add an MDGMessage callback for after the time changes and after all nodes have been evaluated in the dependency graph."""
         self._addMayaCallbackGroup(group)
         self.windowInstance()['callback'][group]['event'].append(om2.MDGMessage.addForceUpdateCallback(func, clientData))
 
+    @deprecate
     def addCallbackConnectionAfter(self, func, clientData=None, group=None):
         """Add an MDGMessage callback for after a connection is made or broken in the dependency graph."""
         self._addMayaCallbackGroup(group)
         self.windowInstance()['callback'][group]['event'].append(om2.MDGMessage.addConnectionCallback(func, clientData))
 
+    @deprecate
     def addCallbackConnectionBefore(self, func, clientData=None, group=None):
         """Add an MDGMessage callback for before a connection is made or broken in the dependency graph."""
         self._addMayaCallbackGroup(group)
@@ -889,7 +919,7 @@ class MayaWindow(MayaCommon, AbstractWindow):
         previousInstance = super(MayaWindow, cls).clearWindowInstance(windowID)
         if previousInstance is None:
             return
-        cls.removeCallbacks(windowInstance=previousInstance)
+        cls._removeCallbacks(windowInstance=previousInstance)
         previousInstance['window'].callbacks.unregister()
 
         # Disconnect the destroyed signal

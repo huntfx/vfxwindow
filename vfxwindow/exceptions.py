@@ -9,3 +9,7 @@ class CallbackAliasNotFoundError(NotImplementedError, KeyError):
 
 class CallbackAliasExistsError(KeyError):
     """Raise if the callback alias already exists."""
+
+
+class VFXWinDeprecationWarning(DeprecationWarning):
+    """Subclassed warning to allow finer control of messages."""

@@ -11,9 +11,8 @@ from contextlib import contextmanager
 from functools import partial
 from Qt import QtCore, QtGui, QtWidgets
 
-from .application import AbstractApplication
 from .callbacks import AbstractCallbacks
-from ..utils import hybridmethod, setCoordinatesToScreen, saveWindowSettings, getWindowSettings, getWindowSettingsPath
+from ..utils import hybridmethod, setCoordinatesToScreen, saveWindowSettings, getWindowSettings, getWindowSettingsPath, deprecate
 from ..utils.palette import savePaletteData, setPalette
 
 
@@ -849,5 +848,6 @@ class AbstractWindow(QtWidgets.QMainWindow):
         return True
 
     @hybridmethod
+    @deprecate
     def removeCallbacks(cls, self, *args, **kwargs):
         pass
