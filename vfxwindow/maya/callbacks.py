@@ -108,7 +108,17 @@ class MayaCallbacks(AbstractCallbacks):
             Signature: (clientData) -> None
 
         reference:
-            Mapped to 'reference.add.after'.
+            Mapped to 'reference.after'.
+
+        reference.before:
+            Called before a File > CreateReference / LoadReference operation.
+            Parameters: (clientData=None)
+            Signature: (clientData) -> None
+
+        reference.after:
+            Called after a File > CreateReference / LoadReference operation.
+            Parameters: (clientData=None)
+            Signature: (clientData) -> None
 
         reference.add:
             Mapped to 'reference.add.after'.
@@ -124,6 +134,7 @@ class MayaCallbacks(AbstractCallbacks):
             Signature: (file: MFileObject, clientData) -> bool
 
         reference.add.after
+            Called after a File > CreateReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
@@ -524,6 +535,9 @@ class MayaCallbacks(AbstractCallbacks):
         """Setup Maya callback aliases."""
         def unregMsg(callbackID):
             self.api.MMessage.removeCallback(callbackID)
+        def unregMultipleMsg(callbackIDs):
+            for callbackID in callbackIDs:
+                unregMsg(callbackID)
         def unregSJ(callbackID):
             mc.scriptJob(kill=callbackID)
 
@@ -587,6 +601,20 @@ class MayaCallbacks(AbstractCallbacks):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterExport, func, clientData)
         self.aliases['export'] = self.aliases['export.after'] = (afterExport, unregMsg)
 
+        def beforeRef(func, clientData=None):
+            return [
+                self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeCreateReference, func, clientData),
+                self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeLoadReference, func, clientData),
+            ]
+        self.aliases['reference.before'] = (beforeRef, unregMultipleMsg)
+
+        def afterRef(func, clientData=None):
+            return [
+                self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterCreateReference, func, clientData),
+                self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterLoadReference, func, clientData),
+            ]
+        self.aliases['reference'] = self.aliases['reference.after'] = (afterRef, unregMultipleMsg)
+
         def refCreateBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeCreateReference, func, clientData)
         self.aliases['reference.add.before'] = (refCreateBefore, unregMsg)
@@ -597,7 +625,7 @@ class MayaCallbacks(AbstractCallbacks):
 
         def refCreateAfter(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterCreateReference, func, clientData)
-        self.aliases['reference'] = self.aliases['reference.add'] = self.aliases['reference.add.after'] = (refCreateAfter, unregMsg)
+        self.aliases['reference.add'] = self.aliases['reference.add.after'] = (refCreateAfter, unregMsg)
 
         def refRemoveBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeRemoveReference, func, clientData)

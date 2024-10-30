@@ -122,6 +122,8 @@ class TestWindow(VFXWindow):
             self.callbacks.add('import.before.check', beforeImportCheck)
             self.callbacks.add('import.after', lambda clientData: print('Callback: import.after'))
             self.callbacks.add('reference', lambda clientData: print('Callback: reference'))
+            self.callbacks.add('reference.before', lambda clientData: print('Callback: reference.before'))
+            self.callbacks.add('reference.after', lambda clientData: print('Callback: reference.after'))
             self.callbacks.add('reference.add', lambda clientData: print('Callback: reference.add'))
             self.callbacks.add('reference.add.before', lambda clientData: print('Callback: reference.add.before'))
             def beforeRefCreateCheck(fileObj, clientData):
