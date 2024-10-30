@@ -108,14 +108,13 @@ if __name__ == '__main__':
 
 ### Features
  - Automatically save/restore window position
- - Move window to screen if out of bounds (windows only)
- - Keep track of callbacks to remove groups if required, and clean up on window close
+ - Automatically dock window to application (if supported)
+ - Move window to screen if out of bounds (Windows only)
+ - Register application specific callbacks to be cleaned up on window close
  - Keep track of signals to remove groups if required
- - Display a popup message that forces control
  - Set palette to that of another program
  - Auto close if opening a duplicate window
  - Close down all windows at once
- - Create dialog windows automatically attached to the application (and return data)
 
 ### Running with Non-Python Applications
 Certain Windows applications have dispatch based COM interface, which will allow a link between Python and the application. See [photoshop-scripting-python](https://github.com/lohriialo/photoshop-scripting-python) for an example on how to connect to an application.
