@@ -477,11 +477,28 @@ class MayaCallbacks(AbstractCallbacks):
 
     Unimplemented:
         MNodeMessage.addNodePreRemovalCallback | MNodeMessage.aboutToDelete:
-            Way too specific.
-            One is for a DG modifier only, and the other cannot do any
-            DG modifications.
+            Both of these have very specific purposes for running before
+            a node is removed. `addNodePreRemovalCallback` is called
+            even during a redo, and cannot perform any DG operations.
+            `aboutToDelete` is called once on deletion, and provides a
+            DG modifier for any operation so that it works with the
+            undo queue.
+            Because both of these have such specific uses, and the fact
+            that `node.add` uses `addNodeAddedCallback`, it makes sense
+            for `node.remove` to use `addNodeRemovedCallback` rather than
+            than any of these.
 
-        MNodeMessage.addNodeDirtyCallback :
+            If absolutely needed, use the `addMessage` method.
+            >>> cb.addMessage(partial(MNodeMessage.addNodePreRemovalCallback, node), func)
+
+            Or create your own alias:
+            >>> cb.aliases['custom.nodePreRemoval'] = (
+            ...     lambda func, node, clientData=None: om2.MNodeMessage.addNodePreRemovalCallback(node, func, clientData),
+            ...     lambda callbackID: self.api.MMessage.removeCallback(callbackID),
+            ... )
+            >>> cb.add('custom.nodePreRemoval', func, node)
+
+        MNodeMessage.addNodeDirtyCallback:
             Called for node dirty messages.
             Parameters: (node: MObject, clientData=None)
             Signature: (node: MObject, plug: MPlug, clientData) -> None
@@ -495,6 +512,23 @@ class MayaCallbacks(AbstractCallbacks):
             Called when the node is destroyed.
             Parameters: (node: MObject, clientData=None)
             Signature: (clientData) -> None
+
+        renderLayerChange | renderLayerManagerChange | displayLayerChange:
+            Some events are simply shorthand for attribute change callbacks.
+
+            # Directly use `callbacks.addEventMessage`
+            >>> def layerChanged(clientData=None):
+            ...     print('Render layer changed')
+            >>> self.callbacks.addEventMessage('renderLayerManagerChange', layerChanged)
+
+            # Use `attribute.changed` callback
+            >>> def rlmChanged(msg, plug, otherPlug, clientData):
+            ...     if not msg & om2.MNodeMessage.kAttributeSet: return
+            ...     if plug.name() != 'renderLayerManager.currentRenderLayer': return
+            ...     layerChanged()
+            >>> selection = om2.MSelectionList()
+            >>> selection.add('renderLayerManager')
+            >>> callbacks.add('attribute.changed', rlmChanged, selection.getDependNode(0))
     """
 
     def __init__(self, *args, **kwargs):
