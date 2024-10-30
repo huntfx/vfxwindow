@@ -1039,7 +1039,7 @@ class MayaCallbacks(AbstractCallbacks):
                 Signature: () -> None
         """
         register = lambda func, *args, **kwargs: mc.scriptJob(event=[event, func], *args, **kwargs)
-        unregister = lambda callbackID: mc.scriptJob(kill=callbackID)
+        unregister = lambda callbackID: mc.scriptJob(kill=callbackID) if mc.scriptJob(exists=callbackID) else None
         callback = CallbackProxy(func.__name__, register, unregister, func, (), {}).register()
         self._callbacks.append(callback)
         return callback
@@ -1055,7 +1055,7 @@ class MayaCallbacks(AbstractCallbacks):
                 Signature: () -> None
         """
         register = lambda func, *args, **kwargs: mc.scriptJob(conditionChange=[condition, func], *args, **kwargs)
-        unregister = lambda callbackID: mc.scriptJob(kill=callbackID)
+        unregister = lambda callbackID: mc.scriptJob(kill=callbackID) if mc.scriptJob(exists=callbackID) else None
         callback = CallbackProxy(func.__name__, register, unregister, func, (), {}).register()
         self._callbacks.append(callback)
         return callback
