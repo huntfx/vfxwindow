@@ -40,7 +40,7 @@ setup(
         'qt', 'pyside', 'pyside2', 'pyqt', 'pyqt4', 'pyqt5', 'gui', 'window',
         'maya', 'mayapy', 'nuke', 'nukescripts', 'houdini', 'unreal', 'engine', 'ue4',
         'blender', '3dsmax', '3ds', 'blackmagic', 'fusion', 'substance', 'designer',
-        'vfx', 'visualfx', 'fx', 'cgi', '3d',
+        'vfx', 'visualfx', 'fx', 'cgi', '3d', 'natron',
     ],
     package_data={'vfxwindow': ['palettes/*.json']},
     install_requires=requirements,

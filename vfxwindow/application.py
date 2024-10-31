@@ -8,6 +8,7 @@ __all__ = [
     'Katana',
     'Max',
     'Maya',
+    'Natron',
     'Nuke',
     'SubstanceDesigner',
     'SubstancePainter',
@@ -21,6 +22,7 @@ from .houdini.application import Application as Houdini
 from .katana.application import Application as Katana
 from .max.application import Application as Max
 from .maya.application import Application as Maya
+from .natron.application import Application as Natron
 from .nuke.application import Application as Nuke
 from .renderdoc.application import Application as RenderDoc
 from .substance_designer.application import Application as SubstanceDesigner
