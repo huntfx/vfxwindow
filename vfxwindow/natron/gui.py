@@ -1,10 +1,30 @@
-"""Window class for Natron."""
+"""Window class for Natron.
+
+TODO:
+    NatronGui.natron.getGuiInstance(0).registerPythonPanel - https://natron.readthedocs.io/en/v2.3.15/devel/PythonReference/NatronGui/PyPanel.html
+"""
 
 from __future__ import absolute_import
+
+import NatronEngine
+import NatronGui
 
 from .application import Application
 from ..utils import setCoordinatesToScreen, hybridmethod
 from ..standalone.gui import StandaloneWindow
+
+
+def getActiveGuiApp():
+    """Get the active GUI app."""
+    numInstances = NatronGui.natron.getNumInstances()
+    if numInstances == 1:
+        return NatronGui.natron.getGuiInstance(0)
+    active = NatronGui.natron.getActiveInstance()
+    for i in range(numInstances):
+        instance = NatronGui.natron.getInstance(i)
+        if id(instance) == id(active):
+            return NatronGui.natron.getGuiInstance(i)
+    return None
 
 
 class NatronWindow(StandaloneWindow):
