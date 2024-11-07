@@ -26,6 +26,10 @@ class BlenderCallbacks(AbstractCallbacks):
     `bpy.app.handlers.persistent` decorator can be used to keep them
     loaded.
 
+    Note that older versions of Blender may be missing some of these.
+    Any callback that does not exist will not have its alias registered,
+    so a KeyError will occur when adding the callback.
+
     Callbacks:
         file.load:
             Mapped to 'file.load.after'
@@ -177,36 +181,41 @@ class BlenderCallbacks(AbstractCallbacks):
     def _setupAliases(self):
         """Setup Blender callback aliases."""
         handlers = {
-            'file.load.before': bpy.app.handlers.load_pre,
-            'file.load.after': bpy.app.handlers.load_post,
-            'file.load.fail': bpy.app.handlers.load_post_fail,
-            'file.save.before': bpy.app.handlers.save_pre,
-            'file.save.after': bpy.app.handlers.save_post,
-            'file.save.fail': bpy.app.handlers.save_post_fail,
-            'frame.changed.before': bpy.app.handlers.frame_change_pre,
-            'frame.changed.after': bpy.app.handlers.frame_change_post,
-            'playback.before': bpy.app.handlers.animation_playback_pre,
-            'playback.after': bpy.app.handlers.animation_playback_post,
-            'render.before': bpy.app.handlers.render_init,
-            'render.after': (bpy.app.handlers.render_complete, bpy.app.handlers.render_cancel),
-            'render.complete': bpy.app.handlers.render_complete,
-            'render.cancel': bpy.app.handlers.render_cancel,
-            'render.stats': bpy.app.handlers.render_stats,
-            'render.frame.before': bpy.app.handlers.render_pre,
-            'render.frame.after': bpy.app.handlers.render_post,
-            'render.frame.write': bpy.app.handlers.render_write,
-            'undo.before': bpy.app.handlers.undo_pre,
-            'undo.after': bpy.app.handlers.undo_post,
-            'redo.before': bpy.app.handlers.redo_pre,
-            'redo.after': bpy.app.handlers.redo_post,
+            'file.load.before': 'load_pre',
+            'file.load.after': 'load_post',
+            'file.load.fail': 'load_post_fail',
+            'file.save.before': 'save_pre',
+            'file.save.after': 'save_post',
+            'file.save.fail': 'save_post_fail',
+            'frame.changed.before': 'frame_change_pre',
+            'frame.changed.after': 'frame_change_post',
+            'playback.before': 'animation_playback_pre',
+            'playback.after': 'animation_playback_post',
+            'render.before': 'render_init',
+            'render.after': ('render_complete', 'render_cancel'),
+            'render.complete': 'render_complete',
+            'render.cancel': 'render_cancel',
+            'render.stats': 'render_stats',
+            'render.frame.before': 'render_pre',
+            'render.frame.after': 'render_post',
+            'render.frame.write': 'render_write',
+            'undo.before': 'undo_pre',
+            'undo.after': 'undo_post',
+            'redo.before': 'redo_pre',
+            'redo.after': 'redo_post',
         }
-        for alias, handler in handlers.items():
-            if isinstance(handler, tuple):
-                register = lambda func, handlers=handler: [handler.append(func) for handler in handlers]
-                unregister = lambda func, handlers=handler: [handler.remove(func) for handler in handlers]
-            else:
-                register = handler.append
-                unregister = handler.remove
+        for alias, name in handlers.items():
+            try:
+                if isinstance(name, tuple):
+                    handler = [getattr(bpy.app.handlers, n) for n in name]
+                    register = lambda func, handlers=handler: [handler.append(func) for handler in handlers]
+                    unregister = lambda func, handlers=handler: [handler.remove(func) for handler in handlers]
+                else:
+                    handler = getattr(bpy.app.handlers, name)
+                    register = handler.append
+                    unregister = handler.remove
+            except AttributeError:
+                continue
 
             if alias.endswith('.after'):
                 self.aliases[alias.rsplit('.', 1)[0]] = self.aliases[alias] = (register, unregister)
