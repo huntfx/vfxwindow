@@ -14,9 +14,9 @@ from ..utils import setCoordinatesToScreen, hybridmethod
 if RenderDoc:
     Process = object
 # Somewhere between Blender 3.6 and 4.2 it became unstable and would crash
-# The exact version isn't known, but the fix was done after 4.2.3 was already released
+# The exact version isn't known, but it was fixed in 4.2.4 and 4.3.0
 # https://projects.blender.org/blender/blender/commit/9a252c2e73b9303d4c2c493c7a80a75a4b1629bc
-elif Blender and Blender.version == 4 and Blender.version <= '4.2.3':
+elif Blender and Blender.version == 4 and Blender.version < '4.2.4':
     Process = object
 else:
     from multiprocessing import Process
