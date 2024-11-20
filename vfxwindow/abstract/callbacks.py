@@ -4,7 +4,7 @@ import logging
 import weakref
 from collections import defaultdict, namedtuple
 from contextlib import contextmanager
-from functools import wraps
+from functools import partial, wraps
 
 from ..exceptions import CallbackAliasNotFoundError, CallbackAliasExistsError
 
@@ -45,7 +45,7 @@ class CallbackProxy(object):
         self._registered = False
         self._result = None
 
-        @wraps(func)
+        @wraps(func.func if isinstance(func, partial) else func)
         def runCallback(*args, **kwargs):
             """Run the callback function."""
             if intercept is None or not intercept(*args, **kwargs):
