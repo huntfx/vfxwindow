@@ -25,7 +25,7 @@ class BlenderApplication(AbstractApplication):
 
     PATHS = [
         r'[bB]lender[_\s][fF]oundation',
-        r'[bB]lender[_\s]\d+(?:\.\d+){0,2}',
+        r'[bB]lender[_\s-]\d+(?:\.\d+){0,2}',
         r'[bB]lender\.(?:bin|exe)',
     ]
 
