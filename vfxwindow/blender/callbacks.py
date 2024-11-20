@@ -19,6 +19,24 @@ class BlenderCallbackProxy(CallbackProxy):
         return self.func in self._register.__self__
 
 
+class _MultiHandler(object):
+    """Wrap multiple handlers into one while keeping the same behaviour."""
+
+    def __init__(self, *handlers):
+        self.handlers = [getattr(bpy.app.handlers, n) for n in handlers]
+
+    def __contains__(self, func):
+        return any(func in handler for handler in self.handlers)
+
+    def append(self, func):
+        for handler in self.handlers:
+            handler.append(func)
+
+    def remove(self, func):
+        for handler in self.handlers:
+            handler.remove(func)
+
+
 class BlenderCallbacks(AbstractCallbacks):
     """Blender callbacks.
 
@@ -62,7 +80,7 @@ class BlenderCallbacks(AbstractCallbacks):
             Signature: (path: str, None) -> None
 
         render:
-            Mapped to 'render.end'.
+            Mapped to 'render.after'.
 
         render.before:
             Called on initialisation of a render job.
@@ -192,7 +210,7 @@ class BlenderCallbacks(AbstractCallbacks):
             'playback.before': 'animation_playback_pre',
             'playback.after': 'animation_playback_post',
             'render.before': 'render_init',
-            'render.after': ('render_complete', 'render_cancel'),
+            'render.after': _MultiHandler('render_complete', 'render_cancel'),
             'render.complete': 'render_complete',
             'render.cancel': 'render_cancel',
             'render.stats': 'render_stats',
@@ -206,14 +224,12 @@ class BlenderCallbacks(AbstractCallbacks):
         }
         for alias, name in handlers.items():
             try:
-                if isinstance(name, tuple):
-                    handler = [getattr(bpy.app.handlers, n) for n in name]
-                    register = lambda func, handlers=handler: [handler.append(func) for handler in handlers]
-                    unregister = lambda func, handlers=handler: [handler.remove(func) for handler in handlers]
+                if isinstance(name, _MultiHandler):
+                    handler = name
                 else:
                     handler = getattr(bpy.app.handlers, name)
-                    register = handler.append
-                    unregister = handler.remove
+                register = handler.append
+                unregister = handler.remove
             except AttributeError:
                 continue
 
