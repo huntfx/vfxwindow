@@ -10,6 +10,7 @@ __all__ = [
     'Maya',
     'Natron',
     'Nuke',
+    'RenderDoc',
     'SubstanceDesigner',
     'SubstancePainter',
     'Unreal'
