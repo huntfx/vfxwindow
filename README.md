@@ -48,9 +48,9 @@ class MyWindow(VFXWindow):
         See '/vfxwindow/<app>/callbacks.py' for the relevant signatures.
         """
         if self.application == 'Maya':
-            self.callbacks['scene'].add('node.add', self.mayaNodeAdded, nodeType='dependNode')
+            self.callbacks['scene'].add('node.create', self.mayaNodeAdded, nodeType='dependNode')
         if self.application == 'Nuke':
-            self.callbacks['scene'].add('node.add', self.nukeNodeAdded)
+            self.callbacks['scene'].add('node.create', self.nukeNodeAdded)
 
     def beforeSceneChange(self, *args):
         """Delete the scene specific callbacks."""

@@ -33,11 +33,11 @@ class SubstanceDesignerCallbacks(AbstractCallbacks):
             Called after a file is saved.
             Signature: (filePath: str, succeed: bool) -> None
 
-        ui.graph.add:
+        ui.graph.create:
             Called when a new graphView is created.
             Signature (graphViewID: int) -> None
 
-        ui.explorer.add:
+        ui.explorer.create:
             Called when a new explorer panel is created.
             Signature (explorerID: int) -> None
 
@@ -57,8 +57,8 @@ class SubstanceDesignerCallbacks(AbstractCallbacks):
         self.aliases['file.save'] = self.aliases['file.save.after'] = (app.registerAfterFileSavedCallback, app.unregisterCallback)
         self.aliases['file.close.before'] = (app.registerBeforeFileClosedCallback, app.unregisterCallback)
         self.aliases['file.close'] = self.aliases['file.close.after'] = (app.registerAfterFileClosedCallback, app.unregisterCallback)
-        self.aliases['ui.graph.add'] = (manager.registerGraphViewCreatedCallback, manager.unregisterCallback)
-        self.aliases['ui.explorer.add'] = (manager.registerExplorerCreatedCallback, manager.unregisterCallback)
+        self.aliases['ui.graph.create'] = (manager.registerGraphViewCreatedCallback, manager.unregisterCallback)
+        self.aliases['ui.explorer.create'] = (manager.registerExplorerCreatedCallback, manager.unregisterCallback)
         self.aliases['ui.explorer.selection.changed'] = (manager.registerExplorerSelectionChangedCallback, manager.unregisterCallback)
 
     @property

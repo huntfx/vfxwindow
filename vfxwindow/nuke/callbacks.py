@@ -34,12 +34,12 @@ class NukeCallbacks(AbstractCallbacks):
             This is run immediately before `onDestroy` for the root.
             Signature: () -> None
 
-        node.add:
+        node.create:
             Called when any node is created.
             Parameters: (nodeClass: Optional[str] = None)
             Signature: () -> None
 
-        node.add.user:
+        node.create.user:
             Called when any node is created by the user in the GUI.
             Parameters: (nodeClass: Optional[str] = None)
             Signature: () -> None
@@ -114,8 +114,8 @@ class NukeCallbacks(AbstractCallbacks):
         self.aliases['file.load'] = (nuke.addOnScriptLoad, nuke.removeOnScriptLoad)
         self.aliases['file.save'] = (nuke.addOnScriptSave, nuke.removeOnScriptSave)
         self.aliases['file.close'] = (nuke.addOnScriptClose, nuke.removeOnScriptClose)
-        self.aliases['node.add'] = (nuke.addOnCreate, nuke.removeOnCreate)
-        self.aliases['node.add.user'] = (nuke.addOnUserCreate, nuke.removeOnUserCreate)
+        self.aliases['node.create'] = (nuke.addOnCreate, nuke.removeOnCreate)
+        self.aliases['node.create.user'] = (nuke.addOnUserCreate, nuke.removeOnUserCreate)
         self.aliases['node.remove'] = (nuke.addOnDestroy, nuke.removeOnDestroy)
         self.aliases['knob.changed'] = (nuke.addKnobChanged, nuke.removeKnobChanged)
         self.aliases['render.before'] = (nuke.addBeforeRender, nuke.removeBeforeRender)

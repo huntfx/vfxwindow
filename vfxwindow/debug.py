@@ -124,13 +124,13 @@ class TestWindow(VFXWindow):
             self.callbacks.add('reference', lambda clientData: print('Callback: reference'))
             self.callbacks.add('reference.before', lambda clientData: print('Callback: reference.before'))
             self.callbacks.add('reference.after', lambda clientData: print('Callback: reference.after'))
-            self.callbacks.add('reference.add', lambda clientData: print('Callback: reference.add'))
-            self.callbacks.add('reference.add.before', lambda clientData: print('Callback: reference.add.before'))
+            self.callbacks.add('reference.create', lambda clientData: print('Callback: reference.create'))
+            self.callbacks.add('reference.create.before', lambda clientData: print('Callback: reference.create.before'))
             def beforeRefCreateCheck(fileObj, clientData):
-                print('Callback: reference.add.before.check ({})'.format(fileObj.resolvedFullName()))
+                print('Callback: reference.create.before.check ({})'.format(fileObj.resolvedFullName()))
                 return True
-            self.callbacks.add('reference.add.before.check', beforeRefCreateCheck)
-            self.callbacks.add('reference.add.after', lambda clientData: print('Callback: reference.add.after'))
+            self.callbacks.add('reference.create.before.check', beforeRefCreateCheck)
+            self.callbacks.add('reference.create.after', lambda clientData: print('Callback: reference.create.after'))
             self.callbacks.add('reference.remove', lambda clientData: print('Callback: reference.remove'))
             self.callbacks.add('reference.remove.before', lambda clientData: print('Callback: reference.remove.before'))
             self.callbacks.add('reference.remove.after', lambda clientData: print('Callback: reference.remove.after'))
@@ -178,7 +178,7 @@ class TestWindow(VFXWindow):
             self.callbacks.add('playback.range.changed.after', lambda clientdata: print('Callback: playback.range.changed.after'))
             self.callbacks.add('playback.speed.changed', lambda clientdata: print('Callback: playback.speed.changed'))
             self.callbacks.add('playback.mode.changed', lambda clientdata: print('Callback: playback.mode.changed'))
-            self.callbacks.add('node.add', lambda node, clientData: print('Callback: node.add ({})'.format(node)), nodeType='dependNode')
+            self.callbacks.add('node.create', lambda node, clientData: print('Callback: node.create ({})'.format(node)), nodeType='dependNode')
             self.callbacks.add('node.remove', lambda node, clientData: print('Callback: node.remove ({})'.format(node)), nodeType='dependNode')
             self.callbacks.add('node.name.changed', lambda node, prevName, clientData: print('Callback: node.name.changed ({}, {})'.format(node, prevName)), om2.MObject.kNullObj)
             self.callbacks.add('node.uuid.changed', lambda node, prevUuid, clientData: print('Callback: node.uuid.changed ({}, {})'.format(node, prevUuid)), om2.MObject.kNullObj)
@@ -187,7 +187,7 @@ class TestWindow(VFXWindow):
                 return om2.MMessage.kDefaultAction
             self.callbacks.add('node.uuid.changed.check', checkUUID)
             self.callbacks.add('attribute.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.changed ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
-            self.callbacks.add('attribute.add', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.add ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
+            self.callbacks.add('attribute.create', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.create ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
             self.callbacks.add('attribute.remove', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.remove ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
             self.callbacks.add('attribute.name.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.name.changed ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
             self.callbacks.add('attribute.value.changed', lambda msg, plug, otherPlug, clientData: print('Callback: attribute.value.changed ({}, {}, {})'.format(msg, plug, otherPlug)), om2.MObject.kNullObj)
@@ -221,8 +221,8 @@ class TestWindow(VFXWindow):
             self.callbacks.add('file.load', lambda: print('Callback: file.load ({})'.format(self._nukeThisNode())))
             self.callbacks.add('file.save', lambda: print('Callback: file.save ({})'.format(self._nukeThisNode())))
             self.callbacks.add('file.close', lambda: print('Callback: file.close ({})'.format(self._nukeThisNode())))
-            self.callbacks.add('node.add', lambda: print('Callback: node.add ({})'.format(self._nukeThisNode())))
-            self.callbacks.add('node.add.user', lambda: print('Callback: node.add.user ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('node.create', lambda: print('Callback: node.create ({})'.format(self._nukeThisNode())))
+            self.callbacks.add('node.create.user', lambda: print('Callback: node.create.user ({})'.format(self._nukeThisNode())))
             self.callbacks.add('node.remove', lambda: print('Callback: node.remove ({})'.format(self._nukeThisNode())))
             self.callbacks.add('knob.changed', lambda: print('Callback: knob.changed ({}, {})'.format(self._nukeThisNode(), self._nukeThisKnob())))
 
@@ -280,8 +280,8 @@ class TestWindow(VFXWindow):
             self.callbacks.add('file.close', lambda filePath, succeed: print('file.close (filePath={!r}, succeed={!r})'.format(filePath, succeed)))
             self.callbacks.add('file.close.before', lambda filePath: print('file.close.before (filePath={!r})'.format(filePath)))
             self.callbacks.add('file.close.after', lambda filePath, succeed: print('file.close.after (filePath={!r}, succeed={!r})'.format(filePath, succeed)))
-            self.callbacks.add('ui.graph.add', lambda graphViewID: print('graph.add (graphViewID={!r})'.format(graphViewID)))
-            self.callbacks.add('ui.explorer.add', lambda explorerID: print('explorer.add (explorerID={!r})'.format(explorerID)))
+            self.callbacks.add('ui.graph.create', lambda graphViewID: print('graph.create (graphViewID={!r})'.format(graphViewID)))
+            self.callbacks.add('ui.explorer.create', lambda explorerID: print('explorer.create (explorerID={!r})'.format(explorerID)))
             self.callbacks.add('ui.explorer.selection.changed', lambda explorerID: print('explorer.selection.changed (explorerID={!r})'.format(explorerID)))
 
         elif self.application == 'Substance Painter':

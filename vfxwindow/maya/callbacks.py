@@ -120,20 +120,20 @@ class MayaCallbacks(AbstractCallbacks):
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.add:
-            Mapped to 'reference.add.after'.
+        reference.create:
+            Mapped to 'reference.create.after'.
 
-        reference.add.before:
+        reference.create.before:
             Called before a File > CreateReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.add.before.check:
+        reference.create.before.check:
             Called prior to a File > CreateReference operation, allows user to cancel action.
             Parameters: (clientData=None)
             Signature: (file: MFileObject, clientData) -> bool
 
-        reference.add.after
+        reference.create.after
             Called after a File > CreateReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
@@ -290,7 +290,7 @@ class MayaCallbacks(AbstractCallbacks):
             Parameters: (clientData=None)
             Signature: (srcPlug: MPlug, destPlug: MPlug, made: bool, clientData) -> None
 
-        node.add:
+        node.create:
             Called whenever a new node is added to the dependency graph.
             The nodeType argument allows you to specify the type of nodes that will trigger the callback.
             The default node type is "dependNode" which matches all nodes.
@@ -389,7 +389,7 @@ class MayaCallbacks(AbstractCallbacks):
             Parameters: (node: MObject, clientData=None)
             Signature: (msg: int, plug: MPlug, clientData) -> None
 
-        attribute.add:
+        attribute.create:
             Called when an attribute is added.
             Use a null MObject to listen for all nodes.
             Parameters: (node: MObject, clientData=None)
@@ -484,9 +484,9 @@ class MayaCallbacks(AbstractCallbacks):
             DG modifier for any operation so that it works with the
             undo queue.
             Because both of these have such specific uses, and the fact
-            that `node.add` uses `addNodeAddedCallback`, it makes sense
-            for `node.remove` to use `addNodeRemovedCallback` rather than
-            than any of these.
+            that `node.create` uses `addNodeAddedCallback`, it makes
+            sense for `node.remove` to use `addNodeRemovedCallback`
+            rather than than any of these.
 
             If absolutely needed, use the `addMessage` method.
             >>> cb.addMessage(partial(MNodeMessage.addNodePreRemovalCallback, node), func)
@@ -651,15 +651,15 @@ class MayaCallbacks(AbstractCallbacks):
 
         def refCreateBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeCreateReference, func, clientData)
-        self.aliases['reference.add.before'] = (refCreateBefore, unregMsg)
+        self.aliases['reference.create.before'] = (refCreateBefore, unregMsg)
 
         def refCreateBeforeCheck(func, clientData=None):
             return self.api.MSceneMessage.addCheckFileCallback(self.api.MSceneMessage.kBeforeCreateReferenceCheck, func, clientData)
-        self.aliases['reference.add.before.check'] = (refCreateBeforeCheck, unregMsg)
+        self.aliases['reference.create.before.check'] = (refCreateBeforeCheck, unregMsg)
 
         def refCreateAfter(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterCreateReference, func, clientData)
-        self.aliases['reference.add'] = self.aliases['reference.add.after'] = (refCreateAfter, unregMsg)
+        self.aliases['reference.create'] = self.aliases['reference.create.after'] = (refCreateAfter, unregMsg)
 
         def refRemoveBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeRemoveReference, func, clientData)
@@ -759,7 +759,7 @@ class MayaCallbacks(AbstractCallbacks):
 
         def nodeAdd(func, nodeType='dependNode', clientData=None):
             return self.api.MDGMessage.addNodeAddedCallback(func, nodeType, clientData)
-        self.aliases['node.add'] = (nodeAdd, unregMsg)
+        self.aliases['node.create'] = (nodeAdd, unregMsg)
 
         def nodeRemove(func, nodeType='dependNode', clientData=None):
             return self.api.MDGMessage.addNodeRemovedCallback(func, nodeType, clientData)
@@ -825,7 +825,7 @@ class MayaCallbacks(AbstractCallbacks):
 
         def attributeAddIntercept(msg, plug, otherPlug, clientData):
             return not msg & self.api.MNodeMessage.kAttributeAdded
-        self.aliases['attribute.add'] = (attributeChange, unregMsg, attributeAddIntercept)
+        self.aliases['attribute.create'] = (attributeChange, unregMsg, attributeAddIntercept)
 
         def attributeRemoveIntercept(msg, plug, otherPlug, clientData):
             return not msg & self.api.MNodeMessage.kAttributeRemoved
