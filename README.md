@@ -28,12 +28,16 @@ class MyWindow(VFXWindow):
         self.setCentralWidget(QtWidgets.QWidget())
 
         # Setup callbacks
-        self.callbacks.add('file.new', self.afterSceneChange)
-        self.callbacks.add('file.load', self.afterSceneChange)
+        self.callbacks.add('file.load', self.afterSceneChange)  # All apps have callback support for 'file.load'
         if self.application == 'Maya':  # Maya supports before/after callbacks
             self.callbacks.add('file.new.before', self.beforeSceneChange)
+            self.callbacks.add('file.new', self.afterSceneChange)  # Also mapped to 'file.new.after'
             self.callbacks.add('file.load.before', self.beforeSceneChange)
-        elif self.application in ('Nuke', 'Substance'):  # Nuke and Painter/Designer support close
+        elif self.application == 'Nuke':
+            self.callbacks.add('node.create', self.sceneChanged, nodeClass='Root')  # Pass in a parameter
+            self.callbacks.add('file.close', self.beforeSceneChange)
+        elif self.application == 'Substance':
+            self.callbacks.add('file.new', self.afterSceneChange)
             self.callbacks.add('file.close', self.beforeSceneChange)
 
         # Wait until the program is ready before triggering the new scene method

@@ -217,7 +217,6 @@ class TestWindow(VFXWindow):
 
         elif self.application == 'Nuke':
             import nuke
-            self.callbacks.add('file.new', lambda: print('Callback: file.new ({})'.format(self._nukeThisNode())))
             self.callbacks.add('file.load', lambda: print('Callback: file.load ({})'.format(self._nukeThisNode())))
             self.callbacks.add('file.save', lambda: print('Callback: file.save ({})'.format(self._nukeThisNode())))
             self.callbacks.add('file.close', lambda: print('Callback: file.close ({})'.format(self._nukeThisNode())))

@@ -18,9 +18,6 @@ class NukeCallbacks(AbstractCallbacks):
     """Nuke callbacks.
 
     Callbacks:
-        file.new: Called whenever a new script is made.
-            Signature: () -> None
-
         file.load:
             Called whenever a script is loaded.
             This is run immediately after `onCreate` for the root.
@@ -32,10 +29,15 @@ class NukeCallbacks(AbstractCallbacks):
 
         file.close:
             This is run immediately before `onDestroy` for the root.
+            In GUI mode, if `nuke.root().name()` is 'Root' during the
+            execution of this, then it means Nuke is shutting down.
             Signature: () -> None
 
         node.create:
             Called when any node is created.
+            To capture when any new scene is created, add this with
+            `nodeClass='Root'`. Note that it will also run before
+            opening files as well.
             Parameters: (nodeClass: Optional[str] = None)
             Signature: () -> None
 
@@ -110,7 +112,6 @@ class NukeCallbacks(AbstractCallbacks):
 
     def _setupAliases(self):
         """Setup Nuke callback aliases."""
-        self.aliases['file.new'] = (partial(nuke.addOnCreate, nodeClass='Root'), partial(nuke.removeOnCreate, nodeClass='Root'))
         self.aliases['file.load'] = (nuke.addOnScriptLoad, nuke.removeOnScriptLoad)
         self.aliases['file.save'] = (nuke.addOnScriptSave, nuke.removeOnScriptSave)
         self.aliases['file.close'] = (nuke.addOnScriptClose, nuke.removeOnScriptClose)
