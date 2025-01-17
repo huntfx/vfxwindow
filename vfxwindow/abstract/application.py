@@ -126,9 +126,15 @@ class AbstractVersion(object):
     """Application version data for comparisons."""
 
     def __init__(self, version=None, major=None, minor=None, patch=None):
+        if major is not None:
+            major = str(major)
+        if minor is not None:
+            minor = str(minor)
+        if patch is not None:
+            patch = str(patch)
         parts = (major, minor, patch)
 
-        # Build the version string
+        # Generate the version string from the parts
         if not version:
             validParts = []
             for num in parts:
@@ -136,37 +142,30 @@ class AbstractVersion(object):
                     break
                 validParts.append(num)
             version = '.'.join(validParts)
+
+        # Get any missing parts from the version string
+        if None in parts:
+            split = version.replace('v', '.').split('.')
+            if major is None:
+                try:
+                    major = split[0]
+                except IndexError:
+                    major = '0'
+            if minor is None:
+                try:
+                    minor = split[1]
+                except IndexError:
+                    minor = '0'
+            if patch is None:
+                try:
+                    patch = split[2]
+                except IndexError:
+                    patch = '0'
+
         self.version = str(version)
-
-        # Split to major/minor/patch
-        if major is not None:
-            major = str(major)
-        if minor is not None:
-            minor = str(minor)
-        if patch is not None:
-            patch = str(patch)
-
         self.major = major
         self.minor = minor
         self.patch = patch
-
-        if None in parts:
-            split = version.replace('v', '.').split('.')
-            if self.major is None:
-                try:
-                    self.major = split[0]
-                except IndexError:
-                    self.major = '0'
-            if self.minor is None:
-                try:
-                    self.minor = split[1]
-                except IndexError:
-                    self.minor = '0'
-            if self.patch is None:
-                try:
-                    self.patch = split[2]
-                except IndexError:
-                    self.patch = '0'
 
     def __repr__(self):
         return repr(self.version)

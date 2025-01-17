@@ -12,8 +12,7 @@ class BlenderVersion(AbstractVersion):
     """Blender version data for comparisons."""
 
     def __init__(self):
-        super(BlenderVersion, self).__init__(bpy.app.version_string,  # '3.6.0'
-                                             *bpy.app.version)  # (3, 6, 0)
+        super(BlenderVersion, self).__init__(None, *bpy.app.version)  # (3, 6, 0)
 
 
 class BlenderApplication(AbstractApplication):
