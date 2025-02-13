@@ -28,7 +28,7 @@ class MayaCallbacks(AbstractCallbacks):
         file.new.before.check:
             Called prior to File > New operation, allows user to cancel action.
             Parameters: (clientData=None)
-            Signature: (clientData) -> bool
+            Signature: (file: MFileObject, clientData) -> bool
 
         file.new.after:
             Called after a File > New operation.
@@ -46,7 +46,7 @@ class MayaCallbacks(AbstractCallbacks):
         file.load.before.check:
             Called prior to File > Open operation, allows user to cancel action.
             Parameters: (clientData=None)
-            Signature: (clientData) -> bool
+            Signature: (file: MFileObject, clientData) -> bool
 
         file.load.after:
             Called after a File > Open operation.
@@ -64,7 +64,7 @@ class MayaCallbacks(AbstractCallbacks):
         file.save.before.check:
             Called before a File > Save (or SaveAs) operation.
             Parameters: (clientData=None)
-            Signature: (clientData) -> bool
+            Signature: (file: MFileObject, clientData) -> bool
 
         file.save.after:
             Called after a File > Save (or SaveAs) operation.
