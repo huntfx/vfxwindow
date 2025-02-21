@@ -19,6 +19,8 @@ import os
 import sys
 import warnings
 
+import Qt
+
 from . import application
 from .exceptions import VFXWinDeprecationWarning
 
@@ -35,13 +37,32 @@ def _setupQApp():
         will set up its own QApplication that is not compatible with
         GUI elements.
     Blender:
-        It will crash if this is not run.
+        It will crash if this is not run before creating a widget.
     """
     from Qt import QtWidgets
     try:
         QtWidgets.QApplication(sys.argv)
     except RuntimeError:
         pass
+
+
+def _bypassPySide6WebEngine():
+    """Blender 4.2.0 has a crash on import on Windows machines.
+    Bypassing the QWebEngine components solves it.
+    It appears to be solved as of 4.2.1.
+    https://community.shotgridsoftware.com/t/shotgrid-with-tk-blender/17217/11
+    """
+    # Note: PySide6 support was added in Qt.py 1.4.1
+    if not getattr(Qt, 'IsPySide6', False):
+        return
+
+    # Override QtWebEngine for both Qt and PySide6
+    import PySide6
+    class QtWebEngineCore:
+        QWebEnginePage = None
+        QWebEngineProfile = None
+    Qt.QtWebEngineCore = PySide6.QtWebEngineCore = QtWebEngineCore
+    Qt.QtWebEngineWidgets = PySide6.QtWebEngineWidgets = None
 
 
 if application.Maya:
@@ -61,8 +82,8 @@ elif application.Houdini:
     from .houdini.gui import HoudiniWindow as VFXWindow
 
 elif application.Blender:
-    from .blender.compatibility import bypassWebEngine
-    bypassWebEngine()
+    if application.Blender.version == '4.2.0' and sys.playform == 'win32':
+        _bypassPySide6WebEngine()
     _setupQApp()
     from .blender.gui import BlenderWindow as VFXWindow
 
