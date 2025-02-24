@@ -38,6 +38,8 @@ def _setupQApp():
         GUI elements.
     Blender:
         It will crash if this is not run before creating a widget.
+    Gaffer:
+        Required to launch widgets when running in batch mode.
     """
     from Qt import QtWidgets
     try:
@@ -112,6 +114,7 @@ elif application.Natron:
     from .natron.gui import NatronWindow as VFXWindow
 
 elif application.Gaffer:
+    _setupQApp()
     from .gaffer.gui import GafferWindow as VFXWindow
 
 elif application.RenderDoc:

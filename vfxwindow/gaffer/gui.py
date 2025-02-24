@@ -60,5 +60,6 @@ class GafferWindow(StandaloneWindow):
         except AttributeError:
             pass
         kwargs['exec_'] = False
-        kwargs['instance'] = True
+        kwargs['init'] = False
+        kwargs['instance'] = Application.gui
         return super(GafferWindow, cls).show(*args, **kwargs)

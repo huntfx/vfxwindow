@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 try:
     import Gaffer
+    import GafferUI
 except ImportError:
     Gaffer = None
 
@@ -37,8 +38,10 @@ class GafferApplication(AbstractApplication):
 
     VERSION = GafferVersion
 
+    @property
     def gui(self):
-        return True
+        """Determine if running in interactive mode."""
+        return GafferUI.EventLoop.mainEventLoop().running()
 
 
 Application = GafferApplication()
