@@ -107,6 +107,7 @@ if __name__ == '__main__':
 | CryEngine Sandbox  | ✔️ | [❌](# "There's a `SandboxBridge.register_window` function, but I was not able to figure it out.") | ❌ | 5.7 | ❔ | [✔️](# "Causes recursion error if calling `show`/`hide`/`setVisible`.") | ❔ |
 | Standalone Python  | ✔️ | | | 2.7 (Qt4), 3.7-3.9 (Qt5) | ❔ | ✔️ | ❔ |
 | Natron             | ✔️ | [❌](# "Potentially possible, but not yet implemented.") | ❌ | 2.5 | ❔ | ✔️ | ❔ |
+| Gaffer             |️ ️✔️ | ❌ | ❌ | 1.5.6.0 | ❔ | ✔️ | ❔ |
 | RenderDoc          | [✔️](# "Only runs in the interactive shell, not the script editor.") | ❌ | ❌ | 1.33 | ❔ | [✔️](# "Causes recursion error if calling `show`/`hide`, and crashes when calling `setVisible`.") | ❔ |
 
 <sub>* Hover over underlined fields to see any extra details/issues.</sub>

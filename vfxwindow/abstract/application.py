@@ -125,7 +125,7 @@ class AbstractApplication(str):
 class AbstractVersion(object):
     """Application version data for comparisons."""
 
-    def __init__(self, version=None, major=None, minor=None, patch=None):
+    def __init__(self, version=None, major=None, minor=None, patch=None, *extra):
         if major is not None:
             major = str(major)
         if minor is not None:
@@ -141,7 +141,7 @@ class AbstractVersion(object):
                 if num is None:
                     break
                 validParts.append(num)
-            version = '.'.join(validParts)
+            version = '.'.join(validParts + list(extra))
 
         # Get any missing parts from the version string
         if None in parts:
@@ -166,6 +166,7 @@ class AbstractVersion(object):
         self.major = major
         self.minor = minor
         self.patch = patch
+        self.extra = extra
 
     def __repr__(self):
         return repr(self.version)
@@ -218,7 +219,7 @@ class AbstractVersion(object):
 
     def __getitem__(self, item):
         """Get the major/minor/patch number from an index."""
-        return (self.major, self.minor, self.patch)[item]
+        return self.split()[item]
 
     def split(self, sep='.'):
         """Get all the version parts."""

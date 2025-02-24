@@ -111,6 +111,9 @@ elif application.CryEngine:
 elif application.Natron:
     from .natron.gui import NatronWindow as VFXWindow
 
+elif application.Gaffer:
+    from .gaffer.gui import GafferWindow as VFXWindow
+
 elif application.RenderDoc:
     from .renderdoc.gui import RenderDocWindow as VFXWindow
 
