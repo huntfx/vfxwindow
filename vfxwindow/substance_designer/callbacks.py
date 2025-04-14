@@ -11,27 +11,27 @@ class SubstanceDesignerCallbacks(AbstractCallbacks):
     Callbacks:
         file.load.before:
             Called before when a file is loaded.
-            Signature: (filePath: str) -> None
+            Signature: (filePath: bytes) -> None
 
         file.load.after:
             Called after a file is loaded.
-            Signature: (filePath: str, succeed: bool, updated: bool) -> None
+            Signature: (filePath: bytes, succeed: bool, updated: bool) -> None
 
         file.save.before:
             Called before when a file is saved.
-            Signature: (filePath: str, parentPackagePath: str) -> None
+            Signature: (filePath: bytes, parentPackagePath: bytes) -> None
 
         file.save.after:
             Called after when a file is saved.
-            Signature: (filePath: str, succeed: bool) -> None
+            Signature: (filePath: bytes, succeed: bool) -> None
 
         file.close.before:
             Called before a file is closed.
-            Signature: (filePath: str) -> None
+            Signature: (filePath: bytes) -> None
 
         file.close.after:
             Called after a file is saved.
-            Signature: (filePath: str, succeed: bool) -> None
+            Signature: (filePath: bytes, succeed: bool) -> None
 
         ui.graph.create:
             Called when a new graphView is created.
@@ -49,7 +49,7 @@ class SubstanceDesignerCallbacks(AbstractCallbacks):
     def _setupAliases(self):
         """Setup Substance Designer callback aliases."""
         app = sd.getContext().getSDApplication()
-        manager = app .getQtForPythonUIMgr()
+        manager = app.getQtForPythonUIMgr()
 
         self.aliases['file.load.before'] = (app.registerBeforeFileLoadedCallback, app.unregisterCallback)
         self.aliases['file.load'] = self.aliases['file.load.after'] = (app.registerAfterFileLoadedCallback, app.unregisterCallback)

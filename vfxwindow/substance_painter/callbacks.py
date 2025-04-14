@@ -18,43 +18,43 @@ class SubstancePainterCallbacks(AbstractCallbacks):
     """Substance Painter callbacks.
 
     Callbacks:
+        file.new:
+            Called when a new project has been created.
+            Signature: (evt: ProjectCreated()) -> None
+
         file.load:
             Called when an existing project has been opened.
             The project may still be loading at this point.
-            Signature: (evt: Event()) -> None
-
-        file.new:
-            Called when a new project has been created.
-            Signature: (evt: Event()) -> None
+            Signature: (evt: ProjectOpened()) -> None
 
         file.close:
             Mapped to 'file.close.before'
 
         file.close.before:
             Event triggered just before closing the current project.
-            Signature: (evt: Event()) -> None
+            Signature: (evt: ProjectAboutToClose()) -> None
 
         file.save:
             Mapped to 'file.save.after'
 
         file.save.before:
             Called just before saving the current project.
-            Signature: (evt: Event(file_path: str)) -> None
+            Signature: (evt: ProjectAboutToSave(file_path: str)) -> None
                 file_path: The destination file.
 
         file.save.after:
             Called once the current project is saved.
-            Signature: (evt: Event()) -> None
+            Signature: (evt: ProjectSaved()) -> None
 
         export.textures.before:
             Called just before a textures export.
-            Signature: (evt: Event(textures: Dict[Tuple[str, str], List[str]])) -> None
+            Signature: (evt: ExportTexturesAboutToStart(textures: Dict[Tuple[str, str], List[str]])) -> None
                 textures: List of texture files to be written to disk.
                     Grouped by stack (Texture Set name, stack name).
 
         export.textures.after:
-            Signature: (evt: Event(message: str, status: sp.export.ExportStatus,
-                                   textures: Dict[Tuple[str, str], List[str]])) -> None
+            Signature: (evt: ExportTexturesEnded(message: str, status: sp.export.ExportStatus,
+                                                 textures: Dict[Tuple[str, str], List[str]])) -> None
                 message: Human readable status message.
                 textures: List of texture files written to disk.
                     Grouped by stack (Texture Set name, stack name).
@@ -62,12 +62,12 @@ class SubstancePainterCallbacks(AbstractCallbacks):
         shelf.crawling.before:
             Called when a shelf starts reading the file system to
             discover new resources.
-            Signature: (evt: Event(shelf_name: str)) -> None
+            Signature: (evt: ShelfCrawlingStarted(shelf_name: str)) -> None
 
         shelf.crawling.after:
             Called when a shelf has finished discovering new
             resources and loading thumbnails.
-            Signature: (evt: Event(shelf_name: str)) -> None
+            Signature: (evt: ShelfCrawlingEnded(shelf_name: str)) -> None
 
     Unimplemented
         sp.event.ProjectEditionEntered:
@@ -80,7 +80,7 @@ class SubstancePainterCallbacks(AbstractCallbacks):
 
         sp.event.BusyStatusChanged:
             Called when Substance 3D Painter busy state changes.
-            Signature: (evt: Event(busy: bool)) -> None
+            Signature: (evt: BusyStatusChanged(busy: bool)) -> None
 
         sp.event.TextureStateEvent:
             Called when a document texture is added, removed or updated.

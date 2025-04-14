@@ -290,7 +290,7 @@ class TestWindow(VFXWindow):
             self.callbacks.add('file.close.before', lambda evt: print('file.close.before'))
             self.callbacks.add('file.save', lambda evt: print('file.save'))
             self.callbacks.add('file.save.before', lambda evt: print('file.save.before (file_path={!r})'.format(evt.file_path)))
-            self.callbacks.add('file.save.after', lambda evt: print('file.save'))
+            self.callbacks.add('file.save.after', lambda evt: print('file.save.after'))
             self.callbacks.add('export.textures', lambda evt: print('export.textures (message={!r}, status={!r}, textures={!r})'.format(evt.message, evt.status, evt.textures)))
             self.callbacks.add('export.textures.before', lambda evt: print('export.textures.before (textures={!r})'.format(evt.textures)))
             self.callbacks.add('export.textures.after', lambda evt: print('export.textures.after (message={!r}, status={!r}, textures={!r})'.format(evt.message, evt.status, evt.textures)))
