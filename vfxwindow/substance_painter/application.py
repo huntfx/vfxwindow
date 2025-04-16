@@ -12,8 +12,12 @@ class SubstancePainterVersion(AbstractVersion):
     """Substance Painter version data for comparisons."""
 
     def __init__(self):
-        version = substance_painter.js.evaluate('alg.version.painter')  # '8.3.0'
-        super(SubstancePainterVersion, self).__init__(version)
+        try:
+            args = [substance_painter.application.version()]  # '8.3.0'
+            args.extend(substance_painter.application.version_info())  # (8, 3, 0)
+        except AttributeError:
+            args = [substance_painter.js.evaluate('alg.version.painter')]  # '8.3.0'
+        super(SubstancePainterVersion, self).__init__(*args)
 
 
 class SubstancePainterApplication(AbstractApplication):
