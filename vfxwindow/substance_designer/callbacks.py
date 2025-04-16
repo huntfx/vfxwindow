@@ -9,21 +9,30 @@ class SubstanceDesignerCallbacks(AbstractCallbacks):
     """Substance Designer callbacks.
 
     Callbacks:
+        file.load:
+            Mapped to 'file.load.after'.
+
         file.load.before:
-            Called before when a file is loaded.
+            Called before a file is loaded.
             Signature: (filePath: bytes) -> None
 
         file.load.after:
             Called after a file is loaded.
             Signature: (filePath: bytes, succeed: bool, updated: bool) -> None
 
+        file.save:
+            Mapped to 'file.save.after'.
+
         file.save.before:
-            Called before when a file is saved.
+            Called before a file is saved.
             Signature: (filePath: bytes, parentPackagePath: bytes) -> None
 
         file.save.after:
-            Called after when a file is saved.
+            Called after a file is saved.
             Signature: (filePath: bytes, succeed: bool) -> None
+
+        file.close:
+            Mapped to 'file.close.after'.
 
         file.close.before:
             Called before a file is closed.
