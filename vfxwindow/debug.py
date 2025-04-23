@@ -269,6 +269,21 @@ class TestWindow(VFXWindow):
             self.callbacks.add('undo', lambda scene, _: print('Callback: redo non-persistent ({})'.format(scene.name)))
             self.callbacks.add('redo', lambda scene, _: print('Callback: redo non-persistent ({})'.format(scene.name)))
 
+        elif self.application == 'Houdini':
+            self.callbacks.add('file', lambda event_type: print('file (event_type={!r})'.format(event_type)))
+            self.callbacks.add('file.clear', lambda event_type: print('file.clear (event_type={!r})'.format(event_type)))
+            self.callbacks.add('file.clear.before', lambda event_type: print('file.clear.before (event_type={!r})'.format(event_type)))
+            self.callbacks.add('file.clear.after', lambda event_type: print('file.clear.after (event_type={!r})'.format(event_type)))
+            self.callbacks.add('file.load', lambda event_type: print('file.load (event_type={!r})'.format(event_type)))
+            self.callbacks.add('file.load.before', lambda event_type: print('file.load.before (event_type={!r})'.format(event_type)))
+            self.callbacks.add('file.load.after', lambda event_type: print('file.load.after (event_type={!r})'.format(event_type)))
+            self.callbacks.add('file.merge', lambda event_type: print('file.clear (event_type={!r})'.format(event_type)))
+            self.callbacks.add('file.merge.before', lambda event_type: print('file.merge.before (event_type={!r})'.format(event_type)))
+            self.callbacks.add('file.merge.after', lambda event_type: print('file.merge.after (event_type={!r})'.format(event_type)))
+            self.callbacks.add('file.save', lambda event_type: print('file.save (event_type={!r})'.format(event_type)))
+            self.callbacks.add('file.save.before', lambda event_type: print('file.save.before (event_type={!r})'.format(event_type)))
+            self.callbacks.add('file.save.after', lambda event_type: print('file.save.after (event_type={!r})'.format(event_type)))
+
         elif self.application == 'Substance Designer':
             self.callbacks.add('file.load', lambda filePath, succeed, updated: print('file.load (filePath={!r}, succeed={!r}, updated={!r})'.format(filePath, succeed, updated)))
             self.callbacks.add('file.load.before', lambda filePath: print('file.load.before (filePath={!r})'.format(filePath)))

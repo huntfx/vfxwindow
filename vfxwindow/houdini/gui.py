@@ -8,6 +8,7 @@ import hdefereval
 from Qt import QtCore
 
 from .application import Application
+from .callbacks import HoudiniCallbacks
 from ..abstract.gui import AbstractWindow
 from ..utils import setCoordinatesToScreen, deprecate
 
@@ -52,6 +53,10 @@ class HoudiniWindow(AbstractWindow):
 
         # As of today, that's the only solution that seems to make this window stay over houdini.
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.Dialog)
+
+    def _createCallbackHandler(self):
+        """Create the callback handler."""
+        return HoudiniCallbacks(self)
 
     @property
     def application(self):
