@@ -64,7 +64,7 @@ class MayaCallbacks(AbstractCallbacks):
         file.save.before.check:
             Called before a File > Save (or SaveAs) operation.
             Parameters: (clientData=None)
-            Signature: (file: MFileObject, clientData) -> bool
+            Signature: (clientData) -> bool
 
         file.save.after:
             Called after a File > Save (or SaveAs) operation.
