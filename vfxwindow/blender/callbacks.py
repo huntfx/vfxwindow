@@ -143,11 +143,15 @@ class BlenderCallbacks(AbstractCallbacks):
             after the data has been evaluated for the new frame.
             Signature: (scene: bpy.types.Scene, depsgraph: bpy.types.Depsgraph) -> None
 
+        playback:
+            Called when starting or ending animation playback.
+            Signature: (scene: bpy.types.Scene, depsgraph: bpy.types.Depsgraph) -> None
+
         playback.start:
             Called when starting animation playback.
             Signature: (scene: bpy.types.Scene, depsgraph: bpy.types.Depsgraph) -> None
 
-        playback.end:
+        playback.stop:
             Called when ending animation playback.
             Signature: (scene: bpy.types.Scene, depsgraph: bpy.types.Depsgraph) -> None
 
@@ -207,8 +211,9 @@ class BlenderCallbacks(AbstractCallbacks):
             'file.save.fail': 'save_post_fail',
             'frame.changed.before': 'frame_change_pre',
             'frame.changed.after': 'frame_change_post',
-            'playback.before': 'animation_playback_pre',
-            'playback.after': 'animation_playback_post',
+            'playback': _MultiHandler('animation_playback_pre', 'animation_playback_post'),
+            'playback.start': 'animation_playback_pre',
+            'playback.stop': 'animation_playback_post',
             'render.before': 'render_init',
             'render.after': _MultiHandler('render_complete', 'render_cancel'),
             'render.complete': 'render_complete',

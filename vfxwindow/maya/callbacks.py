@@ -352,6 +352,21 @@ class MayaCallbacks(AbstractCallbacks):
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
+        playback:
+            Called when Maya starts or stops playing back.
+            Parameters: (clientData=None)
+            Signature: (state: bool, clientData) -> None
+
+        playback.started:
+            Called when Maya starts playing back.
+            Parameters: (clientData=None)
+            Signature: (state: bool, clientData) -> None
+
+        playback.stopped:
+            Called when Maya stops playing back.
+            Parameters: (clientData=None)
+            Signature: (state: bool, clientData) -> None
+
         playback.range.changed:
             Mapped to 'playback.range.changed.after'
 
@@ -366,11 +381,6 @@ class MayaCallbacks(AbstractCallbacks):
             This does not trigger when editing the animation range.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
-
-        playback.state.changed:
-            Called when Maya changes playing back state.
-            Parameters: (clientData=None)
-            Signature: (state: bool, clientData) -> None
 
         playback.speed.changed:
             Called when the playback speed (fps) is updated.
@@ -807,7 +817,9 @@ class MayaCallbacks(AbstractCallbacks):
 
         def playbackStateChange(func, clientData=None):
             return self.api.MConditionMessage.addConditionCallback('playingBack', func, clientData)
-        self.aliases['playback.state.changed'] = (playbackStateChange, unregMsg)
+        self.aliases['playback'] = (playbackStateChange, unregMsg)
+        self.aliases['playback.start'] = (playbackStateChange, unregMsg, lambda state, clientData: state)
+        self.aliases['playback.stop'] = (playbackStateChange, unregMsg, lambda state, clientData: not state)
 
         def playbackSpeedChange(func, clientData=None):
             return self.api.MEventMessage.addEventCallback('playbackSpeedChanged', func, clientData)
