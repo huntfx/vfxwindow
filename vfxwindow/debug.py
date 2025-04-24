@@ -283,6 +283,16 @@ class TestWindow(VFXWindow):
             self.callbacks.add('file.save', lambda event_type: print('file.save (event_type={!r})'.format(event_type)))
             self.callbacks.add('file.save.before', lambda event_type: print('file.save.before (event_type={!r})'.format(event_type)))
             self.callbacks.add('file.save.after', lambda event_type: print('file.save.after (event_type={!r})'.format(event_type)))
+            self.callbacks.add('playbar', lambda event_type, frame: print('playbar (event_type={!r}, frame={!r})'.format(event_type, frame)))
+            self.callbacks.add('playback', lambda event_type, frame: print('playback (event_type={!r}, frame={!r})'.format(event_type, frame)))
+            self.callbacks.add('playback.start', lambda event_type, frame: print('playback.start (event_type={!r}, frame={!r})'.format(event_type, frame)))
+            self.callbacks.add('playback.stop', lambda event_type, frame: print('playback.stop (event_type={!r}, frame={!r})'.format(event_type, frame)))
+            self.callbacks.add('frame.changed', lambda event_type, frame: print('frame.changed (event_type={!r}, frame={!r})'.format(event_type, frame)))
+            self.callbacks.add('asset.create', lambda event_type, asset_definition: print('asset.create (event_type={!r}, asset_definition={!r})'.format(event_type, asset_definition)))
+            self.callbacks.add('asset.remove', lambda event_type, asset_name, library_path, node_type_category: print('asset.create (event_type={!r}, asset_name={!r}, library_path={!r}, node_type_category={!r})'.format(event_type, asset_name, library_path, node_type_category)))
+            self.callbacks.add('asset.save', lambda event_type, asset_definition: print('asset.create (event_type={!r}, asset_definition={!r})'.format(event_type, asset_definition)))
+            self.callbacks.add('asset.library.install', lambda event_type, library_path: print('asset.library.install (event_type={!r}, library_path={!r})'.format(event_type, library_path)))
+            self.callbacks.add('asset.library.uninstall', lambda event_type, library_path: print('asset.library.uninstall (event_type={!r}, library_path={!r})'.format(event_type, library_path)))
 
         elif self.application == 'Substance Designer':
             self.callbacks.add('file.load', lambda filePath, succeed, updated: print('file.load (filePath={!r}, succeed={!r}, updated={!r})'.format(filePath, succeed, updated)))
