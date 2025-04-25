@@ -71,139 +71,139 @@ class MayaCallbacks(AbstractCallbacks):
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        import:
-            Mapped to 'import.after'.
+        file.import:
+            Mapped to 'file.import.after'.
 
-        import.before:
+        file.import.before:
             Called before a File > Import operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        import.before.check:
+        file.import.before.check:
             Called prior to File > Import operation, allows user to cancel action.
             Parameters: (clientData=None)
             Signature: (file: MFileObject, clientData) -> bool
 
-        import.after:
+        file.import.after:
             Called after a File > Import operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        export:
-            Mapped to 'export.after'.
+        file.export:
+            Mapped to 'file.export.after'.
 
-        export.before:
+        file.export.before:
             Called before a File > Export operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        export.before.check:
+        file.export.before.check:
             Called prior to File > Export operation, allows user to cancel action.
             Parameters: (clientData=None)
             Signature: (file: MFileObject, clientData) -> bool
 
-        export.after:
+        file.export.after:
             Called after a File > Export operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference:
-            Mapped to 'reference.after'.
+        file.reference:
+            Mapped to 'file.reference.after'.
 
-        reference.before:
+        file.reference.before:
             Called before a File > CreateReference / LoadReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.after:
+        file.reference.after:
             Called after a File > CreateReference / LoadReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.create:
-            Mapped to 'reference.create.after'.
+        file.reference.create:
+            Mapped to 'file.reference.create.after'.
 
-        reference.create.before:
+        file.reference.create.before:
             Called before a File > CreateReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.create.before.check:
+        file.reference.create.before.check:
             Called prior to a File > CreateReference operation, allows user to cancel action.
             Parameters: (clientData=None)
             Signature: (file: MFileObject, clientData) -> bool
 
-        reference.create.after
+        file.reference.create.after
             Called after a File > CreateReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.remove:
-            Mapped to 'reference.remove.after'.
+        file.reference.remove:
+            Mapped to 'file.reference.remove.after'.
 
-        reference.remove.before:
+        file.reference.remove.before:
             Called before a File > RemoveReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.remove.after:
+        file.reference.remove.after:
             Called after a File > RemoveReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.load:
-            Mapped to 'reference.load.after'.
+        file.reference.load:
+            Mapped to 'file.reference.load.after'.
 
-        reference.load.before:
+        file.reference.load.before:
             Called before a File > LoadReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.load.before.check:
+        file.reference.load.before.check:
             Called before a File > LoadReference operation, allows user to cancel action.
             Parameters: (clientData=None)
             Signature: (file: MFileObject, clientData) -> bool
 
-        reference.load.after:
+        file.reference.load.after:
             Called after a File > LoadReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.unload:
+        file.reference.unload:
             Mapped to 'reference.unload.after'.
 
-        reference.unload.before:
+        file.reference.unload.before:
             Called before a File > UnloadReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.unload.after:
+        file.reference.unload.after:
             Called after a File > UnloadReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.import:
-            Mapped to 'reference.import.after'.
+        file.reference.import:
+            Mapped to 'file.reference.import.after'.
 
-        reference.import.before:
+        file.reference.import.before:
             Called before a File > ImportReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.import.after:
+        file.reference.import.after:
             Called after a File > ImportReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.export:
-            Mapped to 'reference.export.after'
+        file.reference.export:
+            Mapped to 'file.reference.export.after'
 
-        reference.export.before:
+        file.reference.export.before:
             Called before a File > ExportReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
 
-        reference.export.after:
+        file.reference.export.after:
             Called after a File > ExportReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
