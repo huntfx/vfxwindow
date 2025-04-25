@@ -36,7 +36,7 @@ class MyWindow(VFXWindow):
         elif self.application == 'Nuke':
             self.callbacks.add('node.create', self.sceneChanged, nodeClass='Root')  # Pass in a parameter
             self.callbacks.add('file.close', self.beforeSceneChange)
-        elif self.application == 'Substance':
+        elif self.application == 'Substance':  # Matches "Substance Painter" and "Substance Designer"
             self.callbacks.add('file.new', self.afterSceneChange)
             self.callbacks.add('file.close', self.beforeSceneChange)
 
@@ -93,14 +93,14 @@ if __name__ == '__main__':
 | ------------------ | -------- | -------- | -------- | -------- | -------- | --------- | ------- |
 | Maya               | ✔️ | [✔️](# "Uses `workspaceControl` or falls back to `dockControl` for pre Maya 2017, saves/restores location of window.") | ✔️ | [2011-2016](# "Docked windows use `dockControl`, tested lightly on 2016."), [2017+](# "Docked windows use `workspaceControl`.") | ✔️ | ✔️ | ❔ |
 | Maya (Standalone)  | ✔️ | | ✔️ | | ❔ | ✔️ | ❔ |
-| Nuke               | ✔️ | [✔️](# "Uses `registerWidgetAsPanel` to dock window in a panel, saves/restores location of panel only when docked (not floating).") | [✔️](# "Callbacks are only active while the window has focus. It is recommended to define a `checkForChanges()` method which will be run each time the callbacks get reactivated.") | 9-14 | ❔ | ✔️ | ❔ |
+| Nuke               | ✔️ | [✔️](# "Uses `registerWidgetAsPanel` to dock window in a panel, saves/restores location of panel only when docked (not floating).") | [✔️](# "Callbacks are only active while a docked window has focus. It is recommended to define a `checkForChanges()` method which will be run each time the callbacks get reactivated.") | 9-14 | ❔ | ✔️ | ❔ |
 | Nuke (Terminal)    | ✔️ | | ✔️ | | ❔ | ✔️ | ❔ |
 | Houdini            | ✔️ | ❌ | ✔️ | 16-19 | ✔️ | ✔️ | ❔ |
 | Unreal Engine      | ✔️ | ❌ | ❌ | 4.19-4.23, 5.0-5.3 | [❌](# "Tested on UE5.") | ✔️ | ❔ |
 | Blender            | ✔️ | ❌ | ✔️ | 2.8-4.2 | ❔ | ✔️ | ❔ |
 | Blender (Background) | ✔️ | | ❔ | 3.1-4.2 | ❔ | ✔️ | ❔ |
 | Katana             | ✔️ | ❌ | ❌ | 7 | ❔ | [✔️](# "Unable to catch close events when the user presses the X, meaning the position can't be saved and callbacks can't be implemented") | ❔ |
-| 3ds Max            | ✔️ | ❌ | ❌ | 2018-2020 | ❔ | [✔️](# "Tested previously but unable to confirm.") | ❔ |
+| 3ds Max            | ✔️ | ❌ | ❌ | 2018-2020 | ❔ | ✔️ | ❔ |
 | Substance Painter  | ✔️ | [✔️](# "Uses `substance_painter.ui.add_dock_widget`, does not save/restore location of window.") | ✔️ | 8.3 | ✔️ | ✔️ | ❔ |
 | Substance Designer | ✔️ | [✔️](# "Uses `sd.getContext().getSDApplication().getQtForPythonUIMgr().newDockWidget`, does not save/restore location of window.") | ✔️ | 2019.3, 7.1, 12.3 | ✔️ | ✔️ | ❔ |
 | Blackmagic Fusion  | ✔️ | ❌ | ❌ | 9 | ❔ | [✔️](# "Unable to read Fusion version, and causes recursion error if calling `show`/`hide`/`setVisible`.") | ❔ |
@@ -130,8 +130,6 @@ Currently there is no way of launching `VFXWindow` from inside these application
 ### Requirements
  - [Qt.py](https://github.com/mottosso/Qt.py)
 
-### Special Thanks
- - [Blue Zoo](https://www.blue-zoo.co.uk/) - I've been building this up while working there
- - [Lior Ben Horin](https://gist.github.com/liorbenhorin): [Simple_MayaDockingClass.py](https://gist.github.com/liorbenhorin/69da10ec6f22c6d7b92deefdb4a4f475) - Used for Maya docking code
- - [Fredrik Averpil](https://github.com/fredrikaverpil): [pyvfx-boilerplate](https://github.com/fredrikaverpil/pyvfx-boilerplate) - Used to help with palettes, Nuke, and pre-2017 Maya
- - And a shoutout to anyone who has helped [contribute](https://github.com/huntfx/vfxwindow/graphs/contributors) to the module.
+### Resources Used
+ - [Simple_MayaDockingClass.py](https://gist.github.com/liorbenhorin/69da10ec6f22c6d7b92deefdb4a4f475) - Used for Maya docking code
+ - [pyvfx-boilerplate](https://github.com/fredrikaverpil/pyvfx-boilerplate) - Used to help with palettes, Nuke, and pre-2017 Maya
