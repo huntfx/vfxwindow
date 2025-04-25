@@ -46,13 +46,16 @@ class SubstancePainterCallbacks(AbstractCallbacks):
             Called once the current project is saved.
             Signature: (evt: ProjectSaved()) -> None
 
-        export.textures.before:
-            Called just before a textures export.
+        texture.export:
+            Mapped to 'texture.export.after'
+
+        texture.export.before:
+            Called just before a texture export.
             Signature: (evt: ExportTexturesAboutToStart(textures: Dict[Tuple[str, str], List[str]])) -> None
                 textures: List of texture files to be written to disk.
                     Grouped by stack (Texture Set name, stack name).
 
-        export.textures.after:
+        texture.export.after:
             Signature: (evt: ExportTexturesEnded(message: str, status: sp.export.ExportStatus,
                                                  textures: Dict[Tuple[str, str], List[str]])) -> None
                 message: Human readable status message.
@@ -103,8 +106,8 @@ class SubstancePainterCallbacks(AbstractCallbacks):
             'file.save.before': sp.event.ProjectAboutToSave,
             'file.save.after': sp.event.ProjectSaved,
             'file.close.before': sp.event.ProjectAboutToClose,
-            'export.textures.before': sp.event.ExportTexturesAboutToStart,
-            'export.textures.after': sp.event.ExportTexturesEnded,
+            'texture.export.before': sp.event.ExportTexturesAboutToStart,
+            'texture.export.after': sp.event.ExportTexturesEnded,
             'shelf.crawling.before': sp.event.ShelfCrawlingStarted,
             'shelf.crawling.after': sp.event.ShelfCrawlingEnded
         }
