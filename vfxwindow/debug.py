@@ -273,6 +273,7 @@ class TestWindow(VFXWindow):
             self.callbacks.add('redo', lambda scene, _: print('Callback: redo non-persistent ({})'.format(scene.name)))
 
         elif self.application == 'Houdini':
+            import hou
             self.callbacks.add('file', lambda event_type: print('file (event_type={!r})'.format(event_type)))
             self.callbacks.add('file.clear', lambda event_type: print('file.clear (event_type={!r})'.format(event_type)))
             self.callbacks.add('file.clear.before', lambda event_type: print('file.clear.before (event_type={!r})'.format(event_type)))
@@ -296,6 +297,22 @@ class TestWindow(VFXWindow):
             self.callbacks.add('asset.save', lambda event_type, asset_definition: print('asset.create (event_type={!r}, asset_definition={!r})'.format(event_type, asset_definition)))
             self.callbacks.add('asset.library.install', lambda event_type, library_path: print('asset.library.install (event_type={!r}, library_path={!r})'.format(event_type, library_path)))
             self.callbacks.add('asset.library.uninstall', lambda event_type, library_path: print('asset.library.uninstall (event_type={!r}, library_path={!r})'.format(event_type, library_path)))
+            if hou.node('/obj/geo1') is not None:
+                self.callbacks.add('node.selection.changed', lambda node, event_type: print('node.selection.changed (node={!r}, event_type={!r})'.format(node.path(), event_type)), '/obj/geo1')
+                self.callbacks.add('node.remove', lambda node, event_type: print('node.remove (node={!r}, event_type={!r})'.format(node.path(), event_type)), '/obj/geo1')
+                self.callbacks.add('node.name.changed', lambda node, event_type: print('node.name.changed (node={!r}, event_type={!r})'.format(node.path(), event_type)), '/obj/geo1')
+                self.callbacks.add('node.flag.changed', lambda node, event_type: print('node.flag.changed (node={!r}, event_type={!r})'.format(node.path(), event_type)), '/obj/geo1')
+                self.callbacks.add('node.appearance.changed', lambda node, event_type, change_type: print('node.appearance.changed (node={!r}, event_type={!r}, change_type={!r})'.format(node.path(), event_type, change_type)), '/obj/geo1')
+                self.callbacks.add('node.position.changed', lambda node, event_type: print('node.position.changed (node={!r}, event_type={!r})'.format(node.path(), event_type)), '/obj/geo1')
+                self.callbacks.add('node.input.changed', lambda node, event_type, input_index: print('node.input.changed (node={!r}, event_type={!r}, input_index={!r})'.format(node.path(), event_type, input_index)), '/obj/geo1')
+                self.callbacks.add('node.parameter.changed', lambda node, event_type, param_tuple: print('node.parameter.changed (node={!r}, event_type={!r}, param_tuple={!r})'.format(node.path(), event_type, param_tuple)), '/obj/geo1')
+                self.callbacks.add('node.parameter.spare.changed', lambda node, event_type: print('node.parameter.sparechanged (node={!r}, event_type={!r})'.format(node.path(), event_type)), '/obj/geo1')
+                self.callbacks.add('node.child.create', lambda node, event_type, child_node: print('node.child.create (node={!r}, event_type={!r}, child_node={!r})'.format(node.path(), event_type, child_node.path())), '/obj/geo1')
+                self.callbacks.add('node.child.remove', lambda node, event_type, child_node: print('node.child.remove node={!r}, (event_type={!r}, child_node={!r})'.format(node.path(), event_type, child_node.path())), '/obj/geo1')
+                self.callbacks.add('node.child.changed', lambda node, event_type, child_node=None: print('node.child.changed (node={!r}, event_type={!r}, child_node={!r})'.format(node.path(), event_type, child_node.path() if child_node is not None else None)), '/obj/geo1')
+                self.callbacks.add('node.child.selection.changed', lambda node, event_type: print('node.child.selection.changed (node={!r}, event_type={!r})'.format(node.path(), event_type)), '/obj/geo1')
+            curSceneViewer = [item for item in hou.ui.curDesktop().currentPaneTabs() if item.type() == hou.paneTabType.SceneViewer][0]
+            self.callbacks.add('viewport.camera.changed', lambda event_type, desktop, viewer, viewport: print('camera.changed (event_type={!r}, desktop={!r}, viewer={!r}, viewport={!r})'.format(event_type, desktop, viewer, viewport)), curSceneViewer.curViewport())
 
         elif self.application == 'Substance Designer':
             self.callbacks.add('file.load', lambda filePath, succeed, updated: print('file.load (filePath={!r}, succeed={!r}, updated={!r})'.format(filePath, succeed, updated)))

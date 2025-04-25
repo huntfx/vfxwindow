@@ -127,7 +127,7 @@ class HoudiniWindow(AbstractWindow):
         if previousInstance is None:
             return
 
-        #Shut down the window
+        previousInstance['window'].callbacks.unregister()
         if not previousInstance['window'].isClosed():
             try:
                 previousInstance['window'].close()

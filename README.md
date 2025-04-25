@@ -95,7 +95,7 @@ if __name__ == '__main__':
 | Maya (Standalone)  | ✔️ | | ✔️ | | ❔ | ✔️ | ❔ |
 | Nuke               | ✔️ | [✔️](# "Uses `registerWidgetAsPanel` to dock window in a panel, saves/restores location of panel only when docked (not floating).") | [✔️](# "Callbacks are only active while the window has focus. It is recommended to define a `checkForChanges()` method which will be run each time the callbacks get reactivated.") | 9-14 | ❔ | ✔️ | ❔ |
 | Nuke (Terminal)    | ✔️ | | ✔️ | | ❔ | ✔️ | ❔ |
-| Houdini            | ✔️ | ❌ | ❌ | 16-19 | ✔️ | ✔️ | ❔ |
+| Houdini            | ✔️ | ❌ | ✔️ | 16-19 | ✔️ | ✔️ | ❔ |
 | Unreal Engine      | ✔️ | ❌ | ❌ | 4.19-4.23, 5.0-5.3 | [❌](# "Tested on UE5.") | ✔️ | ❔ |
 | Blender            | ✔️ | ❌ | ✔️ | 2.8-4.2 | ❔ | ✔️ | ❔ |
 | Blender (Background) | ✔️ | | ❔ | 3.1-4.2 | ❔ | ✔️ | ❔ |
