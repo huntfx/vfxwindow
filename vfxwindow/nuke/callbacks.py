@@ -123,8 +123,8 @@ class NukeCallbacks(AbstractCallbacks):
         self.aliases['render'] = self.aliases['render.after'] = (nuke.addAfterRender, nuke.removeAfterRender)
         self.aliases['render.frame.before'] = (nuke.addBeforeFrameRender, nuke.removeBeforeFrameRender)
         self.aliases['render.frame'] = self.aliases['render.frame.after'] = (nuke.addAfterFrameRender, nuke.removeAfterFrameRender)
-        self.aliases['render.background.after'] = (nuke.addAfterBackgroundRender, nuke.removeAfterBackgroundRender)
-        self.aliases['render.background.frame.after'] = (nuke.addAfterBackgroundFrameRender, nuke.removeAfterBackgroundFrameRender)
+        self.aliases['render.background'] = self.aliases['render.background.after'] = (nuke.addAfterBackgroundRender, nuke.removeAfterBackgroundRender)
+        self.aliases['render.background.frame'] = self.aliases['render.background.frame.after'] = (nuke.addAfterBackgroundFrameRender, nuke.removeAfterBackgroundFrameRender)
 
     @property
     def registerAvailable(self):

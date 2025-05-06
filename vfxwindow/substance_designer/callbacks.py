@@ -39,20 +39,20 @@ class SubstanceDesignerCallbacks(AbstractCallbacks):
             Signature: (filePath: bytes) -> None
 
         file.close.after:
-            Called after a file is saved.
+            Called after a file is closed.
             Signature: (filePath: bytes, succeed: bool) -> None
 
         ui.graph.create:
             Called when a new graphView is created.
-            Signature (graphViewID: int) -> None
+            Signature: (graphViewID: int) -> None
 
         ui.explorer.create:
             Called when a new explorer panel is created.
-            Signature (explorerID: int) -> None
+            Signature: (explorerID: int) -> None
 
         ui.explorer.selection.changed:
             Called when the selection in the explorer panel changes.
-            Signature (explorerID: int) -> None
+            Signature: (explorerID: int) -> None
     """
 
     def _setupAliases(self):

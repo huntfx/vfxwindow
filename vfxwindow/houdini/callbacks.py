@@ -34,13 +34,13 @@ class HoudiniCallbacks(AbstractCallbacks):
             Mapped to 'file.clear.after'
 
         file.clear.before:
-            Called before before the current .hip file is cleared.
+            Called before the current .hip file is cleared.
             For example during a "File > New" operation.
             Parameters: ()
             Signature: (event_type: hou.hipFileEventType.BeforeClear) -> None
 
         file.clear.after:
-            Called after a after the current .hip file is cleared.
+            Called after the current .hip file is cleared.
             For example during a "File > New" operation.
             Parameters: ()
             Signature: (event_type: hou.hipFileEventType.AfterClear) -> None
@@ -135,7 +135,7 @@ class HoudiniCallbacks(AbstractCallbacks):
 
         asset.library.uninstall:
             Called when a digital asset library is uninstalled from
-            the current ession.
+            the current session.
             Parameters: ()
             Signature: (event_type: hou.hdaEventType, library_path: str) -> None
 
@@ -206,7 +206,7 @@ class HoudiniCallbacks(AbstractCallbacks):
 
         node.child.changed:
             Called when the current node, display flag, or render flag
-            changes inside is changed inside a subnet node.
+            is changed inside a subnet node.
             Parameters: (node: hou.Node | str)
             Signature: (node: hou.Node, event_type: hou.nodeEventType, child_node: hou.Node | None) -> None
 

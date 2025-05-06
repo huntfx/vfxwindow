@@ -98,7 +98,7 @@ class BlenderCallbacks(AbstractCallbacks):
             Called on completion or cancellation of render job.
             Signature: (scene: bpy.types.Scene, None) -> None
 
-        render.frame.before
+        render.frame.before:
             Called before render.
             Signature: (scene: bpy.types.Scene, None) -> None
 
@@ -112,7 +112,7 @@ class BlenderCallbacks(AbstractCallbacks):
 
         render.stats:
             Called when printing render statistics.
-            Signataure: (None, None) -> None
+            Signature: (None, None) -> None
 
         undo.before:
             Called before loading an undo step.
@@ -131,9 +131,9 @@ class BlenderCallbacks(AbstractCallbacks):
             Signature: (scene: bpy.types.Scene, None) -> None
 
         frame.changed:
-            Mapped to 'frame.change.after'
+            Mapped to 'frame.changed.after'
 
-        frame.changed.before
+        frame.changed.before:
             Called after frame change for playback and rendering,
             before any data is evaluated for the new frame.
             Signature: (scene: bpy.types.Scene, None) -> None

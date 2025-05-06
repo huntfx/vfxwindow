@@ -93,7 +93,7 @@ class SubstancePainterCallbacks(AbstractCallbacks):
 
         sp.event.BakingProcessEnded:
             Called after baking is finished.
-            Signature: (evt: Event(status: BakingStatus)):
+            Signature: (evt: Event(status: BakingStatus)) -> None
     """
 
     CallbackProxy = SubstancePainterCallbackProxy

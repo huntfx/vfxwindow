@@ -28,7 +28,7 @@ class MayaCallbacks(AbstractCallbacks):
         file.new.before.check:
             Called prior to File > New operation, allows user to cancel action.
             Parameters: (clientData=None)
-            Signature: (file: MFileObject, clientData) -> bool
+            Signature: (clientData) -> bool
 
         file.new.after:
             Called after a File > New operation.
@@ -133,7 +133,7 @@ class MayaCallbacks(AbstractCallbacks):
             Parameters: (clientData=None)
             Signature: (file: MFileObject, clientData) -> bool
 
-        file.reference.create.after
+        file.reference.create.after:
             Called after a File > CreateReference operation.
             Parameters: (clientData=None)
             Signature: (clientData) -> None
@@ -223,8 +223,6 @@ class MayaCallbacks(AbstractCallbacks):
 
         render.software.frame:
             Mapped to 'render.software.frame.after'
-            Parameters: (clientData=None)
-            Signature: (clientData) -> None
 
         render.software.frame.before:
             Called before each frame of a Software Render.
@@ -357,12 +355,12 @@ class MayaCallbacks(AbstractCallbacks):
             Parameters: (clientData=None)
             Signature: (state: bool, clientData) -> None
 
-        playback.started:
+        playback.start:
             Called when Maya starts playing back.
             Parameters: (clientData=None)
             Signature: (state: bool, clientData) -> None
 
-        playback.stopped:
+        playback.stop:
             Called when Maya stops playing back.
             Parameters: (clientData=None)
             Signature: (state: bool, clientData) -> None
@@ -397,7 +395,7 @@ class MayaCallbacks(AbstractCallbacks):
             The callback is disabled while Maya is in playback or scrubbing modes.
             Use a null MObject to listen for all nodes.
             Parameters: (node: MObject, clientData=None)
-            Signature: (msg: int, plug: MPlug, clientData) -> None
+            Signature: (msg: int, plug: MPlug, otherPlug: MPlug, clientData) -> None
 
         attribute.create:
             Called when an attribute is added.
@@ -1078,7 +1076,7 @@ class MayaCallbacks(AbstractCallbacks):
         """Add a new scriptJob event callback.
 
         Parameters:
-            condition (str): Name of the condition.
+            event (str): Name of the event.
                 View all events with `mc.scriptJob(listEvents=True)`.
 
             func (callable): Callback function.
