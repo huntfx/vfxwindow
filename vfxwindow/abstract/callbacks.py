@@ -10,13 +10,13 @@ from ..exceptions import CallbackAliasNotFoundError, CallbackAliasExistsError
 
 logger = logging.getLogger(__name__)
 
-CallbackFunction = namedtuple('CallbackFunction', ('register', 'unregister', 'intercept'))
+CallbackFunction = namedtuple('CallbackFunction', ('register', 'unregister', 'intercept', 'extra'))
 
 
 class CallbackProxy(object):
     """Hold the callback data for easy registering/unregistering."""
 
-    def __init__(self, name, register, unregister, func, args=None, kwargs=None, intercept=None):
+    def __init__(self, name, register, unregister, func, args=None, kwargs=None, intercept=None, extra=None):
         """Create a proxy.
 
         Parameters:
@@ -26,9 +26,13 @@ class CallbackProxy(object):
             func (callable): Function to register.
             args (tuple, optional): User defined for the register function.
             kwargs (dict, optional): User defined for the register function.
-            itercept (callable): Function to determine if the callback should run.
+            itercept (callable, optional): Determine if the callback should be stopped.
                 Returning True will intercept and stop the callback.
                 It should take the same args and kwargs as `func`.
+            extra (any): Store anything extra.
+                This is for subclass use only, implemented for Houdini.
+                It may change in the future, I just needed a way of
+                passing extra data.
         """
         if args is None:
             args = ()
@@ -41,6 +45,7 @@ class CallbackProxy(object):
         self._unregister = unregister
         self._args = args
         self._kwargs = kwargs
+        self._extra = extra
 
         self._registered = False
         self._result = None
@@ -193,12 +198,12 @@ class CallbackAliases(object):
             alias (str): Alias to assign the callback to.
 
             data (tuple): Data to pass to `CallbackFunction`.
-                It must either be `(register, unregister)`, or
-                `(register, unregister, intercept)`.
+                It must be of length 2, 3 or 4.
 
                 `register` parameters are `(func, *args, **kwargs)`.
                 `unregister` parameters are `(callbackID)`.
                 `intercept` parameters must match that of `func`.
+                `extra` parameters are `(any)`.
 
         Raises:
             AliasAlreadyExistsError: If the alias is already registered.
@@ -213,13 +218,10 @@ class CallbackAliases(object):
         if current._function is not None:
             raise CallbackAliasExistsError('alias already exists for {}'.format(alias))
 
-        # Set the current
-        if isinstance(data, tuple):
-            if len(data) == 2:
-                data = CallbackFunction(data[0], data[1], None)
-            else:
-                data = CallbackFunction(*data)
-        current._function = CallbackFunction(*data)
+        # Set the callback function
+        if not isinstance(data, tuple):
+            raise TypeError('expected tuple of values')
+        current._function = CallbackFunction(*(data + (None, None))[:4])
 
     def __delitem__(self, alias):
         """Delete an alias.
@@ -332,8 +334,8 @@ class AbstractCallbacks(object):
     def add(self, alias, func, *args, **kwargs):
         """Add a pre-defined callback."""
         data = self.aliases[alias]
-        callback = self.CallbackProxy(alias, register=data.register, unregister=data.unregister,
-                                      func=func, args=args, kwargs=kwargs, intercept=data.intercept)
+        callback = self.CallbackProxy(alias, register=data.register, unregister=data.unregister, func=func,
+                                      args=args, kwargs=kwargs, intercept=data.intercept, extra=data.extra)
         if self.registerAvailable:
             callback.register()
         self._callbacks.append(callback)
