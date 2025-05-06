@@ -109,7 +109,7 @@ class CallbackProxy(object):
 
 
 class CallbackAliases(object):
-    """Alias a callback."""
+    """Set aliases for callbacks."""
 
     __slots__ = ['_data', '_function']
 
@@ -199,6 +199,8 @@ class CallbackAliases(object):
 
             data (tuple): Data to pass to `CallbackFunction`.
                 It must be of length 2, 3 or 4.
+                Note that this is currently designed for internal use
+                and may be subject to change in the future.
 
                 `register` parameters are `(func, *args, **kwargs)`.
                 `unregister` parameters are `(callbackID)`.
@@ -274,8 +276,11 @@ class CallbackAliases(object):
             keys.extend(v.keys(_prefix=_prefix + k + '.'))
         return keys
 
+    def values(self):
+        return [self.__getitem__(k) for k in self.keys()]
+
     def items(self):
-        return {k: self.__getitem__(k) for k in self.keys()}
+        return [(k, self.__getitem__(k)) for k in self.keys()]
 
 
 class AbstractCallbacks(object):
