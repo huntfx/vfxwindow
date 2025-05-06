@@ -170,7 +170,7 @@ class MayaCallbacks(AbstractCallbacks):
             Signature: (clientData) -> None
 
         file.reference.unload:
-            Mapped to 'reference.unload.after'.
+            Mapped to 'file.reference.unload.after'.
 
         file.reference.unload.before:
             Called before a File > UnloadReference operation.
@@ -623,97 +623,97 @@ class MayaCallbacks(AbstractCallbacks):
 
         def beforeImport(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeImport, func, clientData)
-        self.aliases['import.before'] = (beforeImport, unregMsg)
+        self.aliases['file.import.before'] = (beforeImport, unregMsg)
 
         def beforeImportCheck(func, clientData=None):
             return self.api.MSceneMessage.addCheckFileCallback(self.api.MSceneMessage.kBeforeImportCheck, func, clientData)
-        self.aliases['import.before.check'] = (beforeImportCheck, unregMsg)
+        self.aliases['file.import.before.check'] = (beforeImportCheck, unregMsg)
 
         def afterImport(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterImport, func, clientData)
-        self.aliases['import'] = self.aliases['import.after'] = (afterImport, unregMsg)
+        self.aliases['file.import'] = self.aliases['file.import.after'] = (afterImport, unregMsg)
 
         def beforeExport(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeExport, func, clientData)
-        self.aliases['export.before'] = (beforeExport, unregMsg)
+        self.aliases['file.export.before'] = (beforeExport, unregMsg)
 
         def beforeExportCheck(func, clientData=None):
             return self.api.MSceneMessage.addCheckFileCallback(self.api.MSceneMessage.kBeforeExportCheck, func, clientData)
-        self.aliases['export.before.check'] = (beforeExportCheck, unregMsg)
+        self.aliases['file.export.before.check'] = (beforeExportCheck, unregMsg)
 
         def afterExport(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterExport, func, clientData)
-        self.aliases['export'] = self.aliases['export.after'] = (afterExport, unregMsg)
+        self.aliases['file.export'] = self.aliases['file.export.after'] = (afterExport, unregMsg)
 
         def beforeRef(func, clientData=None):
             return [
                 self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeCreateReference, func, clientData),
                 self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeLoadReference, func, clientData),
             ]
-        self.aliases['reference.before'] = (beforeRef, unregMultipleMsg)
+        self.aliases['file.reference.before'] = (beforeRef, unregMultipleMsg)
 
         def afterRef(func, clientData=None):
             return [
                 self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterCreateReference, func, clientData),
                 self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterLoadReference, func, clientData),
             ]
-        self.aliases['reference'] = self.aliases['reference.after'] = (afterRef, unregMultipleMsg)
+        self.aliases['file.reference'] = self.aliases['file.reference.after'] = (afterRef, unregMultipleMsg)
 
         def refCreateBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeCreateReference, func, clientData)
-        self.aliases['reference.create.before'] = (refCreateBefore, unregMsg)
+        self.aliases['file.reference.create.before'] = (refCreateBefore, unregMsg)
 
         def refCreateBeforeCheck(func, clientData=None):
             return self.api.MSceneMessage.addCheckFileCallback(self.api.MSceneMessage.kBeforeCreateReferenceCheck, func, clientData)
-        self.aliases['reference.create.before.check'] = (refCreateBeforeCheck, unregMsg)
+        self.aliases['file.reference.create.before.check'] = (refCreateBeforeCheck, unregMsg)
 
         def refCreateAfter(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterCreateReference, func, clientData)
-        self.aliases['reference.create'] = self.aliases['reference.create.after'] = (refCreateAfter, unregMsg)
+        self.aliases['file.reference.create'] = self.aliases['file.reference.create.after'] = (refCreateAfter, unregMsg)
 
         def refRemoveBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeRemoveReference, func, clientData)
-        self.aliases['reference.remove.before'] = (refRemoveBefore, unregMsg)
+        self.aliases['file.reference.remove.before'] = (refRemoveBefore, unregMsg)
 
         def refRemoveAfter(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterRemoveReference, func, clientData)
-        self.aliases['reference.remove'] = self.aliases['reference.remove.after'] = (refRemoveAfter, unregMsg)
+        self.aliases['file.reference.remove'] = self.aliases['file.reference.remove.after'] = (refRemoveAfter, unregMsg)
 
         def refLoadBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeLoadReference, func, clientData)
-        self.aliases['reference.load.before'] = (refLoadBefore, unregMsg)
+        self.aliases['file.reference.load.before'] = (refLoadBefore, unregMsg)
 
         def refLoadBeforeCheck(func, clientData=None):
             return self.api.MSceneMessage.addCheckFileCallback(self.api.MSceneMessage.kBeforeLoadReferenceCheck, func, clientData)
-        self.aliases['reference.load.before.check'] = (refLoadBeforeCheck, unregMsg)
+        self.aliases['file.reference.load.before.check'] = (refLoadBeforeCheck, unregMsg)
 
         def refLoadAfter(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterLoadReference, func, clientData)
-        self.aliases['reference.load'] = self.aliases['reference.load.after'] = (refLoadAfter, unregMsg)
+        self.aliases['file.reference.load'] = self.aliases['file.reference.load.after'] = (refLoadAfter, unregMsg)
 
         def refUnloadBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeUnloadReference, func, clientData)
-        self.aliases['reference.unload.before'] = (refUnloadBefore, unregMsg)
+        self.aliases['file.reference.unload.before'] = (refUnloadBefore, unregMsg)
 
         def refUnloadAfter(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterUnloadReference, func, clientData)
-        self.aliases['reference.unload'] = self.aliases['reference.unload.after'] = (refUnloadAfter, unregMsg)
+        self.aliases['file.reference.unload'] = self.aliases['file.reference.unload.after'] = (refUnloadAfter, unregMsg)
 
         def refImportBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeImportReference, func, clientData)
-        self.aliases['reference.import.before'] = (refImportBefore, unregMsg)
+        self.aliases['file.reference.import.before'] = (refImportBefore, unregMsg)
 
         def refImportAfter(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterImportReference, func, clientData)
-        self.aliases['reference.import'] = self.aliases['reference.import.after'] = (refImportAfter, unregMsg)
+        self.aliases['file.reference.import'] = self.aliases['file.reference.import.after'] = (refImportAfter, unregMsg)
 
         def refExportBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeExportReference, func, clientData)
-        self.aliases['reference.export.before'] = (refExportBefore, unregMsg)
+        self.aliases['file.reference.export.before'] = (refExportBefore, unregMsg)
 
         def refExportAfter(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kAfterExportReference, func, clientData)
-        self.aliases['reference.export'] = self.aliases['reference.export.after'] = (refExportAfter, unregMsg)
+        self.aliases['file.reference.export'] = self.aliases['file.reference.export.after'] = (refExportAfter, unregMsg)
 
         def renderSoftwareBefore(func, clientData=None):
             return self.api.MSceneMessage.addCallback(self.api.MSceneMessage.kBeforeSoftwareRender, func, clientData)
