@@ -4,19 +4,14 @@ from functools import partial
 
 import bpy
 
-from ..abstract.callbacks import AbstractCallbacks, CallbackProxy
+from ..abstract.callbacks import Alias, AbstractCallbacks, CallbackProxy
 
 
 class BlenderCallbackProxy(CallbackProxy):
 
     def forceUnregister(self):
         """Unregister the callback without any extra checks."""
-        self._unregister(self.func)
-
-    @property
-    def registered(self):
-        """Determine if the callback is registered."""
-        return self.func in self._register.__self__
+        self.alias.unregister(self.func)
 
 
 class _MultiHandler(object):
@@ -227,18 +222,16 @@ class BlenderCallbacks(AbstractCallbacks):
             'redo.before': 'redo_pre',
             'redo.after': 'redo_post',
         }
-        for alias, name in handlers.items():
+        for name, callback in handlers.items():
             try:
-                if isinstance(name, _MultiHandler):
-                    handler = name
+                if isinstance(callback, _MultiHandler):
+                    handler = callback
                 else:
-                    handler = getattr(bpy.app.handlers, name)
-                register = handler.append
-                unregister = handler.remove
+                    handler = getattr(bpy.app.handlers, callback)
             except AttributeError:
                 continue
 
-            if alias.endswith('.after'):
-                self.aliases[alias.rsplit('.', 1)[0]] = self.aliases[alias] = (register, unregister)
-            else:
-                self.aliases[alias] = (register, unregister)
+            alias = Alias(register=handler.append, unregister=handler.remove, contains=handler.__contains__)
+            self.aliases[name] = alias
+            if name.endswith('.after'):
+                self.aliases[name.rsplit('.', 1)[0]] = alias

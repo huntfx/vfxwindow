@@ -11,7 +11,7 @@ class NukeCallbackProxy(CallbackProxy):
 
     def forceUnregister(self):
         """Unregister the callback without any extra checks."""
-        self._unregister(self.func, *self._args, **self._kwargs)
+        self.alias.unregister(self.func, *self._args, **self._kwargs)
 
 
 class NukeCallbacks(AbstractCallbacks):

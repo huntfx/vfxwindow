@@ -2,7 +2,27 @@ from __future__ import absolute_import
 
 import sd
 
-from ..abstract.callbacks import AbstractCallbacks
+from ..abstract.callbacks import AbstractCallbacks, CallbackProxy
+
+
+class SubstanceDesignerCallbackProxy(CallbackProxy):
+    @property
+    def registered(self):
+        """Determine if the callback is registered.
+
+        There is no obvious way of doing this, but digging into the
+        code reveals a callback map that contains a dict of callback IDs
+        to their corresponding C functions. The ID only increments so it
+        should be safe enough, but I obviously can't trust this to not
+        change, so it's also wrapped in a try/except.
+        """
+        if self._result is None:
+            return False
+        try:
+            return self._result in sd.api.sdcallbackmap.SDCallbackMap._SDCallbackMap__mCallbacksMap
+        except AttributeError:
+            return super(SubstanceDesignerCallbackProxy, self).registered
+
 
 
 class SubstanceDesignerCallbacks(AbstractCallbacks):
@@ -54,6 +74,8 @@ class SubstanceDesignerCallbacks(AbstractCallbacks):
             Called when the selection in the explorer panel changes.
             Signature: (explorerID: int) -> None
     """
+
+    CallbackProxy = SubstanceDesignerCallbackProxy
 
     def _setupAliases(self):
         """Setup Substance Designer callback aliases."""

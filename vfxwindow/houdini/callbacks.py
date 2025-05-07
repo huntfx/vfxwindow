@@ -8,12 +8,7 @@ from ..abstract.callbacks import AbstractCallbacks, CallbackProxy
 class HoudiniCallbackProxy(CallbackProxy):
 
     def forceUnregister(self):
-        self._unregister(self.func, *self._args, **self._kwargs)
-
-    @property
-    def registered(self):
-        """Determine if the callback is registered."""
-        return self._extra(self.func, *self._args, **self._kwargs)
+        self.alias.unregister(self.func, *self._args, **self._kwargs)
 
 
 class HoudiniCallbacks(AbstractCallbacks):
@@ -283,12 +278,12 @@ class HoudiniCallbacks(AbstractCallbacks):
         def ndUnreg(event_type):
             def ndUnreg(func, node):
                 try:  _getNode(node).removeEventCallback((event_type,), func)
-                except ValueError: pass
+                except (ValueError, hou.ObjectWasDeleted): pass
             return ndUnreg
         def ndCheck(event_type):
             def ndCheck(func, node):
                 try: return ((event_type,), func) in _getNode(node).eventCallbacks()
-                except ValueError: return False
+                except (ValueError, hou.ObjectWasDeleted): return False
             return ndCheck
         nodeEvents = {
             'node.remove': hou.nodeEventType.BeingDeleted,
@@ -308,11 +303,10 @@ class HoudiniCallbacks(AbstractCallbacks):
         for alias, event in nodeEvents.items():
             self.aliases[alias] = (ndReg(event), ndUnreg(event), None, ndCheck(event))
 
-        gvE = hou.geometryViewportEvent
         def gvReg(func, geometryViewport): geometryViewport.addEventCallback(func)
         def gvUnreg(func, geometryViewport): geometryViewport.removeEventCallback(func)
         def gvIntercept(*event_types):
             def gvIntercept(event_type, desktop, viewer, viewport): return event_type not in event_types
             return gvIntercept
         def gvCheck(func, geometryViewport): return func in geometryViewport.eventCallbacks()
-        self.aliases['viewport.camera.changed'] = (gvReg, gvUnreg, gvIntercept(gvE.CameraSwitched), gvCheck)
+        self.aliases['viewport.camera.changed'] = (gvReg, gvUnreg, gvIntercept(hou.geometryViewportEvent.CameraSwitched), gvCheck)

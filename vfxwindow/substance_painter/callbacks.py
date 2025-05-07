@@ -11,7 +11,20 @@ class SubstancePainterCallbackProxy(CallbackProxy):
 
     def forceUnregister(self):
         """Unregister the callback without any extra checks."""
-        self._unregister(self.func)
+        self.alias.unregister(self.func)
+
+    @property
+    def registered(self):
+        """Determine if the callback is registered.
+
+        The Dispatcher class does not have any public method to use,
+        but it stores a private list of every "strong" reference which
+        can be used for this case.
+        """
+        try:
+            return self.func in sp.event.DISPATCHER._strong_refs
+        except AttributeError:
+            return super(SubstancePainterCallbackProxy, self).registered
 
 
 class SubstancePainterCallbacks(AbstractCallbacks):
@@ -111,14 +124,14 @@ class SubstancePainterCallbacks(AbstractCallbacks):
             'shelf.crawling.before': sp.event.ShelfCrawlingStarted,
             'shelf.crawling.after': sp.event.ShelfCrawlingEnded
         }
-        for alias, event in events.items():
+        for name, event in events.items():
             register = partial(sp.event.DISPATCHER.connect_strong, event)
             unregister = partial(sp.event.DISPATCHER.disconnect, event)
+            alias = (register, unregister)
 
-            if alias.endswith('.after') or alias == 'file.close.before':
-                self.aliases[alias.rsplit('.', 1)[0]] = self.aliases[alias] = (register, unregister)
-            else:
-                self.aliases[alias] = (register, unregister)
+            self.aliases[name] = alias
+            if name.endswith('.after') or name == 'file.close.before':
+                self.aliases[name.rsplit('.', 1)[0]] = alias
 
     @property
     def registerAvailable(self):

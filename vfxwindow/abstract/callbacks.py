@@ -10,29 +10,70 @@ from ..exceptions import CallbackAliasNotFoundError, CallbackAliasExistsError
 
 logger = logging.getLogger(__name__)
 
-CallbackFunction = namedtuple('CallbackFunction', ('register', 'unregister', 'intercept', 'extra'))
+
+class Alias(object):
+    """Create a callback alias."""
+
+    __slots__ = ['_register', '_unregister', '_intercept', '_contains']
+
+    def __init__(self, register, unregister, intercept=None, contains=None):
+        """Setup the alias.
+        One alias can be the driving force behind multiple callbacks.
+
+        Parameters:
+            register (callable): Function to register the callback.
+            unregister (callable): Function to unregister the callback.
+                By default it takes in the result from the register
+                function, but this can be overridden if required.
+            itercept (callable, optional): Determine if should skip.
+                Returning True will intercept and stop the callback.
+                It should take the same args and kwargs as `register`.
+            contains (callable, optional): Check if registered.
+                If not set, a basic check will be used.
+                It should take the same args and kwargs as `register`.
+        """
+        self._register = register
+        self._unregister = unregister
+        self._intercept = intercept
+        self._contains = contains
+
+    @property
+    def register(self):
+        """Get the register callback function."""
+        return self._register
+
+    @property
+    def unregister(self):
+        """Get the unregister callback function."""
+        return self._unregister
+
+    def intercept(self, *args, **kwargs):
+        """Determine if the callback should be intercepted."""
+        if self._intercept is None:
+            return False
+        return self._intercept(*args, **kwargs)
+
+    @property
+    def contains(self):
+        """Get the register check function if it's set."""
+        return self._contains
 
 
 class CallbackProxy(object):
     """Hold the callback data for easy registering/unregistering."""
 
-    def __init__(self, name, register, unregister, func, args=None, kwargs=None, intercept=None, extra=None):
+    def __init__(self, name, alias, func, args=None, kwargs=None):
         """Create a proxy.
 
         Parameters:
             name (str): Name to give to the proxy to display in messages.
-            register (callable): Function to register the callback.
-            unregister (callable): Function to unregister the callback.
+            alias (Alias): Contains the registered functions.
             func (callable): Function to register.
             args (tuple, optional): User defined for the register function.
             kwargs (dict, optional): User defined for the register function.
             itercept (callable, optional): Determine if the callback should be stopped.
                 Returning True will intercept and stop the callback.
                 It should take the same args and kwargs as `func`.
-            extra (any): Store anything extra.
-                This is for subclass use only, implemented for Houdini.
-                It may change in the future, I just needed a way of
-                passing extra data.
         """
         if args is None:
             args = ()
@@ -41,11 +82,9 @@ class CallbackProxy(object):
 
         self._id = None
         self._name = name
-        self._register = register
-        self._unregister = unregister
+        self._alias = alias
         self._args = args
         self._kwargs = kwargs
-        self._extra = extra
 
         self._registered = False
         self._result = None
@@ -53,7 +92,7 @@ class CallbackProxy(object):
         @wraps(func.func if isinstance(func, partial) else func)
         def runCallback(*args, **kwargs):
             """Run the callback function."""
-            if intercept is None or not intercept(*args, **kwargs):
+            if not alias.intercept(*args, **kwargs):
                 logger.debug('Running %s...', self.name)
                 func(*args, **kwargs)
 
@@ -80,22 +119,29 @@ class CallbackProxy(object):
         """Get the callback function."""
         return self._func
 
+    @property
+    def alias(self):
+        """Get the alias."""
+        return self._alias
+
     def forceUnregister(self):
         """Unregister the callback without any extra checks.
         This may require overriding.
         """
-        self._unregister(self._result)
+        self.alias.unregister(self._result)
 
     @property
     def registered(self):
         """Determine if the callback is registered."""
+        if self.alias.contains is not None:
+            return self.alias.contains(self.func, *self._args, **self._kwargs)
         return self._registered
 
     def register(self):
         """Register the callback."""
         if not self.registered:
             logger.info('Registering: %s', self._name)
-            self._result = self._register(self.func, *self._args, **self._kwargs)
+            self._result = self.alias.register(self.func, *self._args, **self._kwargs)
             self._registered = True
         return self
 
@@ -183,11 +229,11 @@ class CallbackAliases(object):
                 if item._function:
                     # Fail if multiple found
                     if func is not None:
-                        raise KeyError(alias)
+                        raise CallbackAliasNotFoundError(alias)
                     func = item._function
 
         if func is None:
-            raise KeyError(alias)
+            raise CallbackAliasNotFoundError(alias)
 
         return func
 
@@ -197,10 +243,9 @@ class CallbackAliases(object):
         Parameters:
             alias (str): Alias to assign the callback to.
 
-            data (tuple): Data to pass to `CallbackFunction`.
-                It must be of length 2, 3 or 4.
-                Note that this is currently designed for internal use
-                and may be subject to change in the future.
+            data (tuple): Data to pass to `Alias`.
+                It must be the `Alias` type or of a tuple that matches
+                the arguments to the class.
 
                 `register` parameters are `(func, *args, **kwargs)`.
                 `unregister` parameters are `(callbackID)`.
@@ -220,10 +265,9 @@ class CallbackAliases(object):
         if current._function is not None:
             raise CallbackAliasExistsError('alias already exists for {}'.format(alias))
 
-        # Set the callback function
-        if not isinstance(data, tuple):
-            raise TypeError('expected tuple of values')
-        current._function = CallbackFunction(*(data + (None, None))[:4])
+        if not isinstance(data, Alias):
+            data = Alias(*data)
+        current._function = data
 
     def __delitem__(self, alias):
         """Delete an alias.
@@ -327,6 +371,9 @@ class AbstractCallbacks(object):
     def __iter__(self):
         return iter(self._groups)
 
+    def __contains__(self, other):
+        return other in self._groups
+
     def keys(self):
         return self._groups.keys()
 
@@ -339,8 +386,7 @@ class AbstractCallbacks(object):
     def add(self, alias, func, *args, **kwargs):
         """Add a pre-defined callback."""
         data = self.aliases[alias]
-        callback = self.CallbackProxy(alias, register=data.register, unregister=data.unregister, func=func,
-                                      args=args, kwargs=kwargs, intercept=data.intercept, extra=data.extra)
+        callback = self.CallbackProxy(alias, alias=data, func=func, args=args, kwargs=kwargs)
         if self.registerAvailable:
             callback.register()
         self._callbacks.append(callback)
