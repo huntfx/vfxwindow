@@ -31,5 +31,10 @@ class HoudiniApplication(AbstractApplication):
 
     VERSION = HoudiniVersion
 
+    @property
+    def gui(self):
+        """If the application is in GUI mode."""
+        return hou.isUIAvailable()
+
 
 Application = HoudiniApplication()
