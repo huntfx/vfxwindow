@@ -84,7 +84,7 @@ elif application.Houdini:
     from .houdini.gui import HoudiniWindow as VFXWindow
 
 elif application.Blender:
-    if application.Blender.version == '4.2.0' and sys.playform == 'win32':
+    if application.Blender.version == '4.2.0' and sys.platform == 'win32':
         _bypassPySide6WebEngine()
     _setupQApp()
     from .blender.gui import BlenderWindow as VFXWindow
