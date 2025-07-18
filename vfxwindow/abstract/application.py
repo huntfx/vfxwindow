@@ -52,6 +52,9 @@ class AbstractApplication(str):
         return self.loaded
     __nonzero__ = __bool__
 
+    def __str__(self):
+        return self.name
+
     def __contains__(self, other):
         try:
             return other.lower() in self.name.lower()
