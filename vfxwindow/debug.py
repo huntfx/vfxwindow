@@ -275,6 +275,9 @@ class TestWindow(VFXWindow):
             self.callbacks.add('playback', persistent(lambda scene, depsgraph: print('Callback: playback ({})'.format(scene.name))))
             self.callbacks.add('playback.start', persistent(lambda scene, depsgraph: print('Callback: playback.start ({})'.format(scene.name))))
             self.callbacks.add('playback.stop', persistent(lambda scene, depsgraph: print('Callback: playback.stop ({})'.format(scene.name))))
+            self.callbacks.add('scene.update', persistent(lambda scene, depsgraph=None: print('Callback: scene.update ({})'.format(scene.name))))
+            self.callbacks.add('scene.update.before', persistent(lambda scene, depsgraph=None: print('Callback: scene.update.before ({})'.format(scene.name))))
+            self.callbacks.add('scene.update.after', persistent(lambda scene, depsgraph=None: print('Callback: scene.update.after ({})'.format(scene.name))))
 
             self.callbacks.add('undo', lambda scene, _: print('Callback: redo non-persistent ({})'.format(scene.name)))
             self.callbacks.add('redo', lambda scene, _: print('Callback: redo non-persistent ({})'.format(scene.name)))

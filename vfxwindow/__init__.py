@@ -13,7 +13,7 @@ Changes for 2.0:
 from __future__ import absolute_import
 
 __all__ = ['VFXWindow']
-__version__ = '1.10.1'
+__version__ = '1.10.2'
 
 import os
 import sys

@@ -5,6 +5,7 @@ from functools import partial
 import bpy
 
 from ..abstract.callbacks import Alias, AbstractCallbacks, CallbackProxy
+from .application import Application
 
 
 class BlenderCallbackProxy(CallbackProxy):
@@ -126,7 +127,7 @@ class BlenderCallbacks(AbstractCallbacks):
             Signature: (scene: bpy.types.Scene, None) -> None
 
         frame.changed:
-            Mapped to 'frame.changed.after'
+            Mapped to 'frame.changed.after'.
 
         frame.changed.before:
             Called after frame change for playback and rendering,
@@ -150,21 +151,24 @@ class BlenderCallbacks(AbstractCallbacks):
             Called when ending animation playback.
             Signature: (scene: bpy.types.Scene, depsgraph: bpy.types.Depsgraph) -> None
 
+        scene.update:
+            Mapped to `scene.update.after`.
+
+        scene.update.before:
+            Before the scene data updates.
+            Signature: (scene: bpy.types.Scene, depsgraph: bpy.types.Depsgraph) -> None
+            *The `depsgraph` argument is not given in versions under Blender 2.8.
+
+        scene.update.after:
+            After the scene data updates.
+            Signature: (scene: bpy.types.Scene, depsgraph: bpy.types.Depsgraph) -> None
+            *The `depsgraph` argument is not given in versions under Blender 2.8.
+
     Unimplemented:
         game_pre (removed in 2.80):
             On starting the game engine.
         game_post (removed in 2.80):
             On ending the game engine.
-        scene_update_pre (removed in 2.80):
-            Called before every scene data update.
-            Deprecated by 'depsgraph_update_pre'
-        scene_update_post (removed in 2.80):
-            Called after every scene data update.
-            Deprecated by 'depsgraph_update_post'
-        depsgraph.update.before (depsgraph_update_pre):
-            Called before Depsgraph update.
-        depsgraph.update.after (depsgraph_update_post):
-            Called after Depsgraph update.
         load_factory_preferences_post:
             Called after loading factory preferences.
         load_factory_startup_post:
@@ -222,6 +226,13 @@ class BlenderCallbacks(AbstractCallbacks):
             'redo.before': 'redo_pre',
             'redo.after': 'redo_post',
         }
+        if Application.version < 2.8:
+            handlers['scene.update.before'] = 'scene_update_pre'
+            handlers['scene.update.after'] = 'scene_update_post'
+        else:
+            handlers['scene.update.before'] = 'depsgraph_update_pre'
+            handlers['scene.update.after'] = 'depsgraph_update_post'
+
         for name, callback in handlers.items():
             try:
                 if isinstance(callback, _MultiHandler):
@@ -235,3 +246,4 @@ class BlenderCallbacks(AbstractCallbacks):
             self.aliases[name] = alias
             if name.endswith('.after'):
                 self.aliases[name.rsplit('.', 1)[0]] = alias
+
